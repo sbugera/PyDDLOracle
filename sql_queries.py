@@ -1,0 +1,97 @@
+sql_tables = """
+SELECT t.owner,
+       t.table_name,
+       t.tablespace_name,
+       t.buffer_pool,
+       t.iot_name,
+       t.iot_type,
+       t.min_extents,
+       t.next_extent,
+       t.max_extents,
+       t.ini_trans,
+       t.max_trans,
+       t.initial_extent,
+       t.pct_increase,
+       t.freelists,
+       t.freelist_groups,
+       t.pct_free,
+       t.pct_used,
+       t.instances,
+       t.cluster_name,
+       t.degree,
+       t.num_rows,
+       t.avg_row_len,
+       t.temporary,
+       t.logging,
+       t.partitioned,
+       t.nested,
+       t.row_movement,
+       t.monitoring,
+       t.duration,
+       t.dependencies,
+       t.compression,
+       t.compress_for,
+       t.read_only,
+       t.cache,
+       t.flash_cache,
+       t.cell_flash_cache,
+       t.result_cache,
+       t.segment_created,
+       t.inmemory,
+       t.inmemory_priority,
+       t.inmemory_distribute,
+       t.inmemory_compression,
+       t.inmemory_duplicate,
+       t.clustering,
+       t.inmemory_service,
+       t.inmemory_service_name,
+       t.default_collation,
+       t.sharded,
+       t.duplicated,
+       t.external,
+       t.memoptimize_read,
+       t.memoptimize_write,
+       t.hybrid
+  FROM sys.dba_tables t
+ WHERE t.owner = :schema_name
+ ORDER BY t.table_name
+"""
+
+sql_tab_columns = """
+SELECT table_name,
+       column_name,
+       column_id,
+       data_type,
+       data_type_mod,
+       data_type_owner,
+       DECODE(data_type, 
+              'CHAR', char_length, 
+              'VARCHAR', char_length, 
+              'VARCHAR2', char_length, 
+              'NCHAR', char_length, 
+              'NVARCHAR', char_length, 
+              'NVARCHAR2', char_length, 
+              data_length) AS data_length,
+       data_precision,
+       data_scale,
+       nullable,
+       char_used,
+       default_length,
+       data_default,
+       virtual_column,
+       identity_column,
+       hidden_column,
+       default_on_null,
+       evaluation_edition,
+       unusable_before,
+       unusable_beginning,
+       collation
+  FROM sys.dba_tab_cols   c
+ WHERE owner = :schema_name
+   AND ((user_generated = 'YES') OR (column_name = 'ORA_ARCHIVE_STATE'))
+   AND EXISTS (SELECT NULL
+                 FROM sys.dba_all_tables t
+                WHERE t.table_name = c.table_name
+                  AND t.owner = c.owner)
+ ORDER BY table_name, column_id, internal_column_id
+"""
