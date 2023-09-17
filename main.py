@@ -46,32 +46,53 @@ def get_maximim_column_name_length(df):
     return df["column_name_quoted"].str.len().max()
 
 
+def get_column_data_type(col_data_type, col_data_length, col_data_precision, col_data_scale, col_data_type_owner, col_char_used):
+    data_type = get_case_formatted(col_data_type, "keyword") if pd.isnull(
+        col_data_type_owner) else get_case_formatted(f"{col_data_type_owner}.{col_data_type}", "keyword")
+    if data_type.upper() == "NUMBER":
+        if not pd.isnull(col_data_precision) and col_data_scale > 0:
+            data_type = f"{data_type}({int(col_data_precision)},{int(col_data_scale)})"
+        elif not pd.isnull(col_data_precision):
+            data_type = f"{data_type}({int(col_data_precision)})"
+        elif pd.isnull(col_data_precision) and col_data_scale == 0:
+            data_type = get_case_formatted("INTEGER", "keyword")
+    elif data_type.upper() in ("CHAR", "VARCHAR", "VARCHAR2", "NVARCHAR"):
+        char_used = get_case_formatted(
+            "BYTE", "keyword") if col_char_used == "B" else get_case_formatted("CHAR", "keyword")
+        data_type = f"{data_type}({int(col_data_length)} {char_used})"
+    elif data_type.upper() in ("UROWID", "RAW", "NCHAR", "NVARCHAR2"):
+        data_type = f"{data_type}({int(col_data_length)})"
+    elif data_type.upper() in ("FLOAT"):
+        data_type = f"{data_type}({int(col_data_precision)})"
+    return data_type
+
+
+def get_column_name(col_column_name, max_column_name_length):
+    formatted_column_name = get_case_formatted(col_column_name, "identifier")
+    padded_column_name = formatted_column_name.ljust(max_column_name_length)
+    return padded_column_name
+
+
+def get_indentation():
+    if conf_format["alignments"]["indentation-mode"] == "tab":
+        indentation = "\t"
+    else:
+        indentation = " "*int(conf_format["alignments"]["indentation-size"])
+    return indentation
+
+
 def generate_table_ddl(table, columns):
-    ddl = f"""{get_case_formatted("CREATE TABLE", "keyword")} {get_case_formatted(table.owner, "identifier")}.{get_case_formatted(table.table_name, "identifier")}\n(\n"""
+    table_name = get_case_formatted(f"{table.owner}.{table.table_name}", "identifier")
+    ddl = f"""{get_case_formatted("CREATE TABLE", "keyword")} {table_name}\n(\n"""
     max_column_name_length = get_maximim_column_name_length(columns)
 
     for i, column in enumerate(columns.itertuples()):
+        indentation = get_indentation()
+        column_name = get_column_name(column.column_name, max_column_name_length)
+        data_type = get_column_data_type(column.data_type, column.data_length, column.data_precision, 
+                                         column.data_scale, column.data_type_owner, column.char_used)
         last_char = "\n" if i == len(columns)-1 else ",\n"
-        data_type = get_case_formatted(column.data_type, "keyword") if pd.isnull(
-            column.data_type_owner) else get_case_formatted(f"{column.data_type_owner}.{column.data_type}", "keyword")
-        if data_type.upper() == "NUMBER":
-            if not pd.isnull(column.data_precision) and column.data_scale > 0:
-                data_type = f"{data_type}({int(column.data_precision)},{int(column.data_scale)})"
-            elif not pd.isnull(column.data_precision):
-                data_type = f"{data_type}({int(column.data_precision)})"
-            elif pd.isnull(column.data_precision) and column.data_scale == 0:
-                data_type = get_case_formatted("INTEGER", "keyword")
-        elif data_type.upper() in ("CHAR", "VARCHAR", "VARCHAR2", "NVARCHAR"):
-            char_used = get_case_formatted(
-                "BYTE", "keyword") if column.char_used == "B" else get_case_formatted("CHAR", "keyword")
-            data_type = f"{data_type}({int(column.data_length)} {char_used})"
-        elif data_type.upper() in ("UROWID", "RAW", "NCHAR", "NVARCHAR2"):
-            data_type = f"{data_type}({int(column.data_length)})"
-        elif data_type.upper() in ("FLOAT"):
-            data_type = f"{data_type}({int(column.data_precision)})"
-        padded_column_name = get_case_formatted(
-            column.column_name, "identifier").ljust(max_column_name_length)
-        ddl += f"""    {padded_column_name}  {data_type}{last_char}"""
+        ddl += f"""{indentation}{column_name}  {data_type}{last_char}"""
 
     ddl += ");"
     return ddl
@@ -81,8 +102,7 @@ for table in df_tables.itertuples():
     print("----------------------------")
     print(table.table_name)
     print("----------------------------")
-    df_tab_columns = df_all_tab_columns[df_all_tab_columns["table_name"]
-                                        == table.table_name]
+    df_tab_columns = df_all_tab_columns[df_all_tab_columns["table_name"] == table.table_name]
     table_ddl = generate_table_ddl(table, df_tab_columns)
     print(table_ddl)
 
