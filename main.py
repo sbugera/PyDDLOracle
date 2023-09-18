@@ -81,6 +81,24 @@ def get_indentation():
     return indentation
 
 
+def get_default(col_data_default, col_virtual_column, col_default_on_null):
+    data_default = ""
+    if col_data_default and col_virtual_column == "YES":
+        data_default = f""" {get_case_formatted("GENERATED ALWAYS AS", "keyword")} ({col_data_default})"""
+    elif col_data_default and col_default_on_null == "YES":
+        data_default = f""" {get_case_formatted("DEFAULT ON NULL", "keyword")} {col_data_default}"""
+    elif col_data_default:
+        data_default = f""" {get_case_formatted("DEFAULT", "keyword")} {col_data_default}"""
+    return data_default
+
+
+def get_not_null(col_nullable):
+    not_null = ""
+    if col_nullable == "N":
+        not_null = f" NOT NULL"
+    return get_case_formatted(not_null, "keyword")
+    
+    
 def generate_table_ddl(table, columns):
     table_name = get_case_formatted(f"{table.owner}.{table.table_name}", "identifier")
     ddl = f"""{get_case_formatted("CREATE TABLE", "keyword")} {table_name}\n(\n"""
@@ -91,8 +109,10 @@ def generate_table_ddl(table, columns):
         column_name = get_column_name(column.column_name, max_column_name_length)
         data_type = get_column_data_type(column.data_type, column.data_length, column.data_precision, 
                                          column.data_scale, column.data_type_owner, column.char_used)
+        data_default = get_default(column.data_default, column.virtual_column, column.default_on_null)
+        not_null = get_not_null(column.nullable)
         last_char = "\n" if i == len(columns)-1 else ",\n"
-        ddl += f"""{indentation}{column_name}  {data_type}{last_char}"""
+        ddl += f"""{indentation}{column_name}  {data_type}{data_default}{not_null}{last_char}"""
 
     ddl += ");"
     return ddl
