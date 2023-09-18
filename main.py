@@ -42,7 +42,7 @@ def add_quotes(value):
 
 
 def get_maximim_column_name_length(df):
-    df["column_name_quoted"] = df["column_name"].apply(add_quotes)
+    df.loc[:, 'column_name_quoted'] = df['column_name'].apply(add_quotes)
     return df["column_name_quoted"].str.len().max()
 
 
