@@ -3,6 +3,8 @@ import pandas as pd
 import sql_queries as sql
 import configparser
 
+pd.options.mode.chained_assignment = None  # type: ignore # default='warn'
+
 conf = configparser.ConfigParser()
 conf.read('config.ini')
 
@@ -42,7 +44,7 @@ def add_quotes(value):
 
 
 def get_maximim_column_name_length(df):
-    df.loc[:, 'column_name_quoted'] = df['column_name'].apply(add_quotes)
+    df["column_name_quoted"] = df["column_name"].apply(add_quotes)
     return df["column_name_quoted"].str.len().max()
 
 
@@ -89,15 +91,29 @@ def get_default(col_data_default, col_virtual_column, col_default_on_null):
         data_default = f""" {get_case_formatted("DEFAULT ON NULL", "keyword")} {col_data_default}"""
     elif col_data_default:
         data_default = f""" {get_case_formatted("DEFAULT", "keyword")} {col_data_default}"""
-    return data_default
+    return data_default.rstrip()
 
 
 def get_not_null(col_nullable):
     not_null = ""
     if col_nullable == "N":
-        not_null = f" NOT NULL"
+        not_null = " NOT NULL"
     return get_case_formatted(not_null, "keyword")
-    
+
+
+def get_collation(col_collation):
+    collation = ""
+    if col_collation and col_collation != "USING_NLS_COMP":
+        collation = f" COLLATE {col_collation}"
+    return get_case_formatted(collation, "keyword")
+
+
+def get_invisible(col_hidden_column):
+    invisible = ""
+    if col_hidden_column == "YES":
+        invisible = " INVISIBLE"
+    return get_case_formatted(invisible, "keyword")
+
     
 def generate_table_ddl(table, columns):
     table_name = get_case_formatted(f"{table.owner}.{table.table_name}", "identifier")
@@ -109,10 +125,12 @@ def generate_table_ddl(table, columns):
         column_name = get_column_name(column.column_name, max_column_name_length)
         data_type = get_column_data_type(column.data_type, column.data_length, column.data_precision, 
                                          column.data_scale, column.data_type_owner, column.char_used)
+        invisible = get_invisible(column.hidden_column)
+        collation = get_collation(column.collation)
         data_default = get_default(column.data_default, column.virtual_column, column.default_on_null)
         not_null = get_not_null(column.nullable)
         last_char = "\n" if i == len(columns)-1 else ",\n"
-        ddl += f"""{indentation}{column_name}  {data_type}{data_default}{not_null}{last_char}"""
+        ddl += f"""{indentation}{column_name}  {data_type}{invisible}{collation}{data_default}{not_null}{last_char}"""
 
     ddl += ");"
     return ddl
