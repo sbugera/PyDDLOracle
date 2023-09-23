@@ -1,9 +1,14 @@
 from sqlalchemy import create_engine
 import pandas as pd
-import sql_queries as sql
+import argparse
 import configparser
+import sql_queries as sql
 
 pd.options.mode.chained_assignment = None  # type: ignore # default='warn'
+
+arg_parser = argparse.ArgumentParser(description='Generate DDL scripts for Oracle database objects')
+arg_parser.add_argument('--schema_name', '-s', type=str, help='DB schema name for which DDL scripts need to be generated')
+args = arg_parser.parse_args()
 
 conf = configparser.ConfigParser()
 conf.read('config.ini')
@@ -19,7 +24,9 @@ db_service_name = conf['database']['service_name']
 connection_string = f"oracle+cx_oracle://{db_username}:{db_password}@{db_host}:{db_port}/?service_name={db_service_name}"
 engine = create_engine(connection_string, arraysize=1000)
 
-schema_name = 'EXTORA_APP'
+schema_name = db_username.upper()
+if args.schema_name:
+    schema_name = args.schema_name
 
 df_tables = pd.read_sql_query(sql.sql_tables, engine, params={
                               'schema_name': schema_name})
