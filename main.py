@@ -39,7 +39,7 @@ def get_maximim_column_name_length(df):
     return df["column_name_quoted"].str.len().max()
 
 
-def get_column_data_type(col_data_type, col_data_length, col_data_precision, col_data_scale, col_data_type_owner, col_char_used):
+def get_col_data_type(col_data_type, col_data_length, col_data_precision, col_data_scale, col_data_type_owner, col_char_used):
     data_type = get_case_formatted(col_data_type, "keyword") if pd.isnull(
         col_data_type_owner) else get_case_formatted(f"{col_data_type_owner}.{col_data_type}", "keyword")
     if data_type.upper() == "NUMBER":
@@ -67,14 +67,14 @@ def get_column_name(col_column_name, max_column_name_length):
 
 
 def get_indentation():
-    if conf["alignments"]["indentation-mode"] == "tab":
+    if conf["alignments"]["indentation_mode"] == "tab":
         indentation = "\t"
     else:
-        indentation = " "*int(conf["alignments"]["indentation-size"])
+        indentation = " "*int(conf["alignments"]["indentation_size"])
     return indentation
 
 
-def get_default(col_data_default, col_virtual_column, col_default_on_null):
+def get_col_default(col_data_default, col_virtual_column, col_default_on_null):
     data_default = ""
     if col_data_default and col_virtual_column == "YES":
         data_default = f""" {get_case_formatted("GENERATED ALWAYS AS", "keyword")} ({col_data_default})"""
@@ -85,45 +85,148 @@ def get_default(col_data_default, col_virtual_column, col_default_on_null):
     return data_default.rstrip()
 
 
-def get_not_null(col_nullable):
+def get_col_not_null(col_nullable):
     not_null = ""
     if col_nullable == "N":
         not_null = " NOT NULL"
     return get_case_formatted(not_null, "keyword")
 
 
-def get_collation(col_collation):
+def get_col_collation(col_collation):
     collation = ""
     if col_collation and col_collation != "USING_NLS_COMP":
         collation = f" COLLATE {col_collation}"
     return get_case_formatted(collation, "keyword")
 
 
-def get_invisible(col_hidden_column):
+def get_col_invisible(col_hidden_column):
     invisible = ""
     if col_hidden_column == "YES":
         invisible = " INVISIBLE"
     return get_case_formatted(invisible, "keyword")
 
+
+def get_tab_collation(tab_collation):
+    collation = ""
+    if tab_collation and tab_collation != "USING_NLS_COMP":
+        collation = f"\nDEFAULT COLLATION {tab_collation}"
+    return get_case_formatted(collation, "keyword")
+
+
+def get_tablespace(tab_tablespace_name):
+    tablespace = f"\nTABLESPACE {tab_tablespace_name}"
+    return tablespace
+
+
+def get_tab_storage(table):
+    storage = ""
+    if conf["storage"]["table_storage"] == "no_storage":
+        storage = ""
+    elif conf["storage"]["table_storage"] == "only_tablespace":
+        storage = get_tablespace(table.tablespace_name)
+    elif conf["storage"]["table_storage"] == "with_storage":
+        storage = get_tablespace(table.tablespace_name)
+        storage += f"\nPCTFREE    {int(table.pct_free)}"
+        storage += f"\nINITRANS   {int(table.ini_trans)}"
+        storage += f"\nMAXTRANS   {int(table.max_trans)}"
+        storage += f"\nSTORAGE    ("
+        if str(table.min_extents) != "nan":
+            storage += f"\n            MINEXTENTS       {int(table.min_extents)}"
+        if str(table.max_extents) != "nan":
+            storage += f"\n            MAXEXTENTS       {int(table.max_extents)}"
+        storage += f"\n            PCTINCREASE      {int(table.pct_increase) if table.pct_increase is not None else 0}"
+        if table.buffer_pool != "DEFAULT":
+            storage += f"\n            BUFFER_POOL      {table.buffer_pool}"
+        if table.flash_cache != "DEFAULT":
+            storage += f"\n            FLASH_CACHE      {table.flash_cache}"
+        if table.cell_flash_cache != "DEFAULT":
+            storage += f"\n            CELL_FLASH_CACHE {table.cell_flash_cache}"
+        storage += f"\n            )"
+    return get_case_formatted(storage, "keyword")
+
+
+def get_tab_logging(tab_logging):
+    logging = ""
+    if conf["storage"]["logging"] == "yes":
+        if tab_logging == "YES":
+            logging = "\nLOGGING"
+        else:
+            logging = "\nNOLOGGING"
+    return get_case_formatted(logging, "keyword")
+
+
+def get_tab_comression(tab_comression, tab_compress_for):
+    comression = ""
+    if conf["storage"]["comression"] == "yes":
+        if tab_comression == "DISABLED":
+            comression = "\nNOCOMPRESS"
+        else:
+            if tab_compress_for == "BASIC":
+                comression = "\nCOMPRESS BASIC"
+            elif tab_compress_for == "ADVANCED":
+                comression = "\nCOMPRESS FOR OLTP"
+    return get_case_formatted(comression, "keyword")
+
+
+def get_tab_cache(tab_cache):
+    cache = ""
+    if conf["storage"]["cache"] == "yes":
+        if tab_cache.strip() == "Y":
+            cache = "\nCACHE"
+        else:
+            cache = "\nNOCACHE"
+    return get_case_formatted(cache, "keyword")
+
+
+def get_tab_result_cache(tab_result_cache):
+    result_cache = ""
+    if conf["storage"]["result_cache"] == "yes":
+        result_cache = f"\nRESULT_CACHE (MODE {tab_result_cache})"
+    return get_case_formatted(result_cache, "keyword")
+
+
+def get_tab_row_movement(tab_row_movement):
+    row_movement = ""
+    if tab_row_movement == "ENABLED":
+        row_movement = "\nENABLE ROW MOVEMENT"
+    return get_case_formatted(row_movement, "keyword")
+    
     
 def generate_table_ddl(table, columns):
+    print(table)
     table_name = get_case_formatted(f"{table.owner}.{table.table_name}", "identifier")
+    tab_collation = get_tab_collation(table.default_collation)
+    tab_storage = get_tab_storage(table)
+    tab_logging = get_tab_logging(table.logging)
+    tab_comression = get_tab_comression(table.compression, table.compress_for)
+    tab_cache = get_tab_cache(table.cache)
+    tab_result_cache = get_tab_result_cache(table.result_cache)
+    tab_row_movement = get_tab_row_movement(table.row_movement)
     ddl = f"""{get_case_formatted("CREATE TABLE", "keyword")} {table_name}\n(\n"""
     max_column_name_length = get_maximim_column_name_length(columns)
 
     for i, column in enumerate(columns.itertuples()):
         indentation = get_indentation()
-        column_name = get_column_name(column.column_name, max_column_name_length)
-        data_type = get_column_data_type(column.data_type, column.data_length, column.data_precision, 
-                                         column.data_scale, column.data_type_owner, column.char_used)
-        invisible = get_invisible(column.hidden_column)
-        collation = get_collation(column.collation)
-        data_default = get_default(column.data_default, column.virtual_column, column.default_on_null)
-        not_null = get_not_null(column.nullable)
+        col_name = get_column_name(column.column_name, max_column_name_length)
+        col_data_type = get_col_data_type(column.data_type, column.data_length, column.data_precision, 
+                                          column.data_scale, column.data_type_owner, column.char_used)
+        col_invisible = get_col_invisible(column.hidden_column)
+        col_collation = get_col_collation(column.collation)
+        col_data_default = get_col_default(column.data_default, column.virtual_column, column.default_on_null)
+        col_not_null = get_col_not_null(column.nullable)
         last_char = "\n" if i == len(columns)-1 else ",\n"
-        ddl += f"""{indentation}{column_name}  {data_type}{invisible}{collation}{data_default}{not_null}{last_char}"""
+        ddl += f"""{indentation}{col_name}  {col_data_type}{col_invisible}{col_collation}{col_data_default}{col_not_null}{last_char}"""
 
-    ddl += ");"
+    ddl += ")"
+    ddl += tab_collation
+    ddl += tab_storage
+    ddl += tab_logging
+    ddl += tab_comression
+    ddl += tab_cache
+    ddl += tab_result_cache
+    ddl += tab_row_movement
+    ddl += ";"
+    print(ddl)
     return ddl
 
 
