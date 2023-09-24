@@ -193,7 +193,6 @@ def get_tab_row_movement(tab_row_movement):
     
     
 def generate_table_ddl(table, columns):
-    print(table)
     table_name = get_case_formatted(f"{table.owner}.{table.table_name}", "identifier")
     tab_collation = get_tab_collation(table.default_collation)
     tab_storage = get_tab_storage(table)
@@ -226,7 +225,6 @@ def generate_table_ddl(table, columns):
     ddl += tab_result_cache
     ddl += tab_row_movement
     ddl += ";"
-    print(ddl)
     return ddl
 
 
@@ -285,16 +283,12 @@ df_all_tab_columns = pd.read_sql_query(sql.sql_tab_columns, engine, params={
                                        'schema_name': schema_name})
 
 for table in df_tables.itertuples():
-    print("----------------------------")
     print(table.table_name)
-    print("----------------------------")
     df_tab_columns = df_all_tab_columns[df_all_tab_columns["table_name"] == table.table_name]
     table_ddl = generate_table_ddl(table, df_tab_columns)
-    # print(table_ddl)
-    # table_ddl = "test content"
     file_directory = get_file_directory('table', schema_name, table.table_name)
     file_name = get_file_name('table', schema_name, table.table_name)
-    print(f"Stored in {file_directory}/{file_name}")
+    print(f"   Stored in {file_directory}/{file_name}")
     store_ddl_into_file(table_ddl, file_directory, file_name)
 
 
