@@ -4,6 +4,8 @@ import argparse
 import configparser
 import re
 import os
+from collections import namedtuple
+from pprint import PrettyPrinter
 import sql_queries as sql
 
 pd.options.mode.chained_assignment = None  # type: ignore # default='warn'
@@ -17,6 +19,38 @@ conf_con.read('config_con.ini')
 
 conf = configparser.ConfigParser()
 conf.read('config.ini')
+
+db_username = conf_con['database']['username']
+db_password = conf_con['database']['password']
+db_host = conf_con['database']['host']
+db_port = conf_con['database']['port']
+db_service_name = conf_con['database']['service_name']
+connection_string = f"oracle+cx_oracle://{db_username}:{db_password}@{db_host}:{db_port}/?service_name={db_service_name}"
+engine = create_engine(connection_string, arraysize=1000)
+
+schema_name = db_username.upper()
+if args.schema_name:
+    schema_name = args.schema_name.upper()
+    
+    
+def get_dataframe_namedtuple(df, index):
+    """
+    Returns the row of a pandas dataframe as a namedtuple.
+    """
+    if index >= len(df):
+        return None
+    row = df.iloc[index]
+    row_namedtuple = namedtuple('row', row.index)
+    return row_namedtuple(*row.values)
+
+
+def pprint(variable):
+    pp = PrettyPrinter(indent=1, width=80, depth=None, stream=None, compact=False)
+    try:
+        pp.pprint(variable._asdict())
+    except AttributeError:
+        pp.pprint(variable)
+
 
 def get_case_formatted(str, config_name_for_upper):
     if str != str.upper():
@@ -118,21 +152,26 @@ def get_tablespace(tab_tablespace_name):
     return tablespace
 
 
-def get_tab_storage(table):
+def get_tab_storage(table, part_table):
     storage = ""
     if conf["storage"]["table_storage"] == "no_storage":
         storage = ""
-    elif conf["storage"]["table_storage"] == "only_tablespace":
+    elif conf["storage"]["table_storage"] == "only_tablespace" and table.partitioned == "NO":
         storage = get_tablespace(table.tablespace_name)
-    elif conf["storage"]["table_storage"] == "with_storage":
+    elif conf["storage"]["table_storage"] == "only_tablespace" and table.partitioned == "YES":
+        storage = get_tablespace(part_table.def_tablespace_name)
+    elif conf["storage"]["table_storage"] == "with_storage" and table.partitioned == "NO":
         storage = get_tablespace(table.tablespace_name)
-        storage += f"\nPCTFREE    {int(table.pct_free)}"
-        storage += f"\nINITRANS   {int(table.ini_trans)}"
-        storage += f"\nMAXTRANS   {int(table.max_trans)}"
+        if str(table.pct_free) != "nan":
+            storage += f"\nPCTFREE    {int(table.pct_free)}"
+        if str(table.ini_trans) != "nan":
+            storage += f"\nINITRANS   {int(table.ini_trans)}"
+        if str(table.max_trans) != "nan":
+            storage += f"\nMAXTRANS   {int(table.max_trans)}"
         storage += f"\nSTORAGE    ("
-        if str(table.min_extents) != "nan":
+        if str(table.min_extents) not in ("nan", "DEFAULT"):
             storage += f"\n            MINEXTENTS       {int(table.min_extents)}"
-        if str(table.max_extents) != "nan":
+        if str(table.max_extents) not in ("nan", "DEFAULT"):
             storage += f"\n            MAXEXTENTS       {int(table.max_extents)}"
         storage += f"\n            PCTINCREASE      {int(table.pct_increase) if table.pct_increase is not None else 0}"
         if table.buffer_pool != "DEFAULT":
@@ -142,10 +181,37 @@ def get_tab_storage(table):
         if table.cell_flash_cache != "DEFAULT":
             storage += f"\n            CELL_FLASH_CACHE {table.cell_flash_cache}"
         storage += f"\n            )"
+    elif conf["storage"]["table_storage"] == "with_storage" and table.partitioned == "YES":
+        storage = get_tablespace(part_table.def_tablespace_name)
+        if str(part_table.def_pct_free) != "nan":
+            storage += f"\nPCTFREE    {int(part_table.def_pct_free)}"
+        if str(part_table.def_ini_trans) != "nan":
+            storage += f"\nINITRANS   {int(part_table.def_ini_trans)}"
+        if str(part_table.def_max_trans) != "nan":
+            storage += f"\nMAXTRANS   {int(part_table.def_max_trans)}"
+        storage_tmp = f"\nSTORAGE    ("
+        if str(part_table.def_min_extents) not in ("nan", "DEFAULT"):
+            storage_tmp += f"\n            MINEXTENTS       {int(part_table.def_min_extents)}"
+        if str(part_table.def_max_extents) not in ("nan", "DEFAULT"):
+            storage_tmp += f"\n            MAXEXTENTS       {int(part_table.def_max_extents)}"
+        if part_table.def_pct_increase not in ("nan", "DEFAULT"):
+            storage_tmp += f"\n            PCTINCREASE      {int(part_table.def_pct_increase)}"
+        if part_table.def_buffer_pool != "DEFAULT":
+            storage_tmp += f"\n            BUFFER_POOL      {part_table.def_buffer_pool}"
+        if part_table.def_flash_cache != "DEFAULT":
+            storage_tmp += f"\n            FLASH_CACHE      {part_table.def_flash_cache}"
+        if part_table.def_cell_flash_cache != "DEFAULT":
+            storage_tmp += f"\n            CELL_FLASH_CACHE {part_table.def_cell_flash_cache}"
+        if storage_tmp != f"\nSTORAGE    (":
+            storage += f"{storage_tmp}\n            )"
     return get_case_formatted(storage, "keyword")
 
 
-def get_tab_logging(tab_logging):
+def get_tab_logging(table, part_table):
+    if table.partitioned == "NO":
+        tab_logging = table.logging
+    else:
+        tab_logging = part_table.def_logging
     logging = ""
     if conf["storage"]["logging"] == "yes":
         if tab_logging == "YES":
@@ -155,7 +221,11 @@ def get_tab_logging(tab_logging):
     return get_case_formatted(logging, "keyword")
 
 
-def get_tab_comression(tab_comression, tab_compress_for):
+def get_tab_comression(table, part_table):
+    if table.partitioned == "NO":
+        tab_comression, tab_compress_for = table.compression, table.compress_for
+    else:
+        tab_comression, tab_compress_for = part_table.def_compression, part_table.def_compress_for
     comression = ""
     if conf["storage"]["comression"] == "yes":
         if tab_comression == "DISABLED":
@@ -192,18 +262,12 @@ def get_tab_row_movement(tab_row_movement):
     return get_case_formatted(row_movement, "keyword")
     
     
-def generate_table_ddl(table, columns):
+def generate_table_ddl(table, columns, part_table):
     table_name = get_case_formatted(f"{table.owner}.{table.table_name}", "identifier")
-    tab_collation = get_tab_collation(table.default_collation)
-    tab_storage = get_tab_storage(table)
-    tab_logging = get_tab_logging(table.logging)
-    tab_comression = get_tab_comression(table.compression, table.compress_for)
-    tab_cache = get_tab_cache(table.cache)
-    tab_result_cache = get_tab_result_cache(table.result_cache)
-    tab_row_movement = get_tab_row_movement(table.row_movement)
-    ddl = f"""{get_case_formatted("CREATE TABLE", "keyword")} {table_name}\n(\n"""
     max_column_name_length = get_maximim_column_name_length(columns)
 
+    ddl = f"""{get_case_formatted("CREATE TABLE", "keyword")} {table_name}\n(\n"""
+    
     for i, column in enumerate(columns.itertuples()):
         indentation = get_indentation()
         col_name = get_column_name(column.column_name, max_column_name_length)
@@ -217,13 +281,13 @@ def generate_table_ddl(table, columns):
         ddl += f"""{indentation}{col_name}  {col_data_type}{col_invisible}{col_collation}{col_data_default}{col_not_null}{last_char}"""
 
     ddl += ")"
-    ddl += tab_collation
-    ddl += tab_storage
-    ddl += tab_logging
-    ddl += tab_comression
-    ddl += tab_cache
-    ddl += tab_result_cache
-    ddl += tab_row_movement
+    ddl += get_tab_collation(table.default_collation)
+    ddl += get_tab_storage(table, part_table)
+    ddl += get_tab_logging(table, part_table)
+    ddl += get_tab_comression(table, part_table)
+    ddl += get_tab_cache(table.cache)
+    ddl += get_tab_result_cache(table.result_cache)
+    ddl += get_tab_row_movement(table.row_movement)
     ddl += ";"
     return ddl
 
@@ -265,31 +329,33 @@ def store_ddl_into_file(file_content, file_directory, file_name):
         file.write(file_content)
 
 
-db_username = conf_con['database']['username']
-db_password = conf_con['database']['password']
-db_host = conf_con['database']['host']
-db_port = conf_con['database']['port']
-db_service_name = conf_con['database']['service_name']
-connection_string = f"oracle+cx_oracle://{db_username}:{db_password}@{db_host}:{db_port}/?service_name={db_service_name}"
-engine = create_engine(connection_string, arraysize=1000)
+def get_df_tables():
+    return pd.read_sql_query(sql.sql_tables, engine, params={'schema_name': schema_name})
+    
 
-schema_name = db_username.upper()
-if args.schema_name:
-    schema_name = args.schema_name
+def get_df_tab_columns():
+    return pd.read_sql_query(sql.sql_tab_columns, engine, params={'schema_name': schema_name})
+    
 
-df_tables = pd.read_sql_query(sql.sql_tables, engine, params={
-                              'schema_name': schema_name})
-df_all_tab_columns = pd.read_sql_query(sql.sql_tab_columns, engine, params={
-                                       'schema_name': schema_name})
-
-for table in df_tables.itertuples():
-    print(table.table_name)
-    df_tab_columns = df_all_tab_columns[df_all_tab_columns["table_name"] == table.table_name]
-    table_ddl = generate_table_ddl(table, df_tab_columns)
-    file_directory = get_file_directory('table', schema_name, table.table_name)
-    file_name = get_file_name('table', schema_name, table.table_name)
-    print(f"   Stored in {file_directory}/{file_name}")
-    store_ddl_into_file(table_ddl, file_directory, file_name)
-
-
-engine.dispose()
+def get_df_part_tables():
+    return pd.read_sql_query(sql.sql_part_tables, engine, params={'schema_name': schema_name})
+    
+    
+if __name__ == "__main__":
+    df_tables = get_df_tables()
+    df_all_tab_columns = get_df_tab_columns()
+    df_all_part_tables = get_df_part_tables()
+    
+    for table in df_tables.itertuples():
+        print(table.table_name)
+        df_tab_columns = df_all_tab_columns[df_all_tab_columns["table_name"] == table.table_name]
+        df_part_tables = df_all_part_tables[df_all_part_tables["table_name"] == table.table_name]
+        part_table = get_dataframe_namedtuple(df_part_tables, 0)
+        
+        table_ddl = generate_table_ddl(table, df_tab_columns, part_table)
+        file_directory = get_file_directory('table', schema_name, table.table_name)
+        file_name = get_file_name('table', schema_name, table.table_name)
+        print(f"   Stored in {file_directory}/{file_name}")
+        store_ddl_into_file(table_ddl, file_directory, file_name)
+        
+    engine.dispose()

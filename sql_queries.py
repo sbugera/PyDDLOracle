@@ -95,3 +95,50 @@ SELECT table_name,
                   AND t.owner = c.owner)
  ORDER BY table_name, column_id, internal_column_id
 """
+
+sql_part_tables = """
+SELECT owner,
+       table_name,
+       partitioning_type,
+       subpartitioning_type,
+       def_tablespace_name,
+       def_pct_free,
+       def_pct_used,
+       def_ini_trans,
+       def_max_trans,
+       def_initial_extent,
+       def_next_extent,
+       def_min_extents,
+       def_max_extents,
+       def_max_size,
+       def_pct_increase,
+       def_freelists,
+       def_freelist_groups,
+       def_logging,
+       def_compression,
+       def_compress_for,
+       def_buffer_pool,
+       def_flash_cache,
+       def_cell_flash_cache,
+       ref_ptn_constraint_name,
+       interval,
+       autolist,
+       interval_subpartition,
+       autolist_subpartition,
+       is_nested,
+       def_segment_creation,
+       def_indexing,
+       def_inmemory,
+       def_inmemory_priority,
+       def_inmemory_distribute,
+       def_inmemory_compression,
+       def_inmemory_duplicate,
+       def_read_only,
+       def_cellmemory,
+       def_inmemory_service,
+       def_inmemory_service_name,
+       auto
+  FROM sys.dba_part_tables
+ WHERE owner = :schema_name
+ ORDER BY table_name
+"""
