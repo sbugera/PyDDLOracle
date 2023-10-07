@@ -10,29 +10,6 @@ import sql_queries as sql
 
 pd.options.mode.chained_assignment = None  # type: ignore # default='warn'
 
-arg_parser = argparse.ArgumentParser(description='Generate DDL scripts for Oracle database objects')
-arg_parser.add_argument('--schema_name', '-s', type=str,
-                        help='DB schema name for which DDL scripts need to be generated')
-args = arg_parser.parse_args()
-
-conf_con = configparser.ConfigParser()
-conf_con.read('config_con.ini')
-
-conf = configparser.ConfigParser()
-conf.read('config.ini')
-
-db_username = conf_con['database']['username']
-db_password = conf_con['database']['password']
-db_host = conf_con['database']['host']
-db_port = conf_con['database']['port']
-db_service_name = conf_con['database']['service_name']
-connection_string = f"oracle+cx_oracle://{db_username}:{db_password}@{db_host}:{db_port}/?service_name={db_service_name}"
-engine = create_engine(connection_string, arraysize=1000)
-
-schema_name = db_username.upper()
-if args.schema_name:
-    schema_name = args.schema_name.upper()
-
 
 def get_dataframe_namedtuple(df, index):
     """
@@ -382,6 +359,29 @@ def get_df_part_tables():
 
 
 if __name__ == "__main__":
+    arg_parser = argparse.ArgumentParser(description='Generate DDL scripts for Oracle database objects')
+    arg_parser.add_argument('--schema_name', '-s', type=str,
+                            help='DB schema name for which DDL scripts need to be generated')
+    args = arg_parser.parse_args()
+
+    conf_con = configparser.ConfigParser()
+    conf_con.read('config_con.ini')
+
+    conf = configparser.ConfigParser()
+    conf.read('config.ini')
+
+    db_username = conf_con['database']['username']
+    db_password = conf_con['database']['password']
+    db_host = conf_con['database']['host']
+    db_port = conf_con['database']['port']
+    db_service_name = conf_con['database']['service_name']
+    connection_string = f"oracle+cx_oracle://{db_username}:{db_password}@{db_host}:{db_port}/?service_name={db_service_name}"
+    engine = create_engine(connection_string, arraysize=1000)
+
+    schema_name = db_username.upper()
+    if args.schema_name:
+        schema_name = args.schema_name.upper()
+
     df_tables = get_df_tables()
     df_all_tab_columns = get_df_tab_columns()
     df_all_part_tables = get_df_part_tables()
