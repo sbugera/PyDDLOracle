@@ -377,7 +377,6 @@ class Table:
             tab_compression, tab_compress_for = self.compression, self.compress_for
         else:
             tab_compression, tab_compress_for = self.def_compression, self.def_compress_for
-        print('tab_compression', tab_compression)
         compression = ""
         if conf["storage"]["compression"] == "yes":
             if tab_compression in ("DISABLED", "NONE"):
