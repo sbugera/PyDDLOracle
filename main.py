@@ -72,6 +72,42 @@ def get_entity_name(template_name, object_type, object_owner, object_name):
     return entity_name
 
 
+def get_full_storage(indentation, tablespace_name, pct_free, ini_trans, max_trans, min_extents, max_extents,
+                     pct_increase, buffer_pool, flash_cache, cell_flash_cache, initial_extent=None, next_extent=None):
+    storage = f"\n{indentation}TABLESPACE {tablespace_name}"
+    if str(pct_free) != "nan":
+        storage += f"\n{indentation}PCTFREE    {int(pct_free)}"
+    if str(ini_trans) != "nan":
+        storage += f"\n{indentation}INITRANS   {int(ini_trans)}"
+    if str(max_trans) != "nan":
+        storage += f"\n{indentation}MAXTRANS   {int(max_trans)}"
+    storage_tmp = f"\n{indentation}STORAGE    ("
+    if initial_extent and str(initial_extent) not in ("nan", "DEFAULT", "-1"):
+        storage_tmp += f"\n{indentation}            INITIAL          {int(initial_extent/1024/1024)}M"
+    if next_extent and str(next_extent) not in ("nan", "DEFAULT", "-1"):
+        storage_tmp += f"\n{indentation}            NEXT             {int(next_extent/1024/1024)}M"
+    if min_extents and str(min_extents) not in ("nan", "DEFAULT", "-1"):
+        storage_tmp += f"\n{indentation}            MINEXTENTS       {int(min_extents)}"
+    if max_extents and str(max_extents) not in ("nan", "DEFAULT", "-1"):
+        if max_extents == 2147483645:
+            storage_tmp += f"\n{indentation}            MAXEXTENTS       UNLIMITED"
+        else:
+            storage_tmp += f"\n{indentation}            MAXEXTENTS       {int(max_extents)}"
+    if pct_increase and str(pct_increase) not in ("nan", "DEFAULT", "-1"):
+        storage_tmp += f"\n{indentation}            PCTINCREASE      {int(pct_increase)}"
+    if pct_increase is None:
+        storage_tmp += f"\n{indentation}            PCTINCREASE      0"
+    if buffer_pool and buffer_pool != "DEFAULT2":
+        storage_tmp += f"\n{indentation}            BUFFER_POOL      {buffer_pool}"
+    if flash_cache and flash_cache != "DEFAULT":
+        storage_tmp += f"\n{indentation}            FLASH_CACHE      {flash_cache}"
+    if cell_flash_cache and cell_flash_cache != "DEFAULT":
+        storage_tmp += f"\n{indentation}            CELL_FLASH_CACHE {cell_flash_cache}"
+    if storage_tmp != f"\n{indentation}STORAGE    (":
+        storage += f"{storage_tmp}\n{indentation}            )"
+    return storage
+
+
 class Column:
     def __init__(self, column_row, max_column_name_length):
         self.max_column_name_length = max_column_name_length
@@ -154,11 +190,116 @@ class Column:
         return ddl
 
 
+class Partition:
+    def __init__(self, tab_partition):
+        self.partition_name = tab_partition.partition_name
+        self.high_value = tab_partition.high_value
+        self.partition_position = tab_partition.partition_position
+        self.tablespace_name = tab_partition.tablespace_name
+        self.pct_free = tab_partition.pct_free
+        self.ini_trans = tab_partition.ini_trans
+        self.max_trans = tab_partition.max_trans
+        self.min_extent = tab_partition.min_extent
+        self.max_extent = tab_partition.max_extent
+        self.pct_increase = tab_partition.pct_increase
+        self.buffer_pool = tab_partition.buffer_pool
+        self.flash_cache = tab_partition.flash_cache
+        self.cell_flash_cache = tab_partition.cell_flash_cache
+        self.initial_extent = tab_partition.initial_extent
+        self.next_extent = tab_partition.next_extent
+        self.logging = tab_partition.logging
+        self.compression = tab_partition.compression
+        self.compress_for = tab_partition.compress_for
+
+    def get_logging(self):
+        logging = ""
+        if conf["storage"]["logging"] == "yes":
+            if self.logging == "YES":
+                logging = f"\n{get_indentation()}LOGGING"
+            else:
+                logging = f"\n{get_indentation()}NOLOGGING"
+        return get_case_formatted(logging, "keyword")
+
+    def get_compression(self):
+        compression = ""
+        if conf["storage"]["compression"] == "yes":
+            if self.compression == "DISABLED":
+                compression = f"\n{get_indentation()}NOCOMPRESS"
+            else:
+                if self.compress_for == "BASIC":
+                    compression = f"\n{get_indentation()}COMPRESS BASIC"
+                elif self.compress_for == "ADVANCED":
+                    compression = f"\n{get_indentation()}COMPRESS FOR OLTP"
+        return get_case_formatted(compression, "keyword")
+
+    def get_partition(self):
+        statement = get_case_formatted("\n  PARTITION<:1>VALUES LESS THAN (<:2>)", "keyword")
+        partition_name = " "
+        if not self.partition_name.startswith("SYS_P"):
+            partition_name = get_case_formatted(f" {self.partition_name} ", "identifier")
+        partition = statement.replace("<:1>", partition_name)
+        partition = partition.replace("<:2>", self.high_value)
+        partition += self.get_logging()
+        partition += self.get_compression()
+        if conf["storage"]["partition_storage"] == "with_storage":
+            partition += get_full_storage(
+                get_indentation(), self.tablespace_name, self.pct_free, self.ini_trans, self.max_trans,self.min_extent,
+                self.max_extent, self.pct_increase, self.buffer_pool, self.flash_cache, self.cell_flash_cache,
+                self.initial_extent, self.next_extent)
+        elif conf["storage"]["partition_storage"] == "only_tablespace":
+            partition += f"\n{get_indentation()}TABLESPACE {self.tablespace_name}"
+        return partition
+
+
+class Partitioning:
+    def __init__(self, part_table, part_key_columns, tab_partitions):
+        self.partitioning_type = part_table.partitioning_type
+        self.interval = part_table.interval
+        self.part_key_columns = part_key_columns
+        self.tab_partitions = tab_partitions
+
+    def get_list_of_key_columns(self):
+        list_of_key_columns = ""
+        for i, part_key_column in enumerate(self.part_key_columns.itertuples()):
+            if i == 0:
+                list_of_key_columns += f"{part_key_column.column_name}"
+            else:
+                list_of_key_columns += f", {part_key_column.column_name}"
+        return get_case_formatted(list_of_key_columns, "identifier")
+
+    def get_partitioning(self):
+        partitioning = ""
+        if conf["storage"]["partitioning"] == "none":
+            return ""
+        if self.partitioning_type == "RANGE":
+            statement = get_case_formatted("PARTITION BY RANGE", "keyword")
+            key_columns = self.get_list_of_key_columns()
+            partitioning = f"\n{statement} ({key_columns})"
+            if self.interval:
+                statement = get_case_formatted("INTERVAL", "keyword")
+                partitioning += f"\n{statement} ({self.interval})"
+            if conf["storage"]["partitioning"] == "all":
+                partitioning += "\n("
+                for i, tab_partition in enumerate(self.tab_partitions.itertuples()):
+                    partition = Partition(tab_partition)
+                    partitioning += f"{partition.get_partition()}"
+                    if i != len(self.tab_partitions) - 1:
+                        partitioning += ","
+                partitioning += "\n)"
+            # todo: add conf["storage"]["partitioning"] == "initial"
+            # todo: add subpartitioning
+
+        return partitioning
+
+
 class Table:
-    def __init__(self, table, columns, part_table):
+    def __init__(self, table, part_table, columns, part_key_columns, tab_partitions):
         self.max_column_name_length = None
-        self.ddl = None
+        self.ddl = ""
         self.columns = columns
+        self.part_table = part_table
+        self.part_key_columns = part_key_columns
+        self.tab_partitions = tab_partitions
         self.owner = table.owner
         self.table_name = table.table_name
         self.default_collation = table.default_collation
@@ -179,19 +320,19 @@ class Table:
         self.buffer_pool = table.buffer_pool
         self.flash_cache = table.flash_cache
         self.cell_flash_cache = table.cell_flash_cache
-        self.def_tablespace_name = part_table.def_tablespace_name if part_table else None
-        self.def_logging = part_table.def_logging if part_table else None
-        self.def_compression = part_table.def_compression if part_table else None
-        self.def_compress_for = part_table.def_compress_for if part_table else None
-        self.def_pct_free = part_table.def_pct_free if part_table else None
-        self.def_ini_trans = part_table.def_ini_trans if part_table else None
-        self.def_max_trans = part_table.def_max_trans if part_table else None
-        self.def_min_extents = part_table.def_min_extents if part_table else None
-        self.def_max_extents = part_table.def_max_extents if part_table else None
-        self.def_pct_increase = part_table.def_pct_increase if part_table else None
-        self.def_buffer_pool = part_table.def_buffer_pool if part_table else None
-        self.def_flash_cache = part_table.def_flash_cache if part_table else None
-        self.def_cell_flash_cache = part_table.def_cell_flash_cache if part_table else None
+        self.def_tablespace_name = part_table.def_tablespace_name if part_table else ""
+        self.def_logging = part_table.def_logging if part_table else ""
+        self.def_compression = part_table.def_compression if part_table else ""
+        self.def_compress_for = part_table.def_compress_for if part_table else ""
+        self.def_pct_free = part_table.def_pct_free if part_table else ""
+        self.def_ini_trans = part_table.def_ini_trans if part_table else ""
+        self.def_max_trans = part_table.def_max_trans if part_table else ""
+        self.def_min_extents = part_table.def_min_extents if part_table else ""
+        self.def_max_extents = part_table.def_max_extents if part_table else ""
+        self.def_pct_increase = part_table.def_pct_increase if part_table else ""
+        self.def_buffer_pool = part_table.def_buffer_pool if part_table else ""
+        self.def_flash_cache = part_table.def_flash_cache if part_table else ""
+        self.def_cell_flash_cache = part_table.def_cell_flash_cache if part_table else ""
 
     def get_maximum_column_name_length(self):
         self.columns["column_name_quoted"] = self.columns["column_name"].apply(add_quotes)
@@ -212,54 +353,19 @@ class Table:
         elif conf["storage"]["table_storage"] == "only_tablespace" and self.partitioned == "YES":
             storage = f"\nTABLESPACE {self.def_tablespace_name}"
         elif conf["storage"]["table_storage"] == "with_storage" and self.partitioned == "NO":
-            storage = f"\nTABLESPACE {self.tablespace_name}"
-            if str(self.pct_free) != "nan":
-                storage += f"\nPCTFREE    {int(self.pct_free)}"
-            if str(self.ini_trans) != "nan":
-                storage += f"\nINITRANS   {int(self.ini_trans)}"
-            if str(self.max_trans) != "nan":
-                storage += f"\nMAXTRANS   {int(self.max_trans)}"
-            storage += f"\nSTORAGE    ("
-            if str(self.min_extents) not in ("nan", "DEFAULT"):
-                storage += f"\n            MINEXTENTS       {int(self.min_extents)}"
-            if str(self.max_extents) not in ("nan", "DEFAULT"):
-                storage += f"\n            MAXEXTENTS       {int(self.max_extents)}"
-            storage += f"\n            PCTINCREASE      {int(self.pct_increase) if self.pct_increase is not None else 0}"
-            if self.buffer_pool != "DEFAULT":
-                storage += f"\n            BUFFER_POOL      {self.buffer_pool}"
-            if self.flash_cache != "DEFAULT":
-                storage += f"\n            FLASH_CACHE      {self.flash_cache}"
-            if self.cell_flash_cache != "DEFAULT":
-                storage += f"\n            CELL_FLASH_CACHE {self.cell_flash_cache}"
-            storage += f"\n            )"
+            storage = get_full_storage(
+                '', self.tablespace_name, self.pct_free, self.ini_trans, self.max_trans, self.min_extents,
+                self.max_extents, self.pct_increase, self.buffer_pool, self.flash_cache, self.cell_flash_cache)
         elif conf["storage"]["table_storage"] == "with_storage" and self.partitioned == "YES":
-            storage = f"\nTABLESPACE {self.def_tablespace_name}"
-            if str(self.def_pct_free) != "nan":
-                storage += f"\nPCTFREE    {int(self.def_pct_free)}"
-            if str(self.def_ini_trans) != "nan":
-                storage += f"\nINITRANS   {int(self.def_ini_trans)}"
-            if str(self.def_max_trans) != "nan":
-                storage += f"\nMAXTRANS   {int(self.def_max_trans)}"
-            storage_tmp = f"\nSTORAGE    ("
-            if str(self.def_min_extents) not in ("nan", "DEFAULT"):
-                storage_tmp += f"\n            MINEXTENTS       {int(self.def_min_extents)}"
-            if str(self.def_max_extents) not in ("nan", "DEFAULT"):
-                storage_tmp += f"\n            MAXEXTENTS       {int(self.def_max_extents)}"
-            if self.def_pct_increase not in ("nan", "DEFAULT"):
-                storage_tmp += f"\n            PCTINCREASE      {int(self.def_pct_increase)}"
-            if self.def_buffer_pool != "DEFAULT":
-                storage_tmp += f"\n            BUFFER_POOL      {self.def_buffer_pool}"
-            if self.def_flash_cache != "DEFAULT":
-                storage_tmp += f"\n            FLASH_CACHE      {self.def_flash_cache}"
-            if self.def_cell_flash_cache != "DEFAULT":
-                storage_tmp += f"\n            CELL_FLASH_CACHE {self.def_cell_flash_cache}"
-            if storage_tmp != f"\nSTORAGE    (":
-                storage += f"{storage_tmp}\n            )"
+            storage = get_full_storage(
+                '', self.def_tablespace_name, self.def_pct_free, self.def_ini_trans, self.def_max_trans,
+                self.def_min_extents, self.def_max_extents, self.def_pct_increase, self.def_buffer_pool,
+                self.def_flash_cache, self.def_cell_flash_cache)
         return get_case_formatted(storage, "keyword")
 
     def get_logging(self):
         logging = ""
-        if conf["storage"]["logging"] == "yes":
+        if conf["storage"]["logging"] == "yes" and self.partitioned == "NO":
             if self.logging == "YES":
                 logging = "\nLOGGING"
             else:
@@ -271,9 +377,10 @@ class Table:
             tab_compression, tab_compress_for = self.compression, self.compress_for
         else:
             tab_compression, tab_compress_for = self.def_compression, self.def_compress_for
+        print('tab_compression', tab_compression)
         compression = ""
         if conf["storage"]["compression"] == "yes":
-            if tab_compression == "DISABLED":
+            if tab_compression in ("DISABLED", "NONE"):
                 compression = "\nNOCOMPRESS"
             else:
                 if tab_compress_for == "BASIC":
@@ -303,6 +410,12 @@ class Table:
             row_movement = "\nENABLE ROW MOVEMENT"
         return get_case_formatted(row_movement, "keyword")
 
+    def get_partitioning(self):
+        if self.partitioned == "NO":
+            return ""
+        partitioning = Partitioning(self.part_table, self.part_key_columns, self.tab_partitions)
+        return partitioning.get_partitioning()
+
     def generate_ddl(self):
         table_name = get_case_formatted(f"{self.owner}.{self.table_name}", "identifier")
         self.max_column_name_length = self.get_maximum_column_name_length()
@@ -317,12 +430,17 @@ class Table:
 
         ddl += ")"
         ddl += self.get_collation()
+        if self.partitioned == "YES":
+            ddl += self.get_compression()
         ddl += self.get_storage()
+        ddl += self.get_partitioning()
         ddl += self.get_logging()
-        ddl += self.get_compression()
+        if self.partitioned == "NO":
+            ddl += self.get_compression()
         ddl += self.get_cache()
         ddl += self.get_result_cache()
         ddl += self.get_tab_row_movement()
+        # ToDo: add LOB storage
         ddl += ";"
         self.ddl = ddl
 
@@ -358,6 +476,14 @@ def get_df_part_tables():
     return pd.read_sql_query(sql.sql_part_tables, engine, params={'schema_name': schema_name})
 
 
+def get_df_part_key_columns():
+    return pd.read_sql_query(sql.sql_part_key_columns, engine, params={'schema_name': schema_name})
+
+
+def get_df_tab_partitions():
+    return pd.read_sql_query(sql.sql_tab_partitions, engine, params={'schema_name': schema_name})
+
+
 if __name__ == "__main__":
     arg_parser = argparse.ArgumentParser(description='Generate DDL scripts for Oracle database objects')
     arg_parser.add_argument('--schema_name', '-s', type=str,
@@ -385,14 +511,18 @@ if __name__ == "__main__":
     df_tables = get_df_tables()
     df_all_tab_columns = get_df_tab_columns()
     df_all_part_tables = get_df_part_tables()
+    df_all_part_key_columns = get_df_part_key_columns()
+    df_all_tab_partitions = get_df_tab_partitions()
 
     for table_row in df_tables.itertuples():
         print(table_row.table_name)
         df_tab_columns = df_all_tab_columns[df_all_tab_columns["table_name"] == table_row.table_name]
         df_part_tables = df_all_part_tables[df_all_part_tables["table_name"] == table_row.table_name]
+        df_part_key_columns = df_all_part_key_columns[df_all_part_key_columns["name"] == table_row.table_name]
+        df_tab_partitions = df_all_tab_partitions[df_all_tab_partitions["table_name"] == table_row.table_name]
         part_table_row = get_dataframe_namedtuple(df_part_tables, 0)
 
-        table = Table(table_row, df_tab_columns, part_table_row)
+        table = Table(table_row, part_table_row, df_tab_columns, df_part_key_columns, df_tab_partitions)
         table.generate_ddl()
         table.store_ddl_into_file()
 

@@ -101,6 +101,12 @@ SELECT owner,
        table_name,
        partitioning_type,
        subpartitioning_type,
+       interval,
+       autolist,
+       interval_subpartition,
+       autolist_subpartition,
+       is_nested,
+       auto,
        def_tablespace_name,
        def_pct_free,
        def_pct_used,
@@ -121,11 +127,6 @@ SELECT owner,
        def_flash_cache,
        def_cell_flash_cache,
        ref_ptn_constraint_name,
-       interval,
-       autolist,
-       interval_subpartition,
-       autolist_subpartition,
-       is_nested,
        def_segment_creation,
        def_indexing,
        def_inmemory,
@@ -136,9 +137,60 @@ SELECT owner,
        def_read_only,
        def_cellmemory,
        def_inmemory_service,
-       def_inmemory_service_name,
-       auto
+       def_inmemory_service_name
   FROM sys.dba_part_tables
  WHERE owner = :schema_name
  ORDER BY table_name
+"""
+
+sql_part_key_columns = """
+SELECT name,
+       column_name
+  FROM sys.dba_part_key_columns
+ WHERE owner = :schema_name
+   AND object_type = 'TABLE'
+"""
+
+sql_tab_partitions = """
+SELECT table_name,
+       partition_name,
+       high_value,
+       high_value_length,
+       partition_position,
+       tablespace_name,
+       logging,
+       nvl(ini_trans, -1)       ini_trans,
+       nvl(max_trans, -1)       max_trans,
+       nvl(initial_extent, -1) initial_extent,
+       nvl(next_extent, -1)     next_extent,
+       nvl(min_extent, -1)      min_extent,
+       nvl(max_extent, -1)      max_extent,
+       nvl(pct_increase, -1)    pct_increase,
+       nvl(pct_free, -1)        pct_free,
+       nvl(pct_used, -1)        pct_used,
+       nvl(freelists, -1)       freelists,
+       nvl(freelist_groups, -1) freelist_groups,
+       buffer_pool,
+       last_analyzed,
+       nvl(num_rows, -1)        num_rows,
+       nvl(blocks, -1)          blocks,
+       nvl(empty_blocks, -1)    empty_blocks,
+       nvl(avg_space, -1)       avg_space,
+       subpartition_count,
+       compression,
+       compress_for,
+       flash_cache,
+       cell_flash_cache,
+       indexing,
+       inmemory,
+       inmemory_priority,
+       inmemory_distribute,
+       inmemory_compression,
+       inmemory_duplicate,
+       read_only,
+       inmemory_service,
+       inmemory_service_name
+  FROM sys.dba_tab_partitions
+ WHERE table_owner = :schema_name
+ ORDER BY table_name, partition_position
 """
