@@ -2,6 +2,4 @@
 /__pycache__
 .vscode/settings.json
 /config_con.ini
-/generated_ddls
-/test
 /.idea/*
