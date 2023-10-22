@@ -191,7 +191,9 @@ class Column:
 
 
 class Partition:
-    def __init__(self, tab_partition):
+    def __init__(self, partitioning_type, autolist, tab_partition):
+        self.partitioning_type = partitioning_type
+        self.autolist = autolist
         self.partition_name = tab_partition.partition_name
         self.high_value = tab_partition.high_value
         self.partition_position = tab_partition.partition_position
@@ -233,7 +235,12 @@ class Partition:
         return get_case_formatted(compression, "keyword")
 
     def get_partition(self):
-        statement = get_case_formatted("\n  PARTITION<:1>VALUES LESS THAN (<:2>)", "keyword")
+        if self.partitioning_type == "RANGE":
+            statement = get_case_formatted("\n  PARTITION<:1>VALUES LESS THAN (<:2>)", "keyword")
+        elif self.partitioning_type == "LIST" and self.autolist == "NO":
+            statement = get_case_formatted("\n  PARTITION<:1>VALUES (<:2>)", "keyword")
+        elif self.partitioning_type == "LIST" and self.autolist == "YES":
+            statement = get_case_formatted("\n  PARTITION<:1>VALUES (<:2>) AUTOMATIC", "keyword")
         partition_name = " "
         if not self.partition_name.startswith("SYS_P"):
             partition_name = get_case_formatted(f" {self.partition_name} ", "identifier")
@@ -255,6 +262,7 @@ class Partitioning:
     def __init__(self, part_table, part_key_columns, tab_partitions):
         self.partitioning_type = part_table.partitioning_type
         self.interval = part_table.interval
+        self.autolist = part_table.autolist
         self.part_key_columns = part_key_columns
         self.tab_partitions = tab_partitions
 
@@ -269,25 +277,33 @@ class Partitioning:
 
     def get_partitioning(self):
         partitioning = ""
-        if conf["storage"]["partitioning"] == "none":
+        if conf["storage"]["partitions"] == "none":
             return ""
-        if self.partitioning_type == "RANGE":
-            statement = get_case_formatted("PARTITION BY RANGE", "keyword")
+        if self.partitioning_type in ("RANGE", "LIST", "HASH") and conf["storage"]["partitions"] in ("all", "compact"):
+            statement = get_case_formatted(f"PARTITION BY {self.partitioning_type}", "keyword")
             key_columns = self.get_list_of_key_columns()
             partitioning = f"\n{statement} ({key_columns})"
             if self.interval:
                 statement = get_case_formatted("INTERVAL", "keyword")
                 partitioning += f"\n{statement} ({self.interval})"
-            if conf["storage"]["partitioning"] == "all":
+            if self.partitioning_type in ("RANGE", "LIST"):
                 partitioning += "\n("
                 for i, tab_partition in enumerate(self.tab_partitions.itertuples()):
-                    partition = Partition(tab_partition)
+                    if (tab_partition.partition_position > 1
+                            and self.interval
+                            and conf["storage"]["partitions"] == "compact"):
+                        break
+                    partition = Partition(self.partitioning_type, self.autolist, tab_partition)
                     partitioning += f"{partition.get_partition()}"
                     if i != len(self.tab_partitions) - 1:
                         partitioning += ","
                 partitioning += "\n)"
-            # todo: add conf["storage"]["partitioning"] == "initial"
-            # todo: add subpartitioning
+            if self.partitioning_type == "HASH":
+                partitioning += f"\n{get_indentation()}PARTITIONS {len(self.tab_partitions)}"
+                if conf["storage"]["partition_storage"] in ("only_tablespace", "with_storage"):
+                    all_tablespaces = ", ".join(self.tab_partitions["tablespace_name"])
+                    partitioning += f"\n{get_indentation()}STORE IN ({all_tablespaces})"
+        # todo: Implement sub-partitioning
 
         return partitioning
 
@@ -439,7 +455,7 @@ class Table:
         ddl += self.get_cache()
         ddl += self.get_result_cache()
         ddl += self.get_tab_row_movement()
-        # ToDo: add LOB storage
+        # todo: Add LOB storage
         ddl += ";"
         self.ddl = ddl
 

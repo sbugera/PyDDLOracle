@@ -44,3 +44,10 @@ or:
 ```
 python main.py
 ```
+
+## Currently supported objects
+* Tables
+  * Columns
+  * Constraints (only NOT NULL)
+  * Partitions (only RANGE, LIST and HASH)
+  * Storage parameters
