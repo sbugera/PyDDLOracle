@@ -309,10 +309,11 @@ class Partitioning:
 
 
 class Table:
-    def __init__(self, table, part_table, columns, part_key_columns, tab_partitions):
+    def __init__(self, table, part_table, columns, comments, part_key_columns, tab_partitions):
         self.max_column_name_length = None
         self.ddl = ""
         self.columns = columns
+        self.comments = comments
         self.part_table = part_table
         self.part_key_columns = part_key_columns
         self.tab_partitions = tab_partitions
@@ -431,6 +432,26 @@ class Table:
         partitioning = Partitioning(self.part_table, self.part_key_columns, self.tab_partitions)
         return partitioning.get_partitioning()
 
+    def get_comments(self):
+        comments = ""
+        end_line_char = ""
+        if conf["comments"]["empty_line_after_comment"] == "yes":
+            end_line_char = "\n"
+        max_column_name_length = self.max_column_name_length + len(self.owner) + len(self.table_name) + 2
+        if conf["comments"]["comments"] == "yes":
+            for comment_row in self.comments.itertuples():
+                if not comment_row.column_name:
+                    statement = get_case_formatted(f"\nCOMMENT ON TABLE <:1> IS '<:2>';{end_line_char}", "keyword")
+                    table_name = get_case_formatted(f"{self.owner}.{self.table_name}", "identifier")
+                    comments += statement.replace("<:1>", table_name).replace("<:2>", comment_row.comments)
+                else:
+                    statement = get_case_formatted(f"\nCOMMENT ON COLUMN <:1> IS '<:2>';{end_line_char}", "keyword")
+                    column_name = get_case_formatted(f"{self.owner}.{self.table_name}.{comment_row.column_name}", "identifier")
+                    if conf["comments"]["vertical_alignment"] == "yes":
+                        column_name = column_name.ljust(max_column_name_length)
+                    comments += statement.replace("<:1>", column_name).replace("<:2>", comment_row.comments)
+        return comments
+
     def generate_ddl(self):
         table_name = get_case_formatted(f"{self.owner}.{self.table_name}", "identifier")
         self.max_column_name_length = self.get_maximum_column_name_length()
@@ -456,7 +477,12 @@ class Table:
         ddl += self.get_result_cache()
         ddl += self.get_tab_row_movement()
         # todo: Add LOB storage
-        ddl += ";"
+        ddl += ";\n"
+
+        ddl += self.get_comments()
+        if len(self.comments) > 0:
+            ddl += "\n"
+
         self.ddl = ddl
 
     def get_file_directory(self):
@@ -495,6 +521,10 @@ def get_df_part_key_columns():
     return pd.read_sql_query(sql.sql_part_key_columns, engine, params={'schema_name': schema_name})
 
 
+def get_df_comments():
+    return pd.read_sql_query(sql.sql_comments, engine, params={'schema_name': schema_name})
+
+
 def get_df_tab_partitions():
     return pd.read_sql_query(sql.sql_tab_partitions, engine, params={'schema_name': schema_name})
 
@@ -528,6 +558,7 @@ if __name__ == "__main__":
     df_all_part_tables = get_df_part_tables()
     df_all_part_key_columns = get_df_part_key_columns()
     df_all_tab_partitions = get_df_tab_partitions()
+    df_all_comments = get_df_comments()
 
     for table_row in df_tables.itertuples():
         print(table_row.table_name)
@@ -535,9 +566,10 @@ if __name__ == "__main__":
         df_part_tables = df_all_part_tables[df_all_part_tables["table_name"] == table_row.table_name]
         df_part_key_columns = df_all_part_key_columns[df_all_part_key_columns["name"] == table_row.table_name]
         df_tab_partitions = df_all_tab_partitions[df_all_tab_partitions["table_name"] == table_row.table_name]
+        df_tab_comments = df_all_comments[df_all_comments["table_name"] == table_row.table_name]
         part_table_row = get_dataframe_namedtuple(df_part_tables, 0)
 
-        table = Table(table_row, part_table_row, df_tab_columns, df_part_key_columns, df_tab_partitions)
+        table = Table(table_row, part_table_row, df_tab_columns, df_tab_comments, df_part_key_columns, df_tab_partitions)
         table.generate_ddl()
         table.store_ddl_into_file()
 

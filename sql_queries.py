@@ -194,3 +194,28 @@ SELECT table_name,
  WHERE table_owner = :schema_name
  ORDER BY table_name, partition_position
 """
+
+sql_comments = """
+SELECT table_name,
+       NULL column_name,
+       comments,
+       0 order_num
+  FROM sys.dba_tab_comments
+ WHERE owner = :schema_name
+   AND comments IS NOT NULL
+   AND origin_con_id = TO_NUMBER (SYS_CONTEXT ('USERENV', 'CON_ID'))
+ UNION ALL
+SELECT cc.table_name,
+       cc.column_name,
+       cc.comments,
+       tc.internal_column_id
+  FROM sys.dba_col_comments cc
+  JOIN sys.dba_tab_cols tc
+    ON cc.column_name = tc.column_name
+   AND cc.table_name = tc.table_name
+   AND cc.owner = tc.owner
+ WHERE cc.owner = :schema_name
+   AND cc.comments IS NOT NULL
+   AND cc.origin_con_id = TO_NUMBER (SYS_CONTEXT ('USERENV', 'CON_ID'))
+ ORDER BY table_name, order_num
+"""
