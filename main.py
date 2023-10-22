@@ -279,14 +279,14 @@ class Partitioning:
         partitioning = ""
         if conf["storage"]["partitions"] == "none":
             return ""
-        if self.partitioning_type in ("RANGE", "LIST"):
+        if self.partitioning_type in ("RANGE", "LIST", "HASH") and conf["storage"]["partitions"] in ("all", "compact"):
             statement = get_case_formatted(f"PARTITION BY {self.partitioning_type}", "keyword")
             key_columns = self.get_list_of_key_columns()
             partitioning = f"\n{statement} ({key_columns})"
             if self.interval:
                 statement = get_case_formatted("INTERVAL", "keyword")
                 partitioning += f"\n{statement} ({self.interval})"
-            if conf["storage"]["partitions"] in ("all", "compact"):
+            if self.partitioning_type in ("RANGE", "LIST"):
                 partitioning += "\n("
                 for i, tab_partition in enumerate(self.tab_partitions.itertuples()):
                     if (tab_partition.partition_position > 1
@@ -298,8 +298,12 @@ class Partitioning:
                     if i != len(self.tab_partitions) - 1:
                         partitioning += ","
                 partitioning += "\n)"
-        # todo: add HASH partitioning
-        # todo: add subpartitioning
+            if self.partitioning_type == "HASH":
+                partitioning += f"\n{get_indentation()}PARTITIONS {len(self.tab_partitions)}"
+                if conf["storage"]["partition_storage"] in ("only_tablespace", "with_storage"):
+                    all_tablespaces = ", ".join(self.tab_partitions["tablespace_name"])
+                    partitioning += f"\n{get_indentation()}STORE IN ({all_tablespaces})"
+        # todo: Implement sub-partitioning
 
         return partitioning
 
@@ -451,7 +455,7 @@ class Table:
         ddl += self.get_cache()
         ddl += self.get_result_cache()
         ddl += self.get_tab_row_movement()
-        # ToDo: add LOB storage
+        # todo: Add LOB storage
         ddl += ";"
         self.ddl = ddl
 

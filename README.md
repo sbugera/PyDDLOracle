@@ -49,5 +49,5 @@ python main.py
 * Tables
   * Columns
   * Constraints (only NOT NULL)
-  * Partitions (only RANGE and LIST)
+  * Partitions (only RANGE, LIST and HASH)
   * Storage parameters
