@@ -16,6 +16,8 @@ grant select on sys.dba_all_tables       to <your_db_username>;
 grant select on sys.dba_part_tables      to <your_db_username>;
 grant select on sys.dba_part_key_columns to <your_db_username>;
 grant select on sys.dba_tab_partitions   to <your_db_username>;
+grant select on sys.dba_tab_comments     to <your_db_username>;
+grant select on sys.dba_col_comments     to <your_db_username>;
 ```
 
 ## Installation
@@ -51,3 +53,4 @@ python main.py
   * Constraints (only NOT NULL)
   * Partitions (only RANGE, LIST and HASH)
   * Storage parameters
+  * Comments
