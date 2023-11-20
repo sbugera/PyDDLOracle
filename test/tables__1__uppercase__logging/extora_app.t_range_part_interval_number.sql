@@ -1,0 +1,46 @@
+CREATE TABLE EXTORA_APP.T_RANGE_PART_INTERVAL_NUMBER
+(
+    SALE_ID  NUMBER,
+    REGION   VARCHAR2(50 BYTE),
+    AMOUNT   NUMBER
+)
+NOCOMPRESS
+TABLESPACE EXTORA_APP_DATA
+PCTFREE    10
+INITRANS   1
+MAXTRANS   255
+STORAGE    (
+            BUFFER_POOL      DEFAULT
+            )
+PARTITION BY RANGE (SALE_ID)
+INTERVAL (1000)
+(
+  PARTITION INITIAL_PARTITION VALUES LESS THAN (1000)
+    NOCOMPRESS
+    TABLESPACE EXTORA_APP_DATA
+    PCTFREE    10
+    INITRANS   1
+    MAXTRANS   255
+    STORAGE    (
+                INITIAL          8M
+                NEXT             1M
+                MINEXTENTS       1
+                MAXEXTENTS       UNLIMITED
+                BUFFER_POOL      DEFAULT
+                ),
+  PARTITION VALUES LESS THAN (2000)
+    NOCOMPRESS
+    TABLESPACE EXTORA_APP_DATA
+    PCTFREE    10
+    INITRANS   1
+    MAXTRANS   255
+    STORAGE    (
+                INITIAL          8M
+                NEXT             1M
+                MINEXTENTS       1
+                MAXEXTENTS       UNLIMITED
+                BUFFER_POOL      DEFAULT
+                )
+)
+NOCACHE
+RESULT_CACHE (MODE DEFAULT);
