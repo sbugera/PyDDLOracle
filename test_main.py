@@ -268,4 +268,4 @@ def test_tables_ddl__7__no_storage__no_part__no_comments():
 # df_tables_deserialized = df_tables_deserialized.fillna('None')
 # print(df_tables)
 # print(df_tables_deserialized)
-store_metadata_into_xlsx()
+# store_metadata_into_xlsx()
