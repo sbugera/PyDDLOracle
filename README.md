@@ -1,3 +1,5 @@
+[![PyDDLOracle](https://circleci.com/gh/sbugera/PyDDLOracle.svg?style=svg)](https://circleci.com/gh/sbugera/PyDDLOracle)
+
 # ExtOra
 ## Oracle Database DDL Extractor
 ### Version 1.0.0
