@@ -1,4 +1,6 @@
 import pytest
+import os
+import shutil
 import main as m
 import pandas as pd
 import json
@@ -40,6 +42,11 @@ table = ../extora_generated_ddls/{OBJECT_OWNER}/tables
 table = {object_owner}.{object_name}.sql
 """)
 m.conf = conf
+
+# check if config file exists
+# if not, copy config file from config_default.ini
+if not os.path.isfile("config_con.ini"):
+    shutil.copyfile("config_con.ini.template", "config_con.ini")
 
 
 def store_metadata_into_xlsx():
@@ -261,4 +268,4 @@ def test_tables_ddl__7__no_storage__no_part__no_comments():
 # df_tables_deserialized = df_tables_deserialized.fillna('None')
 # print(df_tables)
 # print(df_tables_deserialized)
-store_metadata_into_xlsx()
+# store_metadata_into_xlsx()
