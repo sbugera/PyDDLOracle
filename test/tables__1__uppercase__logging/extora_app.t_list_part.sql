@@ -1,0 +1,72 @@
+CREATE TABLE EXTORA_APP.T_LIST_PART
+(
+    SALE_DATE  DATE,
+    REGION     VARCHAR2(50 BYTE),
+    AMOUNT     NUMBER
+)
+NOCOMPRESS
+TABLESPACE EXTORA_APP_DATA
+PCTFREE    10
+INITRANS   1
+MAXTRANS   255
+STORAGE    (
+            BUFFER_POOL      DEFAULT
+            )
+PARTITION BY LIST (REGION)
+(
+  PARTITION NORTH_SALES VALUES ('North')
+    NOCOMPRESS
+    TABLESPACE EXTORA_APP_DATA
+    PCTFREE    10
+    INITRANS   1
+    MAXTRANS   255
+    STORAGE    (
+                INITIAL          8M
+                NEXT             1M
+                MINEXTENTS       1
+                MAXEXTENTS       UNLIMITED
+                BUFFER_POOL      DEFAULT
+                ),
+  PARTITION SOUTH_SALES VALUES ('South')
+    NOCOMPRESS
+    TABLESPACE EXTORA_APP_DATA
+    PCTFREE    10
+    INITRANS   1
+    MAXTRANS   255
+    STORAGE    (
+                INITIAL          8M
+                NEXT             1M
+                MINEXTENTS       1
+                MAXEXTENTS       UNLIMITED
+                BUFFER_POOL      DEFAULT
+                ),
+  PARTITION WEST_SALES VALUES ('West')
+    NOCOMPRESS
+    TABLESPACE EXTORA_APP_DATA
+    PCTFREE    10
+    INITRANS   1
+    MAXTRANS   255
+    STORAGE    (
+                BUFFER_POOL      DEFAULT
+                ),
+  PARTITION EAST_SALES VALUES ('East')
+    NOCOMPRESS
+    TABLESPACE EXTORA_APP_DATA
+    PCTFREE    10
+    INITRANS   1
+    MAXTRANS   255
+    STORAGE    (
+                BUFFER_POOL      DEFAULT
+                ),
+  PARTITION OTHER_SALES VALUES (DEFAULT)
+    NOCOMPRESS
+    TABLESPACE EXTORA_APP_DATA
+    PCTFREE    10
+    INITRANS   1
+    MAXTRANS   255
+    STORAGE    (
+                BUFFER_POOL      DEFAULT
+                )
+)
+NOCACHE
+RESULT_CACHE (MODE DEFAULT);

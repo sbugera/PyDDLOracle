@@ -219,3 +219,61 @@ SELECT cc.table_name,
    AND cc.origin_con_id = TO_NUMBER (SYS_CONTEXT ('USERENV', 'CON_ID'))
  ORDER BY table_name, order_num
 """
+
+sql_indexes = """
+SELECT i.owner,
+       i.index_name,
+       i.index_type,
+       i.table_owner,
+       i.table_name,
+       i.uniqueness,
+       i.compression,
+       i.prefix_length,
+       i.tablespace_name,
+       i.ini_trans,
+       i.max_trans,
+       i.initial_extent,
+       i.next_extent,
+       i.min_extents,
+       i.max_extents,
+       i.pct_increase,
+       i.pct_threshold,
+       i.include_column,
+       i.freelists,
+       i.freelist_groups,
+       i.pct_free,
+       i.logging,
+       i.instances,
+       i.partitioned,
+       i.buffer_pool,
+       i.flash_cache,
+       i.cell_flash_cache,
+       i.visibility,
+       u.monitoring,
+       i.degree,
+       i.instances
+  FROM sys.dba_indexes i
+  LEFT JOIN sys.dba_object_usage u
+    ON i.owner = u.owner
+   AND i.index_name = u.index_name
+   AND u.monitoring = 'YES'
+ WHERE i.owner = :schema_name
+   AND i.index_type <> 'LOB'
+ ORDER BY i.owner, i.index_name
+"""
+
+sql_index_columns = """
+SELECT ic.index_owner,
+       ic.index_name,
+       ic.column_name,
+       ic.table_owner,
+       ic.table_name,
+       ic.column_position
+  FROM sys.dba_ind_columns ic
+  JOIN sys.dba_indexes i
+    ON ic.index_owner = i.owner
+   AND ic.index_name = i.index_name
+   AND i.index_type <> 'LOB'
+ WHERE ic.index_owner = :schema_name
+ ORDER BY ic.index_owner, ic.index_name, ic.column_position
+"""
