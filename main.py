@@ -9,6 +9,8 @@ from pprint import PrettyPrinter
 import sql_queries as sql
 
 pd.options.mode.chained_assignment = None  # type: ignore # default='warn'
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
 
 
 def get_dataframe_namedtuple(df, index):
@@ -22,6 +24,10 @@ def get_dataframe_namedtuple(df, index):
     return row_namedtuple(*row.values)
 
 
+def replace_multiple_newlines(text):
+    return re.sub(r'\n+$', '\n', text)
+
+
 def pprint(variable):
     pp = PrettyPrinter(indent=1, width=80, depth=None, stream=None, compact=False)
     try:
@@ -31,6 +37,8 @@ def pprint(variable):
 
 
 def get_case_formatted(str, config_name_for_upper):
+    if not str:
+        return ""
     if str != str.upper():
         return f'"{str}"'
     if conf["case"][config_name_for_upper] == "uppercase":
@@ -47,11 +55,7 @@ def add_quotes(value):
 
 
 def get_indentation():
-    if conf["alignments"]["indentation_mode"] == "tab":
-        indentation = "\t"
-    else:
-        indentation = " " * int(conf["alignments"]["indentation_size"])
-    return indentation
+    return "    "
 
 
 def get_entity_name(template_name, object_type, object_owner, object_name):
@@ -73,37 +77,50 @@ def get_entity_name(template_name, object_type, object_owner, object_name):
 
 
 def get_full_storage(indentation, tablespace_name, pct_free, ini_trans, max_trans, min_extents, max_extents,
-                     pct_increase, buffer_pool, flash_cache, cell_flash_cache, initial_extent=None, next_extent=None):
-    storage = f"\n{indentation}TABLESPACE {tablespace_name}"
+                     pct_increase, buffer_pool, flash_cache, cell_flash_cache, initial_extent=None, next_extent=None,
+                     local_index=None):
+    storage = ""
+    if str(tablespace_name) != "nan" and local_index != "YES":
+        statement = get_case_formatted(f"\n{indentation}TABLESPACE <:1>", "keyword")
+        storage = statement.replace("<:1>", get_case_formatted(tablespace_name, "identifier"))
     if str(pct_free) != "nan":
-        storage += f"\n{indentation}PCTFREE    {int(pct_free)}"
+        statement = get_case_formatted(f"\n{indentation}PCTFREE    <:1>", "keyword")
+        storage += statement.replace("<:1>", str(int(pct_free)))
     if str(ini_trans) != "nan":
-        storage += f"\n{indentation}INITRANS   {int(ini_trans)}"
+        statement = get_case_formatted(f"\n{indentation}INITRANS   <:1>", "keyword")
+        storage += statement.replace("<:1>", str(int(ini_trans)))
     if str(max_trans) != "nan":
-        storage += f"\n{indentation}MAXTRANS   {int(max_trans)}"
-    storage_tmp = f"\n{indentation}STORAGE    ("
+        statement = get_case_formatted(f"\n{indentation}MAXTRANS   <:1>", "keyword")
+        storage += statement.replace("<:1>", str(int(max_trans)))
+    storage_tmp = get_case_formatted(f"\n{indentation}STORAGE    (", "keyword")
     if initial_extent and str(initial_extent) not in ("nan", "DEFAULT", "-1"):
-        storage_tmp += f"\n{indentation}            INITIAL          {int(initial_extent/1024/1024)}M"
+        statement = get_case_formatted(f"\n{indentation}            INITIAL          <:1>", "keyword")
+        storage_tmp += statement.replace("<:1>", str(int(initial_extent/1024/1024)) + "M")
     if next_extent and str(next_extent) not in ("nan", "DEFAULT", "-1"):
-        storage_tmp += f"\n{indentation}            NEXT             {int(next_extent/1024/1024)}M"
+        statement = get_case_formatted(f"\n{indentation}            NEXT             <:1>", "keyword")
+        storage_tmp += statement.replace("<:1>", str(int(next_extent/1024/1024)) + "M")
     if min_extents and str(min_extents) not in ("nan", "DEFAULT", "-1"):
-        storage_tmp += f"\n{indentation}            MINEXTENTS       {int(min_extents)}"
+        statement = get_case_formatted(f"\n{indentation}            MINEXTENTS       <:1>", "keyword")
+        storage_tmp += statement.replace("<:1>", str(int(min_extents)))
     if max_extents and str(max_extents) not in ("nan", "DEFAULT", "-1"):
         if max_extents == 2147483645:
-            storage_tmp += f"\n{indentation}            MAXEXTENTS       UNLIMITED"
+            storage_tmp += get_case_formatted(f"\n{indentation}            MAXEXTENTS       UNLIMITED", "keyword")
         else:
-            storage_tmp += f"\n{indentation}            MAXEXTENTS       {int(max_extents)}"
+            storage_tmp += get_case_formatted(f"\n{indentation}            MAXEXTENTS       {int(max_extents)}", "keyword")
     if pct_increase and str(pct_increase) not in ("nan", "DEFAULT", "-1"):
-        storage_tmp += f"\n{indentation}            PCTINCREASE      {int(pct_increase)}"
-    if pct_increase is None:
-        storage_tmp += f"\n{indentation}            PCTINCREASE      0"
+        storage_tmp += get_case_formatted(f"\n{indentation}            PCTINCREASE      {int(pct_increase)}", "keyword")
+    if str(pct_increase) in ("nan", "None") and local_index != "YES":
+        storage_tmp += get_case_formatted(f"\n{indentation}            PCTINCREASE      0", "keyword")
     if buffer_pool and buffer_pool != "DEFAULT2":
-        storage_tmp += f"\n{indentation}            BUFFER_POOL      {buffer_pool}"
+        statement = get_case_formatted(f"\n{indentation}            BUFFER_POOL      <:1>", "keyword")
+        storage_tmp += statement.replace("<:1>", get_case_formatted(buffer_pool, "identifier"))
     if flash_cache and flash_cache != "DEFAULT":
-        storage_tmp += f"\n{indentation}            FLASH_CACHE      {flash_cache}"
+        statement = get_case_formatted(f"\n{indentation}            FLASH_CACHE      <:1>", "keyword")
+        storage_tmp += statement.replace("<:1>", get_case_formatted(flash_cache, "identifier"))
     if cell_flash_cache and cell_flash_cache != "DEFAULT":
-        storage_tmp += f"\n{indentation}            CELL_FLASH_CACHE {cell_flash_cache}"
-    if storage_tmp != f"\n{indentation}STORAGE    (":
+        statement = get_case_formatted(f"\n{indentation}            CELL_FLASH_CACHE <:1>", "keyword")
+        storage_tmp += statement.replace("<:1>", get_case_formatted(cell_flash_cache, "identifier"))
+    if storage_tmp != get_case_formatted(f"\n{indentation}STORAGE    (", "keyword"):
         storage += f"{storage_tmp}\n{indentation}            )"
     return storage
 
@@ -158,17 +175,17 @@ class Column:
 
     def get_collation(self):
         collation = ""
-        if self.collation and self.collation != "USING_NLS_COMP":
+        if str(self.collation) not in ("nan", "None") and self.collation != "USING_NLS_COMP":
             collation = f" COLLATE {self.collation}"
         return get_case_formatted(collation, "keyword")
 
     def get_default(self):
         default = ""
-        if self.data_default and self.virtual_column == "YES":
+        if str(self.data_default) not in ("nan", "None") and self.virtual_column == "YES":
             default = f""" {get_case_formatted("GENERATED ALWAYS AS", "keyword")} ({self.data_default})"""
-        elif self.data_default and self.default_on_null == "YES":
+        elif str(self.data_default) not in ("nan", "None") and self.default_on_null == "YES":
             default = f""" {get_case_formatted("DEFAULT ON NULL", "keyword")} {self.data_default}"""
-        elif self.data_default:
+        elif str(self.data_default) not in ("nan", "None"):
             default = f""" {get_case_formatted("DEFAULT", "keyword")} {self.data_default}"""
         return default.rstrip()
 
@@ -235,6 +252,7 @@ class Partition:
         return get_case_formatted(compression, "keyword")
 
     def get_partition(self):
+        statement = ""
         if self.partitioning_type == "RANGE":
             statement = get_case_formatted("\n  PARTITION<:1>VALUES LESS THAN (<:2>)", "keyword")
         elif self.partitioning_type == "LIST" and self.autolist == "NO":
@@ -244,16 +262,15 @@ class Partition:
         partition_name = " "
         if not self.partition_name.startswith("SYS_P"):
             partition_name = get_case_formatted(f" {self.partition_name} ", "identifier")
-        partition = statement.replace("<:1>", partition_name)
-        partition = partition.replace("<:2>", self.high_value)
+        partition = statement.replace("<:1>", partition_name).replace("<:2>", self.high_value)
         partition += self.get_logging()
         partition += self.get_compression()
-        if conf["storage"]["partition_storage"] == "with_storage":
+        if conf["storage"]["storage"] == "with_storage":
             partition += get_full_storage(
                 get_indentation(), self.tablespace_name, self.pct_free, self.ini_trans, self.max_trans,self.min_extent,
                 self.max_extent, self.pct_increase, self.buffer_pool, self.flash_cache, self.cell_flash_cache,
                 self.initial_extent, self.next_extent)
-        elif conf["storage"]["partition_storage"] == "only_tablespace":
+        elif conf["storage"]["storage"] == "only_tablespace":
             partition += f"\n{get_indentation()}TABLESPACE {self.tablespace_name}"
         return partition
 
@@ -283,37 +300,154 @@ class Partitioning:
             statement = get_case_formatted(f"PARTITION BY {self.partitioning_type}", "keyword")
             key_columns = self.get_list_of_key_columns()
             partitioning = f"\n{statement} ({key_columns})"
-            if self.interval:
+            if str(self.interval) not in ("nan", "None"):
                 statement = get_case_formatted("INTERVAL", "keyword")
                 partitioning += f"\n{statement} ({self.interval})"
             if self.partitioning_type in ("RANGE", "LIST"):
                 partitioning += "\n("
                 for i, tab_partition in enumerate(self.tab_partitions.itertuples()):
                     if (tab_partition.partition_position > 1
-                            and self.interval
+                            and str(self.interval) not in ("nan", "None")
+                            and conf["storage"]["partitions"] == "compact"):
+                        break
+                    if (tab_partition.partition_name.startswith("SYS_P")
                             and conf["storage"]["partitions"] == "compact"):
                         break
                     partition = Partition(self.partitioning_type, self.autolist, tab_partition)
-                    partitioning += f"{partition.get_partition()}"
-                    if i != len(self.tab_partitions) - 1:
-                        partitioning += ","
+                    partitioning += f"{partition.get_partition()},"
+                partitioning = partitioning[:-1]
                 partitioning += "\n)"
             if self.partitioning_type == "HASH":
-                partitioning += f"\n{get_indentation()}PARTITIONS {len(self.tab_partitions)}"
-                if conf["storage"]["partition_storage"] in ("only_tablespace", "with_storage"):
-                    all_tablespaces = ", ".join(self.tab_partitions["tablespace_name"])
-                    partitioning += f"\n{get_indentation()}STORE IN ({all_tablespaces})"
+                partitioning += get_case_formatted(f"\n{get_indentation()}PARTITIONS {len(self.tab_partitions)}", "keyword")
+                if conf["storage"]["storage"] in ("only_tablespace", "with_storage"):
+                    all_tablespaces = ""
+                    for partition in self.tab_partitions.itertuples():
+                        if all_tablespaces == "":
+                            all_tablespaces = get_case_formatted(partition.tablespace_name, "identifier")
+                        else:
+                            all_tablespaces += ", " + get_case_formatted(partition.tablespace_name, "identifier")
+                    statement = get_case_formatted(f"\n{get_indentation()}STORE IN (<:1>)", "keyword")
+                    partitioning += statement.replace("<:1>", all_tablespaces)
         # todo: Implement sub-partitioning
 
         return partitioning
 
 
+class Index:
+    def __init__(self, index_row, index_columns):
+        self.owner = index_row.owner
+        self.index_name = index_row.index_name
+        self.index_type = index_row.index_type
+        self.table_owner = index_row.table_owner
+        self.table_name = index_row.table_name
+        self.uniqueness = index_row.uniqueness
+        self.compression = index_row.compression
+        self.prefix_length = index_row.prefix_length
+        self.tablespace_name = index_row.tablespace_name
+        self.ini_trans = index_row.ini_trans
+        self.max_trans = index_row.max_trans
+        self.initial_extent = index_row.initial_extent
+        self.next_extent = index_row.next_extent
+        self.min_extents = index_row.min_extents
+        self.max_extents = index_row.max_extents
+        self.pct_increase = index_row.pct_increase
+        self.pct_threshold = index_row.pct_threshold
+        self.include_column = index_row.include_column
+        self.freelists = index_row.freelists
+        self.freelist_groups = index_row.freelist_groups
+        self.pct_free = index_row.pct_free
+        self.logging = index_row.logging
+        self.instances = index_row.instances
+        self.partitioned = index_row.partitioned
+        self.buffer_pool = index_row.buffer_pool
+        self.flash_cache = index_row.flash_cache
+        self.cell_flash_cache = index_row.cell_flash_cache
+        self.visibility = index_row.visibility
+        self.monitoring = index_row.monitoring
+        self.degree = index_row.degree
+        self.instances = index_row.instances
+        self.index_columns = index_columns
+
+    def get_index(self):
+        statement = get_case_formatted("\nCREATE<:1> INDEX <:2> ON <:3>\n(<:4>)", "keyword")
+
+        index_type = ""
+        if self.index_type == "BITMAP":
+            index_type += get_case_formatted(" BITMAP", "keyword")
+        if self.uniqueness == "UNIQUE":
+            index_type += get_case_formatted(" UNIQUE", "keyword")
+
+        index_name = get_case_formatted(f"{self.owner}.{self.index_name}", "identifier")
+        table_name = get_case_formatted(f"{self.table_owner}.{self.table_name}", "identifier")
+
+        index_columns = ""
+        for i, index_column in enumerate(self.index_columns.itertuples()):
+            index_columns += get_case_formatted(index_column.column_name, "identifier")
+            if i != len(self.index_columns) - 1:
+                index_columns += ", "
+
+        index = (statement
+                 .replace("<:1>", index_type)
+                 .replace("<:2>", index_name)
+                 .replace("<:3>", table_name)
+                 .replace("<:4>", index_columns))
+
+        logging = ""
+        if conf["storage"]["logging"] == "yes":
+            if self.logging == "YES":
+                logging = get_case_formatted("\nLOGGING", "keyword")
+            elif self.logging == "NO":
+                logging = get_case_formatted("\nNOLOGGING", "keyword")
+        index += logging
+
+        if conf["storage"]["storage"] == "with_storage":
+            index += get_full_storage(
+                "", self.tablespace_name, self.pct_free, self.ini_trans, self.max_trans,self.min_extents,
+                self.max_extents, self.pct_increase, self.buffer_pool, self.flash_cache, self.cell_flash_cache,
+                self.initial_extent, self.next_extent, self.partitioned)
+        elif conf["storage"]["storage"] == "only_tablespace" and self.partitioned != "YES":
+            statement = get_case_formatted(f"\nTABLESPACE <:1>", "keyword")
+            index += statement.replace("<:1>", get_case_formatted(self.tablespace_name, "identifier"))
+
+        if conf["storage"]["compression"] == "yes":
+            if self.compression == "ENABLED":
+                index += get_case_formatted(f"\nCOMPRESS {int(self.prefix_length)}", "keyword")
+            elif self.compression != "DISABLED":
+                index += get_case_formatted(f"\nCOMPRESS {self.compression}", "keyword")
+
+        local = ""
+        if self.partitioned == "YES":
+            local = get_case_formatted("\nLOCAL", "keyword")
+        index += local
+
+        if self.visibility == "INVISIBLE":
+            index += get_case_formatted("\nINVISIBLE", "keyword")
+
+        if int(self.degree) > 1:
+            index += get_case_formatted(f"\nPARALLEL ( DEGREE {int(self.degree)} INSTANCES {self.instances} )", "keyword")
+
+        if self.index_type == "NORMAL/REV":
+            index += get_case_formatted("\nREVERSE", "keyword")
+
+        index += ";"
+        if conf["indexes"]["empty_line_after_index"] == "yes":
+            index += "\n"
+
+        if self.monitoring == "YES":
+            statement = get_case_formatted("\nALTER INDEX <:1>\n  MONITORING USAGE;\n", "keyword")
+            index += statement.replace("<:1>", index_name)
+
+        return index
+
+
 class Table:
-    def __init__(self, table, part_table, columns, comments, part_key_columns, tab_partitions):
+    def __init__(self, table, part_table, columns, comments, part_key_columns, tab_partitions, indexes, index_columns):
         self.max_column_name_length = None
         self.ddl = ""
         self.columns = columns
         self.comments = comments
+        self.indexes = indexes
+        self.index_columns = index_columns
         self.part_table = part_table
         self.part_key_columns = part_key_columns
         self.tab_partitions = tab_partitions
@@ -363,22 +497,22 @@ class Table:
 
     def get_storage(self):
         storage = ""
-        if conf["storage"]["table_storage"] == "no_storage":
+        if conf["storage"]["storage"] == "no_storage":
             storage = ""
-        elif conf["storage"]["table_storage"] == "only_tablespace" and self.partitioned == "NO":
+        elif conf["storage"]["storage"] == "only_tablespace" and self.partitioned == "NO":
             storage = f"\nTABLESPACE {self.tablespace_name}"
-        elif conf["storage"]["table_storage"] == "only_tablespace" and self.partitioned == "YES":
+        elif conf["storage"]["storage"] == "only_tablespace" and self.partitioned == "YES":
             storage = f"\nTABLESPACE {self.def_tablespace_name}"
-        elif conf["storage"]["table_storage"] == "with_storage" and self.partitioned == "NO":
+        elif conf["storage"]["storage"] == "with_storage" and self.partitioned == "NO":
             storage = get_full_storage(
                 '', self.tablespace_name, self.pct_free, self.ini_trans, self.max_trans, self.min_extents,
                 self.max_extents, self.pct_increase, self.buffer_pool, self.flash_cache, self.cell_flash_cache)
-        elif conf["storage"]["table_storage"] == "with_storage" and self.partitioned == "YES":
+        elif conf["storage"]["storage"] == "with_storage" and self.partitioned == "YES":
             storage = get_full_storage(
                 '', self.def_tablespace_name, self.def_pct_free, self.def_ini_trans, self.def_max_trans,
                 self.def_min_extents, self.def_max_extents, self.def_pct_increase, self.def_buffer_pool,
                 self.def_flash_cache, self.def_cell_flash_cache)
-        return get_case_formatted(storage, "keyword")
+        return storage
 
     def get_logging(self):
         logging = ""
@@ -432,6 +566,17 @@ class Table:
         partitioning = Partitioning(self.part_table, self.part_key_columns, self.tab_partitions)
         return partitioning.get_partitioning()
 
+    def get_indexes(self):
+        indexes = ""
+        if conf["indexes"]["indexes"] == "yes":
+            for index_row in self.indexes.itertuples():
+                index_columns = self.index_columns[self.index_columns["index_name"] == index_row.index_name]
+                index = Index(index_row, index_columns)
+                indexes += index.get_index()
+        if indexes != "":
+            indexes = "\n"+indexes+"\n"
+        return indexes
+
     def get_comments(self):
         comments = ""
         end_line_char = ""
@@ -440,7 +585,7 @@ class Table:
         max_column_name_length = self.max_column_name_length + len(self.owner) + len(self.table_name) + 2
         if conf["comments"]["comments"] == "yes":
             for comment_row in self.comments.itertuples():
-                if not comment_row.column_name:
+                if not comment_row.column_name or str(comment_row.column_name) == "nan":
                     statement = get_case_formatted(f"\nCOMMENT ON TABLE <:1> IS '<:2>';{end_line_char}", "keyword")
                     table_name = get_case_formatted(f"{self.owner}.{self.table_name}", "identifier")
                     comments += statement.replace("<:1>", table_name).replace("<:2>", comment_row.comments)
@@ -483,7 +628,9 @@ class Table:
         if len(self.comments) > 0:
             ddl += "\n"
 
-        self.ddl = ddl
+        ddl += self.get_indexes()
+
+        self.ddl = replace_multiple_newlines(ddl)
 
     def get_file_directory(self):
         file_directory_template = conf['directory']['table']
@@ -505,72 +652,122 @@ class Table:
         print(f"   Stored in {file_directory}/{file_name}")
 
 
-def get_df_tables():
+def get_df_tables(engine, schema_name):
     return pd.read_sql_query(sql.sql_tables, engine, params={'schema_name': schema_name})
 
 
-def get_df_tab_columns():
+def get_df_tab_columns(engine, schema_name):
     return pd.read_sql_query(sql.sql_tab_columns, engine, params={'schema_name': schema_name})
 
 
-def get_df_part_tables():
+def get_df_part_tables(engine, schema_name):
     return pd.read_sql_query(sql.sql_part_tables, engine, params={'schema_name': schema_name})
 
 
-def get_df_part_key_columns():
+def get_df_part_key_columns(engine, schema_name):
     return pd.read_sql_query(sql.sql_part_key_columns, engine, params={'schema_name': schema_name})
 
 
-def get_df_comments():
+def get_df_comments(engine, schema_name):
     return pd.read_sql_query(sql.sql_comments, engine, params={'schema_name': schema_name})
 
 
-def get_df_tab_partitions():
+def get_df_tab_partitions(engine, schema_name):
     return pd.read_sql_query(sql.sql_tab_partitions, engine, params={'schema_name': schema_name})
 
 
-if __name__ == "__main__":
-    arg_parser = argparse.ArgumentParser(description='Generate DDL scripts for Oracle database objects')
-    arg_parser.add_argument('--schema_name', '-s', type=str,
-                            help='DB schema name for which DDL scripts need to be generated')
-    args = arg_parser.parse_args()
+def get_df_indexes(engine, schema_name):
+    return pd.read_sql_query(sql.sql_indexes, engine, params={'schema_name': schema_name})
 
+
+def get_df_index_columns(engine, schema_name):
+    return pd.read_sql_query(sql.sql_index_columns, engine, params={'schema_name': schema_name})
+
+
+def get_db_engine():
     conf_con = configparser.ConfigParser()
     conf_con.read('config_con.ini')
-
-    conf = configparser.ConfigParser()
-    conf.read('config.ini')
-
     db_username = conf_con['database']['username']
     db_password = conf_con['database']['password']
     db_host = conf_con['database']['host']
     db_port = conf_con['database']['port']
     db_service_name = conf_con['database']['service_name']
     connection_string = f"oracle+cx_oracle://{db_username}:{db_password}@{db_host}:{db_port}/?service_name={db_service_name}"
-    engine = create_engine(connection_string, arraysize=1000)
+    return create_engine(connection_string, arraysize=1000)
 
-    schema_name = db_username.upper()
-    if args.schema_name:
-        schema_name = args.schema_name.upper()
 
-    df_tables = get_df_tables()
-    df_all_tab_columns = get_df_tab_columns()
-    df_all_part_tables = get_df_part_tables()
-    df_all_part_key_columns = get_df_part_key_columns()
-    df_all_tab_partitions = get_df_tab_partitions()
-    df_all_comments = get_df_comments()
+def get_db_schema_name(arg_schema_name=None):
+    if arg_schema_name:
+        username = arg_schema_name.upper()
+    else:
+        conf_con = configparser.ConfigParser()
+        conf_con.read('config_con.ini')
+        username = conf_con['database']['username'].upper()
+    return username
 
-    for table_row in df_tables.itertuples():
-        print(table_row.table_name)
-        df_tab_columns = df_all_tab_columns[df_all_tab_columns["table_name"] == table_row.table_name]
-        df_part_tables = df_all_part_tables[df_all_part_tables["table_name"] == table_row.table_name]
-        df_part_key_columns = df_all_part_key_columns[df_all_part_key_columns["name"] == table_row.table_name]
-        df_tab_partitions = df_all_tab_partitions[df_all_tab_partitions["table_name"] == table_row.table_name]
-        df_tab_comments = df_all_comments[df_all_comments["table_name"] == table_row.table_name]
-        part_table_row = get_dataframe_namedtuple(df_part_tables, 0)
 
-        table = Table(table_row, part_table_row, df_tab_columns, df_tab_comments, df_part_key_columns, df_tab_partitions)
+def get_args():
+    arg_parser = argparse.ArgumentParser(description='Generate DDL scripts for Oracle database objects')
+    arg_parser.add_argument('--schema_name', '-s', type=str,
+                            help='DB schema name for which DDL scripts need to be generated')
+    return arg_parser.parse_args()
+
+
+def get_db_metadata(schema_name):
+    engine = get_db_engine()
+    db_metadata = (get_df_tables(engine, schema_name),
+                   get_df_tab_columns(engine, schema_name),
+                   get_df_part_tables(engine, schema_name),
+                   get_df_part_key_columns(engine, schema_name),
+                   get_df_tab_partitions(engine, schema_name),
+                   get_df_comments(engine, schema_name),
+                   get_df_indexes(engine, schema_name),
+                   get_df_index_columns(engine, schema_name))
+    engine.dispose()
+    return db_metadata
+
+
+def get_table_dfs(table_row, metadata):
+    (df_all_tab_columns,
+     df_all_part_tables,
+     df_all_part_key_columns,
+     df_all_tab_partitions,
+     df_all_comments,
+     df_all_indexes,
+     df_all_index_columns) = metadata
+
+    df_tab_columns = df_all_tab_columns[df_all_tab_columns["table_name"] == table_row.table_name]
+    df_part_tables = df_all_part_tables[df_all_part_tables["table_name"] == table_row.table_name]
+    df_part_key_columns = df_all_part_key_columns[df_all_part_key_columns["name"] == table_row.table_name]
+    df_tab_partitions = df_all_tab_partitions[df_all_tab_partitions["table_name"] == table_row.table_name]
+    df_tab_comments = df_all_comments[df_all_comments["table_name"] == table_row.table_name]
+    df_tab_indexes = df_all_indexes[df_all_indexes["table_name"] == table_row.table_name]
+    df_tab_index_columns = df_all_index_columns[df_all_index_columns["table_name"] == table_row.table_name]
+    part_table_row = get_dataframe_namedtuple(df_part_tables, 0)
+
+    return (table_row,
+            part_table_row,
+            df_tab_columns,
+            df_tab_comments,
+            df_part_key_columns,
+            df_tab_partitions,
+            df_tab_indexes,
+            df_tab_index_columns)
+
+
+if __name__ == "__main__":
+    args = get_args()
+    conf = configparser.ConfigParser()
+    conf.read('config.ini')
+
+    schema_name = get_db_schema_name(args.schema_name)
+    df_tables, *db_metadata = get_db_metadata(schema_name)
+
+    for db_table_row in df_tables.itertuples():
+        print(db_table_row.table_name)
+        tabel_dfs = get_table_dfs(db_table_row, db_metadata)
+        table = Table(*tabel_dfs)
         table.generate_ddl()
         table.store_ddl_into_file()
 
-    engine.dispose()
+
