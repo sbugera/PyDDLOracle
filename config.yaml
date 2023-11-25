@@ -1,0 +1,44 @@
+case:
+  keyword: uppercase # uppercase|lowercase
+  identifier: uppercase # uppercase|lowercase
+
+storage:
+  storage: with_storage # no_storage|only_tablespace|with_storage
+
+  partitions: compact # none|all|compact
+                      # "compact" affects only list interval and automatic partitioned tables (to generate only initial partitions),
+                      #    for the rest it works as "all"
+  collation: yes # yes|no
+  logging: yes # yes|no
+  compression: yes # yes|no
+  cache: yes # yes|no
+  result_cache: yes # yes|no
+
+comments:
+  comments: yes # yes|no
+  empty_line_after_comment: no # yes|no
+  vertical_alignment: yes # yes|no
+
+indexes:
+  indexes: yes # yes|no
+  empty_line_after_index: no # yes|no
+
+constraints:
+  constraints: yes # yes|no
+  empty_line_after_constraint: no # yes|no
+
+directory:
+  # Examples:
+  # ./tables/{object_owner}             => ./tables/my_schema
+  # ./DDLS/{OBJECT_TYPE}/{OBJECT_OWNER} => ./DDLS/TABLES/MY_SCHEMA
+  # ./{OBJECT_NAME}                     => ./MY_TABLE
+  table: ../extora_generated_ddls/{OBJECT_OWNER}/tables
+
+filename:
+    # Examples:
+    # {object_owner}.{object_name}.sql => my_schema.my_table.sql
+    # {OBJECT_OWNER}.{OBJECT_NAME}.sql => MY_SCHEMA.MY_TABLE.sql
+    # {OBJECT_TYPE}.{OBJECT_NAME}.sql  => TABLE.MY_TABLE.sql
+    # {OBJECT_NAME}.TRG                => MY_TRIGGER.TRG
+    table: '{object_owner}.{object_name}.sql'
+

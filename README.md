@@ -35,9 +35,9 @@ pip install -r requirements.txt
 ```
 
 ##  Settings
-Rename [config_con.ini.template](./config_con.ini.template) to ```config_con.ini``` and edit it with your database connection parameters.
+Rename [config_con.template.yaml](config_con.template.yaml) to ```config_con.yaml``` and edit it with your database connection parameters.
 
-File names, output directory and other settings can be changed in [config.ini](./config.ini).
+File names, output directory and other settings can be changed in [config.yaml](config.yaml).
 
 ## Usage
 

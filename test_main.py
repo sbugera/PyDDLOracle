@@ -1,55 +1,37 @@
-import pytest
 import os
 import shutil
 import main as m
 import pandas as pd
-import json
-from io import StringIO
-import configparser
+import yaml
 
-conf = configparser.ConfigParser()
-conf.read_string("""
-[case]
-keyword = uppercase
-identifier = uppercase
-
-[alignments]
-indentation_mode = spaces
-indentation_size = 4
-
-[storage]
-storage = no_storage
-partitions = none
-collation = yes
-logging = yes
-compression = yes
-cache = yes
-result_cache = yes
-
-[comments]
-comments = yes
-empty_line_after_comment = no
-vertical_alignment = yes
-
-[indexes]
-indexes = yes
-empty_line_after_index = no
-
-[constraints]
-constraints = yes
-
-[directory]
-table = ../extora_generated_ddls/{OBJECT_OWNER}/tables
-
-[filename]
-table = {object_owner}.{object_name}.sql
+conf = yaml.safe_load("""
+case:
+  keyword: uppercase
+  identifier: uppercase
+storage:
+  storage: with_storage
+  partitions: compact
+  collation: yes
+  logging: yes
+  compression: yes
+  cache: yes
+  result_cache: yes
+comments:
+  comments: yes
+  empty_line_after_comment: no
+  vertical_alignment: yes
+indexes:
+  indexes: yes
+  empty_line_after_index: no
+constraints:
+  constraints: yes
+  empty_line_after_constraint: no
 """)
 m.conf = conf
 
-# check if config file exists
-# if not, copy config file from config_default.ini
-if not os.path.isfile("config_con.ini"):
-    shutil.copyfile("config_con.ini.template", "config_con.ini")
+
+if not os.path.isfile("config_con.yaml"):
+    shutil.copyfile("config_con.template.yaml", "config_con.yaml")
 
 
 def store_metadata_into_xlsx():
@@ -322,23 +304,6 @@ def test_tables_ddl__7__no_storage__no_part__no_comments():
     m.conf["indexes"]["empty_line_after_index"] = "no"
     checking_tables_ddl("7__no_storage__no_part__no_comments")
 
-
-# db_metadata = m.get_db_metadata("EXTORA_APP")
-#
-# (df_tables,
-#  df_all_tab_columns,
-#  df_all_part_tables,
-#  df_all_part_key_columns,
-#  df_all_tab_partitions,
-#  df_all_comments,
-#  df_all_indexes,
-#  df_all_index_columns) = db_metadata
-#
-# df_tables.to_excel("test/dfs/df_tables.xlsx", index=False)
-# df_tables_deserialized = pd.read_excel("test/dfs/df_tables.xlsx", keep_default_na=True)
-# df_tables_deserialized = df_tables_deserialized.fillna('None')
-# print(df_tables)
-# print(df_tables_deserialized)
 
 # store_metadata_into_xlsx()
 # store_metadata_into_files()
