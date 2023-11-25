@@ -1,6 +1,6 @@
 CREATE TABLE extora_app.t_list_part
 (
-    sale_date  DATE,
+    sale_date  DATE NOT NULL,
     region     VARCHAR2(50 BYTE),
     amount     NUMBER
 )
@@ -75,3 +75,28 @@ PARTITION BY LIST (region)
 )
 NOCACHE
 RESULT_CACHE (MODE DEFAULT);
+
+
+CREATE UNIQUE INDEX extora_app.pk_t_list_part ON extora_app.t_list_part
+(sale_date)
+LOGGING
+TABLESPACE extora_app_data
+PCTFREE    10
+INITRANS   2
+MAXTRANS   255
+STORAGE    (
+            INITIAL          64K
+            NEXT             1M
+            MINEXTENTS       1
+            MAXEXTENTS       UNLIMITED
+            PCTINCREASE      0
+            BUFFER_POOL      default
+            );
+
+
+ALTER TABLE extora_app.t_list_part ADD (
+  CONSTRAINT pk_t_list_part
+  PRIMARY KEY
+  (sale_date)
+  USING INDEX extora_app.pk_t_list_part
+  ENABLE VALIDATE);

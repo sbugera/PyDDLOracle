@@ -28,3 +28,29 @@ INTERVAL (NUMTOYMINTERVAL(1, 'MONTH'))
 )
 NOCACHE
 RESULT_CACHE (MODE DEFAULT);
+
+
+CREATE INDEX extora_app."pk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk" ON extora_app.t_range_part_interval_date
+(sale_date, region)
+LOGGING
+TABLESPACE extora_app_index
+PCTFREE    10
+INITRANS   2
+MAXTRANS   255
+STORAGE    (
+            INITIAL          64K
+            NEXT             1M
+            MINEXTENTS       1
+            MAXEXTENTS       UNLIMITED
+            PCTINCREASE      0
+            BUFFER_POOL      default
+            );
+
+
+ALTER TABLE extora_app.t_range_part_interval_date ADD (
+  CONSTRAINT "pk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk"
+  PRIMARY KEY
+  (sale_date, region)
+  DEFERRABLE INITIALLY DEFERRED
+  USING INDEX extora_app."pk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk"
+  ENABLE VALIDATE);

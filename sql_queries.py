@@ -58,41 +58,41 @@ SELECT t.owner,
 """
 
 sql_tab_columns = """
-SELECT table_name,
-       column_name,
-       column_id,
-       data_type,
-       data_type_mod,
-       data_type_owner,
-       DECODE(data_type, 
-              'CHAR', char_length, 
-              'VARCHAR', char_length, 
-              'VARCHAR2', char_length, 
-              'NCHAR', char_length, 
-              'NVARCHAR', char_length, 
-              'NVARCHAR2', char_length, 
-              data_length) AS data_length,
-       data_precision,
-       data_scale,
-       nullable,
-       char_used,
-       default_length,
-       data_default,
-       virtual_column,
-       identity_column,
-       hidden_column,
-       default_on_null,
-       evaluation_edition,
-       unusable_before,
-       unusable_beginning,
-       collation
+SELECT c.table_name,
+       c.column_name,
+       c.column_id,
+       c.data_type,
+       c.data_type_mod,
+       c.data_type_owner,
+       DECODE(data_type,
+              'CHAR', c.char_length,
+              'VARCHAR', c.char_length,
+              'VARCHAR2', c.char_length,
+              'NCHAR', c.char_length,
+              'NVARCHAR', c.char_length,
+              'NVARCHAR2', c.char_length,
+              c.data_length) AS data_length,
+       c.data_precision,
+       c.data_scale,
+       c.nullable,
+       c.char_used,
+       c.default_length,
+       c.data_default,
+       c.virtual_column,
+       c.identity_column,
+       c.hidden_column,
+       c.default_on_null,
+       c.evaluation_edition,
+       c.unusable_before,
+       c.unusable_beginning,
+       c.collation
   FROM sys.dba_tab_cols   c
- WHERE owner = :schema_name
-   AND EXISTS (SELECT NULL
-                 FROM sys.dba_all_tables t
-                WHERE t.table_name = c.table_name
-                  AND t.owner = c.owner)
- ORDER BY table_name, column_id, internal_column_id
+  JOIN sys.dba_all_tables t
+    ON c.table_name = t.table_name
+   AND c.owner = t.owner
+ WHERE c.owner = :schema_name
+   AND NOT (c.column_name LIKE 'SYS\\_%' ESCAPE '\\' AND c.hidden_column = 'YES')
+ ORDER BY c.table_name, c.column_id, c.internal_column_id
 """
 
 sql_part_tables = """
@@ -312,5 +312,5 @@ SELECT cc.table_name,
  WHERE c.owner = :schema_name
    AND b.object_name IS NULL
    AND c.constraint_type = 'P'
- ORDER BY cc.table_name, cc.constraint_name, cc.column_name
+ ORDER BY cc.table_name, cc.constraint_name, cc.position
 """

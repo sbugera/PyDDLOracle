@@ -1,6 +1,6 @@
 create table EXTORA_APP.T_LIST_PART
 (
-    SALE_DATE  date,
+    SALE_DATE  date not null,
     REGION     varchar2(50 byte),
     AMOUNT     number
 )

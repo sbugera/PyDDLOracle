@@ -35,6 +35,9 @@ vertical_alignment = yes
 indexes = yes
 empty_line_after_index = no
 
+[constraints]
+constraints = yes
+
 [directory]
 table = ../extora_generated_ddls/{OBJECT_OWNER}/tables
 
@@ -148,6 +151,7 @@ def test_tables_ddl__1__uppercase__logging():
     m.conf["comments"]["empty_line_after_comment"] = "yes"
     m.conf["comments"]["vertical_alignment"] = "yes"
     m.conf["indexes"]["indexes"] = "yes"
+    m.conf["constraints"]["constraints"] = "yes"
     m.conf["indexes"]["empty_line_after_index"] = "yes"
     checking_tables_ddl("1__uppercase__logging")
 
@@ -166,6 +170,7 @@ def test_tables_ddl__2__lowercase__compress():
     m.conf["comments"]["empty_line_after_comment"] = "yes"
     m.conf["comments"]["vertical_alignment"] = "yes"
     m.conf["indexes"]["indexes"] = "yes"
+    m.conf["constraints"]["constraints"] = "yes"
     m.conf["indexes"]["empty_line_after_index"] = "yes"
     checking_tables_ddl("2__lowercase__compress")
 
@@ -184,6 +189,7 @@ def test_tables_ddl__3__no_storage():
     m.conf["comments"]["empty_line_after_comment"] = "yes"
     m.conf["comments"]["vertical_alignment"] = "yes"
     m.conf["indexes"]["indexes"] = "yes"
+    m.conf["constraints"]["constraints"] = "yes"
     m.conf["indexes"]["empty_line_after_index"] = "yes"
     checking_tables_ddl("3__no_storage")
 
@@ -202,6 +208,7 @@ def test_tables_ddl__4__only_tablespace():
     m.conf["comments"]["empty_line_after_comment"] = "yes"
     m.conf["comments"]["vertical_alignment"] = "yes"
     m.conf["indexes"]["indexes"] = "yes"
+    m.conf["constraints"]["constraints"] = "yes"
     m.conf["indexes"]["empty_line_after_index"] = "yes"
     checking_tables_ddl("4__only_tablespace")
 
@@ -220,6 +227,7 @@ def test_tables_ddl__5__uppercase__lowercase__compact_part():
     m.conf["comments"]["empty_line_after_comment"] = "yes"
     m.conf["comments"]["vertical_alignment"] = "no"
     m.conf["indexes"]["indexes"] = "yes"
+    m.conf["constraints"]["constraints"] = "yes"
     m.conf["indexes"]["empty_line_after_index"] = "yes"
     checking_tables_ddl("5__uppercase__lowercase__compact_part")
 
@@ -238,6 +246,7 @@ def test_tables_ddl__6__lowercase__uppercase__no_empty_line():
     m.conf["comments"]["empty_line_after_comment"] = "no"
     m.conf["comments"]["vertical_alignment"] = "yes"
     m.conf["indexes"]["indexes"] = "no"
+    m.conf["constraints"]["constraints"] = "no"
     m.conf["indexes"]["empty_line_after_index"] = "yes"
     checking_tables_ddl("6__lowercase__uppercase__no_empty_line")
 
@@ -256,6 +265,7 @@ def test_tables_ddl__7__no_storage__no_part__no_comments():
     m.conf["comments"]["empty_line_after_comment"] = "yes"
     m.conf["comments"]["vertical_alignment"] = "yes"
     m.conf["indexes"]["indexes"] = "yes"
+    m.conf["constraints"]["constraints"] = "yes"
     m.conf["indexes"]["empty_line_after_index"] = "no"
     checking_tables_ddl("7__no_storage__no_part__no_comments")
 

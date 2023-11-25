@@ -1,6 +1,6 @@
 CREATE TABLE extora_app.t_standard_datatypes
 (
-    c_varchar2                          VARCHAR2(10 BYTE),
+    c_varchar2                          VARCHAR2(10 BYTE) NOT NULL,
     c_varchar2_not_null                 VARCHAR2(11 BYTE) NOT NULL,
     c_varchar2_def_y_char               VARCHAR2(12 CHAR) DEFAULT 'Y',
     c_varchar2_def_on_null_byte         VARCHAR2(13 BYTE) DEFAULT ON NULL 'N' NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE extora_app.t_standard_datatypes
     c_national_char_varying             NVARCHAR2(22),
     c_national_character                NCHAR(22),
     c_national_character_varying        NVARCHAR2(22),
-    c_number                            NUMBER,
+    c_number                            NUMBER NOT NULL,
     c_number_precision_38               NUMBER(38),
     c_number_precision_20               NUMBER(20),
     c_number_precision_38_scale         NUMBER(38,3),
@@ -172,3 +172,23 @@ STORAGE    (
             )
 PARALLEL ( DEGREE 16 INSTANCES DEFAULT )
 REVERSE;
+
+CREATE UNIQUE INDEX extora_app.pk_t_standard_datatypes ON extora_app.t_standard_datatypes
+(c_varchar2, c_number)
+LOGGING
+TABLESPACE extora_app_data
+PCTFREE    10
+INITRANS   2
+MAXTRANS   255
+STORAGE    (
+            PCTINCREASE      0
+            BUFFER_POOL      default
+            );
+
+
+ALTER TABLE extora_app.t_standard_datatypes ADD (
+  CONSTRAINT pk_t_standard_datatypes
+  PRIMARY KEY
+  (c_varchar2, c_number)
+  USING INDEX extora_app.pk_t_standard_datatypes
+  ENABLE VALIDATE);

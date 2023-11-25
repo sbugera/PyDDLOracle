@@ -1,6 +1,6 @@
 create table extora_app.t_range_part_interval_number
 (
-    sale_id  number,
+    sale_id  number not null,
     region   varchar2(50 byte),
     amount   number
 )
@@ -43,3 +43,28 @@ interval (1000)
 )
 nocache
 result_cache (mode default);
+
+
+create unique index extora_app.uq_t_range_part_interval_number on extora_app.t_range_part_interval_number
+(sale_id)
+logging
+tablespace extora_app_data
+pctfree    10
+initrans   2
+maxtrans   255
+storage    (
+            initial          64K
+            next             1M
+            minextents       1
+            maxextents       unlimited
+            pctincrease      0
+            buffer_pool      default
+            );
+
+
+alter table extora_app.t_range_part_interval_number add (
+  constraint pk_t_range_part_interval_number
+  primary key
+  (sale_id)
+  using index extora_app.uq_t_range_part_interval_number
+  enable validate);

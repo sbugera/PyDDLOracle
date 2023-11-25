@@ -1,6 +1,6 @@
 create table EXTORA_APP.T_STANDARD_DATATYPES
 (
-    C_VARCHAR2                          varchar2(10 byte),
+    C_VARCHAR2                          varchar2(10 byte) not null,
     C_VARCHAR2_NOT_NULL                 varchar2(11 byte) not null,
     C_VARCHAR2_DEF_Y_CHAR               varchar2(12 char) default 'Y',
     C_VARCHAR2_DEF_ON_NULL_BYTE         varchar2(13 byte) default on null 'N' not null,
@@ -22,7 +22,7 @@ create table EXTORA_APP.T_STANDARD_DATATYPES
     C_NATIONAL_CHAR_VARYING             nvarchar2(22),
     C_NATIONAL_CHARACTER                nchar(22),
     C_NATIONAL_CHARACTER_VARYING        nvarchar2(22),
-    C_NUMBER                            number,
+    C_NUMBER                            number not null,
     C_NUMBER_PRECISION_38               number(38),
     C_NUMBER_PRECISION_20               number(20),
     C_NUMBER_PRECISION_38_SCALE         number(38,3),
