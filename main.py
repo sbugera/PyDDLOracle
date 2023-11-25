@@ -76,6 +76,15 @@ def get_entity_name(template_name, object_type, object_owner, object_name):
     return entity_name
 
 
+def get_size_formatted(initial_extent):
+    if initial_extent >= 1024 * 1024 * 1024:
+        return str(int(initial_extent / 1024 / 1024 / 1024)) + "G"
+    if initial_extent >= 1024 * 1024:
+        return str(int(initial_extent / 1024 / 1024)) + "M"
+    if initial_extent >= 1024:
+        return str(int(initial_extent / 1024)) + "K"
+
+
 def get_full_storage(indentation, tablespace_name, pct_free, ini_trans, max_trans, min_extents, max_extents,
                      pct_increase, buffer_pool, flash_cache, cell_flash_cache, initial_extent=None, next_extent=None,
                      local_index=None):
@@ -95,7 +104,7 @@ def get_full_storage(indentation, tablespace_name, pct_free, ini_trans, max_tran
     storage_tmp = get_case_formatted(f"\n{indentation}STORAGE    (", "keyword")
     if initial_extent and str(initial_extent) not in ("nan", "DEFAULT", "-1"):
         statement = get_case_formatted(f"\n{indentation}            INITIAL          <:1>", "keyword")
-        storage_tmp += statement.replace("<:1>", str(int(initial_extent/1024/1024)) + "M")
+        storage_tmp += statement.replace("<:1>", get_size_formatted(initial_extent))
     if next_extent and str(next_extent) not in ("nan", "DEFAULT", "-1"):
         statement = get_case_formatted(f"\n{indentation}            NEXT             <:1>", "keyword")
         storage_tmp += statement.replace("<:1>", str(int(next_extent/1024/1024)) + "M")
@@ -369,7 +378,7 @@ class Index:
         self.index_columns = index_columns
 
     def get_index(self):
-        statement = get_case_formatted("\nCREATE<:1> INDEX <:2> ON <:3>\n(<:4>)", "keyword")
+        statement = get_case_formatted("\nCREATE<:1> INDEX <:2.1>.<:2.2> ON <:3.1>.<:3.2>\n(<:4>)", "keyword")
 
         index_type = ""
         if self.index_type == "BITMAP":
@@ -377,8 +386,10 @@ class Index:
         if self.uniqueness == "UNIQUE":
             index_type += get_case_formatted(" UNIQUE", "keyword")
 
-        index_name = get_case_formatted(f"{self.owner}.{self.index_name}", "identifier")
-        table_name = get_case_formatted(f"{self.table_owner}.{self.table_name}", "identifier")
+        index_owner = get_case_formatted(f"{self.owner}", "identifier")
+        index_name = get_case_formatted(f"{self.index_name}", "identifier")
+        table_owner = get_case_formatted(f"{self.table_owner}", "identifier")
+        table_name = get_case_formatted(f"{self.table_name}", "identifier")
 
         index_columns = ""
         for i, index_column in enumerate(self.index_columns.itertuples()):
@@ -388,8 +399,10 @@ class Index:
 
         index = (statement
                  .replace("<:1>", index_type)
-                 .replace("<:2>", index_name)
-                 .replace("<:3>", table_name)
+                 .replace("<:2.1>", index_owner)
+                 .replace("<:2.2>", index_name)
+                 .replace("<:3.1>", table_owner)
+                 .replace("<:3.2>", table_name)
                  .replace("<:4>", index_columns))
 
         logging = ""
@@ -434,19 +447,72 @@ class Index:
             index += "\n"
 
         if self.monitoring == "YES":
-            statement = get_case_formatted("\nALTER INDEX <:1>\n  MONITORING USAGE;\n", "keyword")
-            index += statement.replace("<:1>", index_name)
+            statement = get_case_formatted("\nALTER INDEX <:1>.<:2>\n  MONITORING USAGE;\n", "keyword")
+            index += statement.replace("<:1>", index_owner).replace("<:2>", index_name)
 
         return index
 
 
+class Constraint:
+    def __init__(self, constraint_row, constraint_columns):
+        self.constraint_name = constraint_row.constraint_name
+        self.status = constraint_row.status
+        self.deferrable = constraint_row.deferrable
+        self.deferred = constraint_row.deferred
+        self.validated = constraint_row.validated
+        self.index_owner = constraint_row.index_owner
+        self.index_name = constraint_row.index_name
+        self.constraint_columns = constraint_columns
+
+    def get_constraint(self):
+        constraint = ""
+        statement = get_case_formatted("  CONSTRAINT <:1>\n  PRIMARY KEY\n  (<:2>)", "keyword")
+        constraint_name = get_case_formatted(self.constraint_name, "identifier")
+        constraint_columns = ""
+
+        for i, constraint_column in enumerate(self.constraint_columns.itertuples()):
+            constraint_columns += get_case_formatted(constraint_column.column_name, "identifier")
+            if i != len(self.constraint_columns) - 1:
+                constraint_columns += ", "
+        constraint += statement.replace("<:1>", constraint_name).replace("<:2>", constraint_columns)
+
+        if self.deferrable == "DEFERRABLE":
+            constraint += get_case_formatted(f"\n  DEFERRABLE INITIALLY {self.deferred}", "keyword")
+
+        if self.index_name and str(self.index_name) not in ("nan", "None"):
+            statement = get_case_formatted("\n  USING INDEX <:1>.<:2>", "keyword")
+            index_owner = get_case_formatted(f"{self.index_owner}", "identifier")
+            index_name = get_case_formatted(f"{self.index_name}", "identifier")
+            constraint += statement.replace("<:1>", index_owner).replace("<:2>", index_name)
+
+        status = ""
+        if self.status == "ENABLED":
+            status = get_case_formatted("ENABLE", "keyword")
+        else:
+            status = get_case_formatted("DISABLE", "keyword")
+
+        validate = ""
+        if self.validated == "VALIDATED":
+            validate = get_case_formatted("VALIDATE", "keyword")
+        else:
+            validate = get_case_formatted("NOVALIDATE", "keyword")
+
+        constraint += f"\n  {status} {validate}"
+
+        return constraint
+
+
 class Table:
-    def __init__(self, table, part_table, columns, comments, part_key_columns, tab_partitions, indexes, index_columns):
+    def __init__(self,
+                 table, part_table, columns, comments, part_key_columns, tab_partitions, indexes, index_columns,
+                 tab_constraints, tab_constraint_columns):
         self.max_column_name_length = None
         self.ddl = ""
         self.columns = columns
         self.comments = comments
         self.indexes = indexes
+        self.tab_constraints = tab_constraints
+        self.tab_constraint_columns = tab_constraint_columns
         self.index_columns = index_columns
         self.part_table = part_table
         self.part_key_columns = part_key_columns
@@ -574,8 +640,24 @@ class Table:
                 index = Index(index_row, index_columns)
                 indexes += index.get_index()
         if indexes != "":
-            indexes = "\n"+indexes+"\n"
+            indexes = indexes+"\n"
         return indexes
+
+    def get_constraints(self):
+        constraints = ""
+        if conf["constraints"]["constraints"] == "yes":
+            if len(self.tab_constraints) > 0:
+                statement = get_case_formatted("\nALTER TABLE <:1> ADD (\n", "keyword")
+                table_name = get_case_formatted(f"{self.owner}.{self.table_name}", "identifier")
+                constraints += statement.replace("<:1>", table_name)
+            for constraint_row in self.tab_constraints.itertuples():
+                constraint_columns = self.tab_constraint_columns[
+                    self.tab_constraint_columns["constraint_name"] == constraint_row.constraint_name]
+                constraint = Constraint(constraint_row, constraint_columns)
+                constraints += constraint.get_constraint()
+        if constraints != "":
+            constraints += ");\n"
+        return constraints
 
     def get_comments(self):
         comments = ""
@@ -595,6 +677,8 @@ class Table:
                     if conf["comments"]["vertical_alignment"] == "yes":
                         column_name = column_name.ljust(max_column_name_length)
                     comments += statement.replace("<:1>", column_name).replace("<:2>", comment_row.comments)
+        if comments != "":
+            comments = comments+"\n"
         return comments
 
     def generate_ddl(self):
@@ -622,13 +706,11 @@ class Table:
         ddl += self.get_result_cache()
         ddl += self.get_tab_row_movement()
         # todo: Add LOB storage
-        ddl += ";\n"
+        ddl += ";\n\n"
 
         ddl += self.get_comments()
-        if len(self.comments) > 0:
-            ddl += "\n"
-
         ddl += self.get_indexes()
+        ddl += self.get_constraints()
 
         self.ddl = replace_multiple_newlines(ddl)
 
@@ -684,6 +766,14 @@ def get_df_index_columns(engine, schema_name):
     return pd.read_sql_query(sql.sql_index_columns, engine, params={'schema_name': schema_name})
 
 
+def get_df_constraints(engine, schema_name):
+    return pd.read_sql_query(sql.sql_constraints, engine, params={'schema_name': schema_name})
+
+
+def get_df_constraint_columns(engine, schema_name):
+    return pd.read_sql_query(sql.sql_constraint_columns, engine, params={'schema_name': schema_name})
+
+
 def get_db_engine():
     conf_con = configparser.ConfigParser()
     conf_con.read('config_con.ini')
@@ -722,7 +812,9 @@ def get_db_metadata(schema_name):
                    get_df_tab_partitions(engine, schema_name),
                    get_df_comments(engine, schema_name),
                    get_df_indexes(engine, schema_name),
-                   get_df_index_columns(engine, schema_name))
+                   get_df_index_columns(engine, schema_name),
+                   get_df_constraints(engine, schema_name),
+                   get_df_constraint_columns(engine, schema_name))
     engine.dispose()
     return db_metadata
 
@@ -734,7 +826,9 @@ def get_table_dfs(table_row, metadata):
      df_all_tab_partitions,
      df_all_comments,
      df_all_indexes,
-     df_all_index_columns) = metadata
+     df_all_index_columns,
+     df_all_constraints,
+     df_all_constraint_columns) = metadata
 
     df_tab_columns = df_all_tab_columns[df_all_tab_columns["table_name"] == table_row.table_name]
     df_part_tables = df_all_part_tables[df_all_part_tables["table_name"] == table_row.table_name]
@@ -743,6 +837,8 @@ def get_table_dfs(table_row, metadata):
     df_tab_comments = df_all_comments[df_all_comments["table_name"] == table_row.table_name]
     df_tab_indexes = df_all_indexes[df_all_indexes["table_name"] == table_row.table_name]
     df_tab_index_columns = df_all_index_columns[df_all_index_columns["table_name"] == table_row.table_name]
+    df_tab_constraints = df_all_constraints[df_all_constraints["table_name"] == table_row.table_name]
+    df_tab_constraint_columns = df_all_constraint_columns[df_all_constraint_columns["table_name"] == table_row.table_name]
     part_table_row = get_dataframe_namedtuple(df_part_tables, 0)
 
     return (table_row,
@@ -752,7 +848,9 @@ def get_table_dfs(table_row, metadata):
             df_part_key_columns,
             df_tab_partitions,
             df_tab_indexes,
-            df_tab_index_columns)
+            df_tab_index_columns,
+            df_tab_constraints,
+            df_tab_constraint_columns)
 
 
 if __name__ == "__main__":

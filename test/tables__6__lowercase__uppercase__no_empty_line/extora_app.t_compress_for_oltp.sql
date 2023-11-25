@@ -1,7 +1,7 @@
 create table EXTORA_APP.T_COMPRESS_FOR_OLTP
 (
     ID  number,
-    V1  varchar2(100 byte),
+    V1  varchar2(100 byte) not null,
     V2  varchar2(100 byte),
     V3  varchar2(100 byte),
     V4  varchar2(100 byte)

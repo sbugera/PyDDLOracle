@@ -99,6 +99,7 @@ interval (NUMTOYMINTERVAL(1, 'MONTH'))
 nocache
 result_cache (mode default);
 
+
 comment on table EXTORA_APP.SALES is 'Sales';
 comment on column EXTORA_APP.SALES.SALE_ID     is 'Sale ID';
 comment on column EXTORA_APP.SALES.SALE_DATE   is 'Sale Date';

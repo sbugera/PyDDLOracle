@@ -1,6 +1,6 @@
 CREATE TABLE extora_app.sales_simple_range
 (
-    sale_date  DATE,
+    sale_date  DATE NOT NULL,
     amount     NUMBER
 )
 NOCOMPRESS
@@ -101,3 +101,11 @@ STORAGE    (
 
 ALTER INDEX extora_app.idx_sales_simple_range_monitored
   MONITORING USAGE;
+
+
+ALTER TABLE extora_app.sales_simple_range ADD (
+  CONSTRAINT pk_sales_simple_range
+  PRIMARY KEY
+  (sale_date)
+  USING INDEX extora_app.idx_sales_simple_range_01
+  ENABLE VALIDATE);

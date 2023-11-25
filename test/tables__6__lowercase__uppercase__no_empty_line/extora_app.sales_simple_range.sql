@@ -1,6 +1,6 @@
 create table EXTORA_APP.SALES_SIMPLE_RANGE
 (
-    SALE_DATE  date,
+    SALE_DATE  date not null,
     AMOUNT     number
 )
 nocompress

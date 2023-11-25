@@ -1,0 +1,5 @@
+table_name,column_name,comments,order_num
+SALES,,Sales,0
+SALES,SALE_ID,Sale ID,1
+SALES,SALE_DATE,Sale Date,2
+SALES,SALE_AMOUNT,Sale Ammount,3

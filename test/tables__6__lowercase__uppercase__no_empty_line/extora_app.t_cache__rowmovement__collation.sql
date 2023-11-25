@@ -1,6 +1,6 @@
 create table EXTORA_APP.T_CACHE__ROWMOVEMENT__COLLATION
 (
-    ID  number
+    ID  number not null
 )
 default collation using_nls_sort_ci
 tablespace EXTORA_APP_DATA

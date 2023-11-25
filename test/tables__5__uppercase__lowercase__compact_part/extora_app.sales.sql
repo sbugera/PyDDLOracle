@@ -29,6 +29,7 @@ INTERVAL (NUMTOYMINTERVAL(1, 'MONTH'))
 NOCACHE
 RESULT_CACHE (MODE DEFAULT);
 
+
 COMMENT ON TABLE extora_app.sales IS 'Sales';
 
 COMMENT ON COLUMN extora_app.sales.sale_id IS 'Sale ID';
@@ -36,3 +37,29 @@ COMMENT ON COLUMN extora_app.sales.sale_id IS 'Sale ID';
 COMMENT ON COLUMN extora_app.sales.sale_date IS 'Sale Date';
 
 COMMENT ON COLUMN extora_app.sales.sale_amount IS 'Sale Ammount';
+
+
+CREATE INDEX extora_app.pk_sales ON extora_app.sales
+(sale_id)
+LOGGING
+TABLESPACE extora_app_data
+PCTFREE    10
+INITRANS   2
+MAXTRANS   255
+STORAGE    (
+            INITIAL          64K
+            NEXT             1M
+            MINEXTENTS       1
+            MAXEXTENTS       UNLIMITED
+            PCTINCREASE      0
+            BUFFER_POOL      default
+            );
+
+
+ALTER TABLE extora_app.sales ADD (
+  CONSTRAINT pk_sales
+  PRIMARY KEY
+  (sale_id)
+  DEFERRABLE INITIALLY IMMEDIATE
+  USING INDEX extora_app.pk_sales
+  ENABLE VALIDATE);

@@ -58,42 +58,41 @@ SELECT t.owner,
 """
 
 sql_tab_columns = """
-SELECT table_name,
-       column_name,
-       column_id,
-       data_type,
-       data_type_mod,
-       data_type_owner,
-       DECODE(data_type, 
-              'CHAR', char_length, 
-              'VARCHAR', char_length, 
-              'VARCHAR2', char_length, 
-              'NCHAR', char_length, 
-              'NVARCHAR', char_length, 
-              'NVARCHAR2', char_length, 
-              data_length) AS data_length,
-       data_precision,
-       data_scale,
-       nullable,
-       char_used,
-       default_length,
-       data_default,
-       virtual_column,
-       identity_column,
-       hidden_column,
-       default_on_null,
-       evaluation_edition,
-       unusable_before,
-       unusable_beginning,
-       collation
+SELECT c.table_name,
+       c.column_name,
+       c.column_id,
+       c.data_type,
+       c.data_type_mod,
+       c.data_type_owner,
+       DECODE(data_type,
+              'CHAR', c.char_length,
+              'VARCHAR', c.char_length,
+              'VARCHAR2', c.char_length,
+              'NCHAR', c.char_length,
+              'NVARCHAR', c.char_length,
+              'NVARCHAR2', c.char_length,
+              c.data_length) AS data_length,
+       c.data_precision,
+       c.data_scale,
+       c.nullable,
+       c.char_used,
+       c.default_length,
+       c.data_default,
+       c.virtual_column,
+       c.identity_column,
+       c.hidden_column,
+       c.default_on_null,
+       c.evaluation_edition,
+       c.unusable_before,
+       c.unusable_beginning,
+       c.collation
   FROM sys.dba_tab_cols   c
- WHERE owner = :schema_name
-   AND ((user_generated = 'YES') OR (column_name = 'ORA_ARCHIVE_STATE'))
-   AND EXISTS (SELECT NULL
-                 FROM sys.dba_all_tables t
-                WHERE t.table_name = c.table_name
-                  AND t.owner = c.owner)
- ORDER BY table_name, column_id, internal_column_id
+  JOIN sys.dba_all_tables t
+    ON c.table_name = t.table_name
+   AND c.owner = t.owner
+ WHERE c.owner = :schema_name
+   AND NOT (c.column_name LIKE 'SYS\\_%' ESCAPE '\\' AND c.hidden_column = 'YES')
+ ORDER BY c.table_name, c.column_id, c.internal_column_id
 """
 
 sql_part_tables = """
@@ -276,4 +275,42 @@ SELECT ic.index_owner,
    AND i.index_type <> 'LOB'
  WHERE ic.index_owner = :schema_name
  ORDER BY ic.index_owner, ic.index_name, ic.column_position
+"""
+
+sql_constraints = """
+SELECT c.table_name,
+       c.constraint_name,
+       c.status,
+       c.deferrable,
+       c.deferred,
+       c.validated,
+       c.index_name,
+       c.index_owner
+  FROM sys.dba_constraints c
+  LEFT JOIN sys.dba_recyclebin b
+    ON c.table_name = b.object_name
+   AND c.owner = b.owner
+   AND b.type = 'TABLE'
+ WHERE c.owner = :schema_name
+   AND b.object_name IS NULL
+   AND c.constraint_type = 'P'
+ ORDER BY c.table_name, c.constraint_type, c.constraint_name
+"""
+
+sql_constraint_columns = """
+SELECT cc.table_name,
+       cc.constraint_name,
+       cc.column_name
+  FROM sys.dba_constraints c
+  JOIN sys.dba_cons_columns cc
+    ON c.constraint_name = cc.constraint_name
+   AND c.owner = cc.owner
+  LEFT JOIN sys.dba_recyclebin b
+    ON c.table_name = b.object_name
+   AND c.owner = b.owner
+   AND b.type = 'TABLE'
+ WHERE c.owner = :schema_name
+   AND b.object_name IS NULL
+   AND c.constraint_type = 'P'
+ ORDER BY cc.table_name, cc.constraint_name, cc.position
 """

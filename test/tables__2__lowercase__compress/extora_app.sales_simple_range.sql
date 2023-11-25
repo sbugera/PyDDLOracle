@@ -1,6 +1,6 @@
 create table extora_app.sales_simple_range
 (
-    sale_date  date,
+    sale_date  date not null,
     amount     number
 )
 tablespace extora_app_data
@@ -95,3 +95,11 @@ storage    (
 
 alter index extora_app.idx_sales_simple_range_monitored
   monitoring usage;
+
+
+alter table extora_app.sales_simple_range add (
+  constraint pk_sales_simple_range
+  primary key
+  (sale_date)
+  using index extora_app.idx_sales_simple_range_01
+  enable validate);

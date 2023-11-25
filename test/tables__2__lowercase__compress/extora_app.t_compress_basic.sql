@@ -17,3 +17,10 @@ storage    (
 logging
 nocache
 result_cache (mode default);
+
+
+alter table extora_app.t_compress_basic add (
+  constraint pk_t_compress_basic
+  primary key
+  (id, v1)
+  disable novalidate);
