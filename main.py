@@ -286,7 +286,7 @@ class Partition:
         partition += self.get_compression()
         if conf["storage"]["storage"] == "with_storage":
             partition += get_full_storage(
-                get_indentation(), self.tablespace_name, self.pct_free, self.ini_trans, self.max_trans,self.min_extent,
+                get_indentation(), self.tablespace_name, self.pct_free, self.ini_trans, self.max_trans, self.min_extent,
                 self.max_extent, self.pct_increase, self.buffer_pool, self.flash_cache, self.cell_flash_cache,
                 self.initial_extent, self.next_extent)
         elif conf["storage"]["storage"] == "only_tablespace":
@@ -425,11 +425,11 @@ class Index:
 
         if conf["storage"]["storage"] == "with_storage":
             index += get_full_storage(
-                "", self.tablespace_name, self.pct_free, self.ini_trans, self.max_trans,self.min_extents,
+                "", self.tablespace_name, self.pct_free, self.ini_trans, self.max_trans, self.min_extents,
                 self.max_extents, self.pct_increase, self.buffer_pool, self.flash_cache, self.cell_flash_cache,
                 self.initial_extent, self.next_extent, self.partitioned)
         elif conf["storage"]["storage"] == "only_tablespace" and self.partitioned != "YES":
-            statement = get_case_formatted(f"\nTABLESPACE <:1>", "keyword")
+            statement = get_case_formatted("\nTABLESPACE <:1>", "keyword")
             index += statement.replace("<:1>", get_case_formatted(self.tablespace_name, "identifier"))
 
         if conf["storage"]["compression"] == "yes":
@@ -874,5 +874,3 @@ if __name__ == "__main__":
         table = Table(*tabel_dfs)
         table.generate_ddl()
         table.store_ddl_into_file()
-
-
