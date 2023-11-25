@@ -466,6 +466,7 @@ class Index:
 class Constraint:
     def __init__(self, constraint_row, constraint_columns):
         self.constraint_name = constraint_row.constraint_name
+        self.constraint_type = constraint_row.constraint_type
         self.status = constraint_row.status
         self.deferrable = constraint_row.deferrable
         self.deferred = constraint_row.deferred
@@ -476,7 +477,10 @@ class Constraint:
 
     def get_constraint(self):
         constraint = ""
-        statement = get_case_formatted("  CONSTRAINT <:1>\n  PRIMARY KEY\n  (<:2>)", "keyword")
+        if self.constraint_type == "P":
+            statement = get_case_formatted("  CONSTRAINT <:1>\n  PRIMARY KEY\n  (<:2>)", "keyword")
+        elif self.constraint_type == "U":
+            statement = get_case_formatted("  CONSTRAINT <:1>\n  UNIQUE\n  (<:2>)", "keyword")
         constraint_name = get_case_formatted(self.constraint_name, "identifier")
         constraint_columns = ""
 
@@ -660,10 +664,12 @@ class Table:
                 statement = get_case_formatted("\nALTER TABLE <:1> ADD (\n", "keyword")
                 table_name = get_case_formatted(f"{self.owner}.{self.table_name}", "identifier")
                 constraints += statement.replace("<:1>", table_name)
-            for constraint_row in self.tab_constraints.itertuples():
+            for i, constraint_row in enumerate(self.tab_constraints.itertuples()):
                 constraint_columns = self.tab_constraint_columns[
                     self.tab_constraint_columns["constraint_name"] == constraint_row.constraint_name]
                 constraint = Constraint(constraint_row, constraint_columns)
+                if i > 0:
+                    constraints += ",\n"
                 constraints += constraint.get_constraint()
         if constraints != "":
             constraints += ");\n"

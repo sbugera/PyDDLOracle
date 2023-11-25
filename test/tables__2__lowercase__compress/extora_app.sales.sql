@@ -118,6 +118,22 @@ storage    (
             buffer_pool      default
             );
 
+create index extora_app.uk_sales on extora_app.sales
+(sale_amount)
+logging
+tablespace extora_app_data
+pctfree    10
+initrans   2
+maxtrans   255
+storage    (
+            initial          64K
+            next             1M
+            minextents       1
+            maxextents       unlimited
+            pctincrease      0
+            buffer_pool      default
+            );
+
 
 alter table extora_app.sales add (
   constraint pk_sales
@@ -125,4 +141,10 @@ alter table extora_app.sales add (
   (sale_id)
   deferrable initially immediate
   using index extora_app.pk_sales
+  enable validate,
+  constraint uk_sales
+  unique
+  (sale_amount)
+  deferrable initially immediate
+  using index extora_app.uk_sales
   enable validate);

@@ -46,6 +46,22 @@ STORAGE    (
             BUFFER_POOL      default
             );
 
+CREATE INDEX extora_app."uk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk" ON extora_app.t_range_part_interval_date
+(amount)
+LOGGING
+TABLESPACE extora_app_index
+PCTFREE    10
+INITRANS   2
+MAXTRANS   255
+STORAGE    (
+            INITIAL          64K
+            NEXT             1M
+            MINEXTENTS       1
+            MAXEXTENTS       UNLIMITED
+            PCTINCREASE      0
+            BUFFER_POOL      default
+            );
+
 
 ALTER TABLE extora_app.t_range_part_interval_date ADD (
   CONSTRAINT "pk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk"
@@ -53,4 +69,10 @@ ALTER TABLE extora_app.t_range_part_interval_date ADD (
   (sale_date, region)
   DEFERRABLE INITIALLY DEFERRED
   USING INDEX extora_app."pk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk"
+  ENABLE VALIDATE,
+  CONSTRAINT "uk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk"
+  UNIQUE
+  (amount)
+  DEFERRABLE INITIALLY DEFERRED
+  USING INDEX extora_app."uk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk"
   ENABLE VALIDATE);

@@ -280,6 +280,7 @@ SELECT ic.index_owner,
 sql_constraints = """
 SELECT c.table_name,
        c.constraint_name,
+       c.constraint_type,
        c.status,
        c.deferrable,
        c.deferred,
@@ -293,7 +294,7 @@ SELECT c.table_name,
    AND b.type = 'TABLE'
  WHERE c.owner = :schema_name
    AND b.object_name IS NULL
-   AND c.constraint_type = 'P'
+   AND c.constraint_type IN ('P', 'U')
  ORDER BY c.table_name, c.constraint_type, c.constraint_name
 """
 
@@ -311,6 +312,6 @@ SELECT cc.table_name,
    AND b.type = 'TABLE'
  WHERE c.owner = :schema_name
    AND b.object_name IS NULL
-   AND c.constraint_type = 'P'
+   AND c.constraint_type IN ('P', 'U')
  ORDER BY cc.table_name, cc.constraint_name, cc.position
 """

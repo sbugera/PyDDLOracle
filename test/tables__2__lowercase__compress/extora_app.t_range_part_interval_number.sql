@@ -45,6 +45,22 @@ nocache
 result_cache (mode default);
 
 
+create index extora_app.uk_t_range_part_interval_number on extora_app.t_range_part_interval_number
+(region)
+logging
+tablespace extora_app_data
+pctfree    10
+initrans   2
+maxtrans   255
+storage    (
+            initial          64K
+            next             1M
+            minextents       1
+            maxextents       unlimited
+            pctincrease      0
+            buffer_pool      default
+            );
+
 create unique index extora_app.uq_t_range_part_interval_number on extora_app.t_range_part_interval_number
 (sale_id)
 logging
@@ -67,4 +83,9 @@ alter table extora_app.t_range_part_interval_number add (
   primary key
   (sale_id)
   using index extora_app.uq_t_range_part_interval_number
+  enable validate,
+  constraint uk_t_range_part_interval_number
+  unique
+  (region)
+  using index extora_app.uk_t_range_part_interval_number
   enable validate);

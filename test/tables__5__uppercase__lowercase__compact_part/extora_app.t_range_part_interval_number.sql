@@ -34,6 +34,22 @@ NOCACHE
 RESULT_CACHE (MODE DEFAULT);
 
 
+CREATE INDEX extora_app.uk_t_range_part_interval_number ON extora_app.t_range_part_interval_number
+(region)
+LOGGING
+TABLESPACE extora_app_data
+PCTFREE    10
+INITRANS   2
+MAXTRANS   255
+STORAGE    (
+            INITIAL          64K
+            NEXT             1M
+            MINEXTENTS       1
+            MAXEXTENTS       UNLIMITED
+            PCTINCREASE      0
+            BUFFER_POOL      default
+            );
+
 CREATE UNIQUE INDEX extora_app.uq_t_range_part_interval_number ON extora_app.t_range_part_interval_number
 (sale_id)
 LOGGING
@@ -56,4 +72,9 @@ ALTER TABLE extora_app.t_range_part_interval_number ADD (
   PRIMARY KEY
   (sale_id)
   USING INDEX extora_app.uq_t_range_part_interval_number
+  ENABLE VALIDATE,
+  CONSTRAINT uk_t_range_part_interval_number
+  UNIQUE
+  (region)
+  USING INDEX extora_app.uk_t_range_part_interval_number
   ENABLE VALIDATE);

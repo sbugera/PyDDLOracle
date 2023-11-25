@@ -102,4 +102,9 @@ alter table extora_app.sales_simple_range add (
   primary key
   (sale_date)
   using index extora_app.idx_sales_simple_range_01
+  enable validate,
+  constraint uk_sales_simple_range
+  unique
+  (sale_date, amount)
+  using index extora_app.idx_sales_simple_range_monitored
   enable validate);
