@@ -78,6 +78,32 @@ def store_metadata_into_xlsx():
     df_all_constraint_columns.to_excel("test/dfs/df_all_constraint_columns.xlsx", index=False)
 
 
+def store_metadata_into_files():
+    db_metadata = m.get_db_metadata("EXTORA_APP")
+
+    (df_tables,
+     df_all_tab_columns,
+     df_all_part_tables,
+     df_all_part_key_columns,
+     df_all_tab_partitions,
+     df_all_comments,
+     df_all_indexes,
+     df_all_index_columns,
+     df_all_constraints,
+     df_all_constraint_columns) = db_metadata
+
+    df_tables.to_csv("test/dfs/df_tables.csv", index=False)
+    df_all_tab_columns.to_csv("test/dfs/df_all_tab_columns.csv", index=False)
+    df_all_part_tables.to_csv("test/dfs/df_all_part_tables.csv", index=False)
+    df_all_part_key_columns.to_csv("test/dfs/df_all_part_key_columns.csv", index=False)
+    df_all_tab_partitions.to_csv("test/dfs/df_all_tab_partitions.csv", index=False)
+    df_all_comments.to_csv("test/dfs/df_all_comments.csv", index=False)
+    df_all_indexes.to_csv("test/dfs/df_all_indexes.csv", index=False)
+    df_all_index_columns.to_csv("test/dfs/df_all_index_columns.csv", index=False)
+    df_all_constraints.to_csv("test/dfs/df_all_constraints.csv", index=False)
+    df_all_constraint_columns.to_csv("test/dfs/df_all_constraint_columns.csv", index=False)
+
+
 def get_metadata_from_xlsx():
     df_tables = pd.read_excel("test/dfs/df_tables.xlsx", na_values=[""])
     df_all_tab_columns = pd.read_excel("test/dfs/df_all_tab_columns.xlsx", na_values=[""])
@@ -102,6 +128,30 @@ def get_metadata_from_xlsx():
             df_all_constraint_columns)
 
 
+def get_metadata_from_files():
+    df_tables = pd.read_csv("test/dfs/df_tables.csv", na_values=[""])
+    df_all_tab_columns = pd.read_csv("test/dfs/df_all_tab_columns.csv", na_values=[""])
+    df_all_part_tables = pd.read_csv("test/dfs/df_all_part_tables.csv", na_values=[""])
+    df_all_part_key_columns = pd.read_csv("test/dfs/df_all_part_key_columns.csv", na_values=[""])
+    df_all_tab_partitions = pd.read_csv("test/dfs/df_all_tab_partitions.csv", na_values=[""])
+    df_all_comments = pd.read_csv("test/dfs/df_all_comments.csv", na_values=[""])
+    df_all_indexes = pd.read_csv("test/dfs/df_all_indexes.csv", na_values=[""])
+    df_all_index_columns = pd.read_csv("test/dfs/df_all_index_columns.csv", na_values=[""])
+    df_all_constraints = pd.read_csv("test/dfs/df_all_constraints.csv", na_values=[""])
+    df_all_constraint_columns = pd.read_csv("test/dfs/df_all_constraint_columns.csv", na_values=[""])
+
+    return (df_tables,
+            df_all_tab_columns,
+            df_all_part_tables,
+            df_all_part_key_columns,
+            df_all_tab_partitions,
+            df_all_comments,
+            df_all_indexes,
+            df_all_index_columns,
+            df_all_constraints,
+            df_all_constraint_columns)
+
+
 def get_content_from_file(file_path):
     with open(file_path, 'r') as f:
         content = f.read()
@@ -110,7 +160,8 @@ def get_content_from_file(file_path):
 
 def checking_tables_ddl(case_name):
     schema_name = "EXTORA_APP"
-    df_tables, *db_metadata = get_metadata_from_xlsx()
+    # df_tables, *db_metadata = get_metadata_from_xlsx()
+    df_tables, *db_metadata = get_metadata_from_files()
     # df_tables, *db_metadata = m.get_db_metadata(schema_name)
     for db_table_row in df_tables.itertuples():
         tabel_dfs = m.get_table_dfs(db_table_row, db_metadata)
@@ -122,14 +173,16 @@ def checking_tables_ddl(case_name):
 
 
 def test_get_table_dfs():
-    df_tables, *db_metadata = get_metadata_from_xlsx()
+    # df_tables, *db_metadata = get_metadata_from_xlsx()
+    df_tables, *db_metadata = get_metadata_from_files()
     db_table_row = df_tables.iloc[0]
     tabel_dfs = m.get_table_dfs(db_table_row, db_metadata)
     assert len(tabel_dfs) == 10
 
 
 def test_table_ddl():
-    df_tables, *db_metadata = get_metadata_from_xlsx()
+    # df_tables, *db_metadata = get_metadata_from_xlsx()
+    df_tables, *db_metadata = get_metadata_from_files()
     db_table_row = df_tables.iloc[0]
     tabel_dfs = m.get_table_dfs(db_table_row, db_metadata)
     table = m.Table(*tabel_dfs)
@@ -288,3 +341,4 @@ def test_tables_ddl__7__no_storage__no_part__no_comments():
 # print(df_tables_deserialized)
 
 # store_metadata_into_xlsx()
+# store_metadata_into_files()
