@@ -55,6 +55,22 @@ STORAGE    (
             BUFFER_POOL      default
             );
 
+CREATE INDEX extora_app.uk_sales ON extora_app.sales
+(sale_amount)
+LOGGING
+TABLESPACE extora_app_data
+PCTFREE    10
+INITRANS   2
+MAXTRANS   255
+STORAGE    (
+            INITIAL          64K
+            NEXT             1M
+            MINEXTENTS       1
+            MAXEXTENTS       UNLIMITED
+            PCTINCREASE      0
+            BUFFER_POOL      default
+            );
+
 
 ALTER TABLE extora_app.sales ADD (
   CONSTRAINT pk_sales
@@ -62,4 +78,10 @@ ALTER TABLE extora_app.sales ADD (
   (sale_id)
   DEFERRABLE INITIALLY IMMEDIATE
   USING INDEX extora_app.pk_sales
+  ENABLE VALIDATE,
+  CONSTRAINT uk_sales
+  UNIQUE
+  (sale_amount)
+  DEFERRABLE INITIALLY IMMEDIATE
+  USING INDEX extora_app.uk_sales
   ENABLE VALIDATE);

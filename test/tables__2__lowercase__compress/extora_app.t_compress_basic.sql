@@ -23,4 +23,8 @@ alter table extora_app.t_compress_basic add (
   constraint pk_t_compress_basic
   primary key
   (id, v1)
+  disable novalidate,
+  constraint uk_t_compress_basic
+  unique
+  (v2)
   disable novalidate);

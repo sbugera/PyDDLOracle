@@ -24,4 +24,8 @@ ALTER TABLE extora_app.t_compress_for_oltp ADD (
   CONSTRAINT pk_t_compress_for_oltp
   PRIMARY KEY
   (v1)
+  DISABLE VALIDATE,
+  CONSTRAINT uk_t_compress_for_oltp
+  UNIQUE
+  (v2)
   DISABLE VALIDATE);
