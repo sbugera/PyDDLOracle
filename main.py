@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 import pandas as pd
 import argparse
-import configparser
+import yaml
 import re
 import os
 from collections import namedtuple
@@ -11,6 +11,16 @@ import sql_queries as sql
 pd.options.mode.chained_assignment = None  # type: ignore # default='warn'
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
+
+
+def load_config(file_path):
+    with open(file_path, 'r') as stream:
+        try:
+            config = yaml.safe_load(stream)
+            return config
+        except yaml.YAMLError as exc:
+            print(f"Error loading YAML file: {exc}")
+            return None
 
 
 def get_dataframe_namedtuple(df, index):
@@ -775,8 +785,7 @@ def get_df_constraint_columns(engine, schema_name):
 
 
 def get_db_engine():
-    conf_con = configparser.ConfigParser()
-    conf_con.read('config_con.ini')
+    conf_con = load_config('config_con.yaml')
     db_username = conf_con['database']['username']
     db_password = conf_con['database']['password']
     db_host = conf_con['database']['host']
@@ -790,8 +799,7 @@ def get_db_schema_name(arg_schema_name=None):
     if arg_schema_name:
         username = arg_schema_name.upper()
     else:
-        conf_con = configparser.ConfigParser()
-        conf_con.read('config_con.ini')
+        conf_con = load_config('config_con.yaml')
         username = conf_con['database']['username'].upper()
     return username
 
@@ -855,8 +863,7 @@ def get_table_dfs(table_row, metadata):
 
 if __name__ == "__main__":
     args = get_args()
-    conf = configparser.ConfigParser()
-    conf.read('config.ini')
+    conf = load_config('config.yaml')
 
     schema_name = get_db_schema_name(args.schema_name)
     df_tables, *db_metadata = get_db_metadata(schema_name)
