@@ -76,6 +76,15 @@ def get_entity_name(template_name, object_type, object_owner, object_name):
     return entity_name
 
 
+def get_size_formatted(initial_extent):
+    if initial_extent >= 1024 * 1024 * 1024:
+        return str(int(initial_extent / 1024 / 1024 / 1024)) + "G"
+    if initial_extent >= 1024 * 1024:
+        return str(int(initial_extent / 1024 / 1024)) + "M"
+    if initial_extent >= 1024:
+        return str(int(initial_extent / 1024)) + "K"
+
+
 def get_full_storage(indentation, tablespace_name, pct_free, ini_trans, max_trans, min_extents, max_extents,
                      pct_increase, buffer_pool, flash_cache, cell_flash_cache, initial_extent=None, next_extent=None,
                      local_index=None):
@@ -95,7 +104,7 @@ def get_full_storage(indentation, tablespace_name, pct_free, ini_trans, max_tran
     storage_tmp = get_case_formatted(f"\n{indentation}STORAGE    (", "keyword")
     if initial_extent and str(initial_extent) not in ("nan", "DEFAULT", "-1"):
         statement = get_case_formatted(f"\n{indentation}            INITIAL          <:1>", "keyword")
-        storage_tmp += statement.replace("<:1>", str(int(initial_extent/1024/1024)) + "M")
+        storage_tmp += statement.replace("<:1>", get_size_formatted(initial_extent))
     if next_extent and str(next_extent) not in ("nan", "DEFAULT", "-1"):
         statement = get_case_formatted(f"\n{indentation}            NEXT             <:1>", "keyword")
         storage_tmp += statement.replace("<:1>", str(int(next_extent/1024/1024)) + "M")
@@ -369,7 +378,7 @@ class Index:
         self.index_columns = index_columns
 
     def get_index(self):
-        statement = get_case_formatted("\nCREATE<:1> INDEX <:2> ON <:3>\n(<:4>)", "keyword")
+        statement = get_case_formatted("CREATE<:1> INDEX <:2> ON <:3>\n(<:4>)", "keyword")
 
         index_type = ""
         if self.index_type == "BITMAP":
@@ -441,7 +450,9 @@ class Index:
 
 
 class Table:
-    def __init__(self, table, part_table, columns, comments, part_key_columns, tab_partitions, indexes, index_columns):
+    def __init__(self,
+                 table, part_table, columns, comments, part_key_columns, tab_partitions, indexes, index_columns,
+                 tab_constraints, tab_constraint_columns):
         self.max_column_name_length = None
         self.ddl = ""
         self.columns = columns
@@ -684,6 +695,14 @@ def get_df_index_columns(engine, schema_name):
     return pd.read_sql_query(sql.sql_index_columns, engine, params={'schema_name': schema_name})
 
 
+def get_df_constraints(engine, schema_name):
+    return pd.read_sql_query(sql.sql_constraints, engine, params={'schema_name': schema_name})
+
+
+def get_df_constraint_columns(engine, schema_name):
+    return pd.read_sql_query(sql.sql_constraint_columns, engine, params={'schema_name': schema_name})
+
+
 def get_db_engine():
     conf_con = configparser.ConfigParser()
     conf_con.read('config_con.ini')
@@ -722,7 +741,9 @@ def get_db_metadata(schema_name):
                    get_df_tab_partitions(engine, schema_name),
                    get_df_comments(engine, schema_name),
                    get_df_indexes(engine, schema_name),
-                   get_df_index_columns(engine, schema_name))
+                   get_df_index_columns(engine, schema_name),
+                   get_df_constraints(engine, schema_name),
+                   get_df_constraint_columns(engine, schema_name))
     engine.dispose()
     return db_metadata
 
@@ -734,7 +755,9 @@ def get_table_dfs(table_row, metadata):
      df_all_tab_partitions,
      df_all_comments,
      df_all_indexes,
-     df_all_index_columns) = metadata
+     df_all_index_columns,
+     df_all_constraints,
+     df_all_constraint_columns) = metadata
 
     df_tab_columns = df_all_tab_columns[df_all_tab_columns["table_name"] == table_row.table_name]
     df_part_tables = df_all_part_tables[df_all_part_tables["table_name"] == table_row.table_name]
@@ -743,6 +766,8 @@ def get_table_dfs(table_row, metadata):
     df_tab_comments = df_all_comments[df_all_comments["table_name"] == table_row.table_name]
     df_tab_indexes = df_all_indexes[df_all_indexes["table_name"] == table_row.table_name]
     df_tab_index_columns = df_all_index_columns[df_all_index_columns["table_name"] == table_row.table_name]
+    df_tab_constraints = df_all_constraints[df_all_constraints["table_name"] == table_row.table_name]
+    df_tab_constraint_columns = df_all_constraint_columns[df_all_constraint_columns["table_name"] == table_row.table_name]
     part_table_row = get_dataframe_namedtuple(df_part_tables, 0)
 
     return (table_row,
@@ -752,7 +777,9 @@ def get_table_dfs(table_row, metadata):
             df_part_key_columns,
             df_tab_partitions,
             df_tab_indexes,
-            df_tab_index_columns)
+            df_tab_index_columns,
+            df_tab_constraints,
+            df_tab_constraint_columns)
 
 
 if __name__ == "__main__":

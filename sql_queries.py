@@ -88,7 +88,6 @@ SELECT table_name,
        collation
   FROM sys.dba_tab_cols   c
  WHERE owner = :schema_name
-   AND ((user_generated = 'YES') OR (column_name = 'ORA_ARCHIVE_STATE'))
    AND EXISTS (SELECT NULL
                  FROM sys.dba_all_tables t
                 WHERE t.table_name = c.table_name
@@ -276,4 +275,42 @@ SELECT ic.index_owner,
    AND i.index_type <> 'LOB'
  WHERE ic.index_owner = :schema_name
  ORDER BY ic.index_owner, ic.index_name, ic.column_position
+"""
+
+sql_constraints = """
+SELECT c.table_name,
+       c.constraint_name,
+       c.status,
+       c.deferrable,
+       c.deferred,
+       c.validated,
+       c.index_name,
+       c.index_owner
+  FROM sys.dba_constraints c
+  LEFT JOIN sys.dba_recyclebin b
+    ON c.table_name = b.object_name
+   AND c.owner = b.owner
+   AND b.type = 'TABLE'
+ WHERE c.owner = :schema_name
+   AND b.object_name IS NULL
+   AND c.constraint_type = 'P'
+ ORDER BY c.table_name, c.constraint_type, c.constraint_name
+"""
+
+sql_constraint_columns = """
+SELECT cc.table_name,
+       cc.constraint_name,
+       cc.column_name
+  FROM sys.dba_constraints c
+  JOIN sys.dba_cons_columns cc
+    ON c.constraint_name = cc.constraint_name
+   AND c.owner = cc.owner
+  LEFT JOIN sys.dba_recyclebin b
+    ON c.table_name = b.object_name
+   AND c.owner = b.owner
+   AND b.type = 'TABLE'
+ WHERE c.owner = :schema_name
+   AND b.object_name IS NULL
+   AND c.constraint_type = 'P'
+ ORDER BY cc.table_name, cc.constraint_name, cc.column_name
 """
