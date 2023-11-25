@@ -6,26 +6,26 @@ import yaml
 
 conf = yaml.safe_load("""
 case:
-  keyword: uppercase
-  identifier: uppercase
+  keyword: "uppercase"
+  identifier: "uppercase"
 storage:
-  storage: with_storage
-  partitions: compact
-  collation: yes
-  logging: yes
-  compression: yes
-  cache: yes
-  result_cache: yes
+  storage: "with_storage"
+  partitions: "compact"
+  collation: "yes"
+  logging: "yes"
+  compression: "yes"
+  cache: "yes"
+  result_cache: "yes"
 comments:
-  comments: yes
-  empty_line_after_comment: no
-  vertical_alignment: yes
+  comments: "yes"
+  empty_line_after_comment: "no"
+  vertical_alignment: "yes"
 indexes:
-  indexes: yes
-  empty_line_after_index: no
+  indexes: "yes"
+  empty_line_after_index: "no"
 constraints:
-  constraints: yes
-  empty_line_after_constraint: no
+  constraints: "yes"
+  empty_line_after_constraint: "no"
 """)
 m.conf = conf
 
