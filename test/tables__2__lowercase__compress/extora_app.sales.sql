@@ -136,15 +136,17 @@ storage    (
 
 
 alter table extora_app.sales add (
+  constraint ck_sales
+  check (sale_amount > 0)
+  deferrable initially immediate
+  enable validate,
   constraint pk_sales
-  primary key
-  (sale_id)
+  primary key (sale_id)
   deferrable initially immediate
   using index extora_app.pk_sales
   enable validate,
   constraint uk_sales
-  unique
-  (sale_amount)
+  unique (sale_amount)
   deferrable initially immediate
   using index extora_app.uk_sales
   enable validate);

@@ -196,12 +196,10 @@ storage    (
 
 alter table extora_app.t_standard_datatypes add (
   constraint pk_t_standard_datatypes
-  primary key
-  (c_varchar2, c_number)
+  primary key (c_varchar2, c_number)
   using index extora_app.pk_t_standard_datatypes
   enable validate,
   constraint uk_t_standard_datatypes
-  unique
-  (c_char, c_number)
+  unique (c_char, c_number)
   using index extora_app.uk_t_standard_datatypes
   enable validate);

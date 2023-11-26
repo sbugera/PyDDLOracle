@@ -104,13 +104,14 @@ ALTER INDEX extora_app.idx_sales_simple_range_monitored
 
 
 ALTER TABLE extora_app.sales_simple_range ADD (
+  CONSTRAINT ck_sales_simple_range
+  CHECK (SALE_DATE = trunc(SALE_DATE))
+  ENABLE VALIDATE,
   CONSTRAINT pk_sales_simple_range
-  PRIMARY KEY
-  (sale_date)
+  PRIMARY KEY (sale_date)
   USING INDEX extora_app.idx_sales_simple_range_01
   ENABLE VALIDATE,
   CONSTRAINT uk_sales_simple_range
-  UNIQUE
-  (sale_date, amount)
+  UNIQUE (sale_date, amount)
   USING INDEX extora_app.idx_sales_simple_range_monitored
   ENABLE VALIDATE);

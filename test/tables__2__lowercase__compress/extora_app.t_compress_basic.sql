@@ -20,11 +20,12 @@ result_cache (mode default);
 
 
 alter table extora_app.t_compress_basic add (
+  constraint ck_t_compress_basic
+  check (v2 = upper(v2))
+  disable novalidate,
   constraint pk_t_compress_basic
-  primary key
-  (id, v1)
+  primary key (id, v1)
   disable novalidate,
   constraint uk_t_compress_basic
-  unique
-  (v2)
+  unique (v2)
   disable novalidate);
