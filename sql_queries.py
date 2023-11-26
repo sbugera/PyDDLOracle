@@ -158,23 +158,18 @@ SELECT table_name,
        partition_position,
        tablespace_name,
        logging,
-       nvl(ini_trans, -1)       ini_trans,
-       nvl(max_trans, -1)       max_trans,
-       nvl(initial_extent, -1) initial_extent,
-       nvl(next_extent, -1)     next_extent,
-       nvl(min_extent, -1)      min_extent,
-       nvl(max_extent, -1)      max_extent,
-       nvl(pct_increase, -1)    pct_increase,
-       nvl(pct_free, -1)        pct_free,
-       nvl(pct_used, -1)        pct_used,
-       nvl(freelists, -1)       freelists,
-       nvl(freelist_groups, -1) freelist_groups,
+       nvl(ini_trans, -1)       AS ini_trans,
+       nvl(max_trans, -1)       AS max_trans,
+       nvl(initial_extent, -1)  AS initial_extent,
+       nvl(next_extent, -1)     AS next_extent,
+       nvl(min_extent, -1)      AS min_extent,
+       nvl(max_extent, -1)      AS max_extent,
+       nvl(pct_increase, -1)    AS pct_increase,
+       nvl(pct_free, -1)        AS pct_free,
+       nvl(pct_used, -1)        AS pct_used,
+       nvl(freelists, -1)       AS freelists,
+       nvl(freelist_groups, -1) AS freelist_groups,
        buffer_pool,
-       last_analyzed,
-       nvl(num_rows, -1)        num_rows,
-       nvl(blocks, -1)          blocks,
-       nvl(empty_blocks, -1)    empty_blocks,
-       nvl(avg_space, -1)       avg_space,
        subpartition_count,
        compression,
        compress_for,
@@ -281,6 +276,7 @@ sql_constraints = """
 SELECT c.table_name,
        c.constraint_name,
        c.constraint_type,
+       c.search_condition,
        c.status,
        c.deferrable,
        c.deferred,
@@ -294,7 +290,8 @@ SELECT c.table_name,
    AND b.type = 'TABLE'
  WHERE c.owner = :schema_name
    AND b.object_name IS NULL
-   AND c.constraint_type IN ('P', 'U')
+   AND c.constraint_type IN ('P', 'U', 'C')
+   AND (c.search_condition_vc IS NULL OR c.search_condition_vc NOT LIKE '"%" IS NOT NULL')
  ORDER BY c.table_name, c.constraint_type, c.constraint_name
 """
 

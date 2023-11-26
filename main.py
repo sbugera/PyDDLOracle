@@ -467,6 +467,7 @@ class Constraint:
     def __init__(self, constraint_row, constraint_columns):
         self.constraint_name = constraint_row.constraint_name
         self.constraint_type = constraint_row.constraint_type
+        self.search_condition = constraint_row.search_condition
         self.status = constraint_row.status
         self.deferrable = constraint_row.deferrable
         self.deferred = constraint_row.deferred
@@ -477,18 +478,26 @@ class Constraint:
 
     def get_constraint(self):
         constraint = ""
-        if self.constraint_type == "P":
-            statement = get_case_formatted("  CONSTRAINT <:1>\n  PRIMARY KEY\n  (<:2>)", "keyword")
-        elif self.constraint_type == "U":
-            statement = get_case_formatted("  CONSTRAINT <:1>\n  UNIQUE\n  (<:2>)", "keyword")
         constraint_name = get_case_formatted(self.constraint_name, "identifier")
-        constraint_columns = ""
 
-        for i, constraint_column in enumerate(self.constraint_columns.itertuples()):
-            constraint_columns += get_case_formatted(constraint_column.column_name, "identifier")
-            if i != len(self.constraint_columns) - 1:
-                constraint_columns += ", "
-        constraint += statement.replace("<:1>", constraint_name).replace("<:2>", constraint_columns)
+        if self.constraint_type == "P":
+            statement = get_case_formatted("  CONSTRAINT <:1>\n  PRIMARY KEY (<:2>)", "keyword")
+        elif self.constraint_type == "U":
+            statement = get_case_formatted("  CONSTRAINT <:1>\n  UNIQUE (<:2>)", "keyword")
+        elif self.constraint_type == "C":
+            statement = get_case_formatted("  CONSTRAINT <:1>\n  CHECK (<:2>)", "keyword")
+        else:
+            statement = ""
+
+        if self.constraint_type == "C":
+            constraint += statement.replace("<:1>", constraint_name).replace("<:2>", self.search_condition)
+        else:
+            constraint_columns = ""
+            for i, constraint_column in enumerate(self.constraint_columns.itertuples()):
+                constraint_columns += get_case_formatted(constraint_column.column_name, "identifier")
+                if i != len(self.constraint_columns) - 1:
+                    constraint_columns += ", "
+            constraint += statement.replace("<:1>", constraint_name).replace("<:2>", constraint_columns)
 
         if self.deferrable == "DEFERRABLE":
             constraint += get_case_formatted(f"\n  DEFERRABLE INITIALLY {self.deferred}", "keyword")
@@ -499,13 +508,11 @@ class Constraint:
             index_name = get_case_formatted(f"{self.index_name}", "identifier")
             constraint += statement.replace("<:1>", index_owner).replace("<:2>", index_name)
 
-        status = ""
         if self.status == "ENABLED":
             status = get_case_formatted("ENABLE", "keyword")
         else:
             status = get_case_formatted("DISABLE", "keyword")
 
-        validate = ""
         if self.validated == "VALIDATED":
             validate = get_case_formatted("VALIDATE", "keyword")
         else:

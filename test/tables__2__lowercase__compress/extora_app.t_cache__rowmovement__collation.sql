@@ -36,7 +36,6 @@ storage    (
 
 alter table extora_app.t_cache__rowmovement__collation add (
   constraint pk_t_cache__rowmovement__collation
-  primary key
-  (id)
+  primary key (id)
   using index extora_app.pk_t_cache__rowmovement__collation
   enable validate);

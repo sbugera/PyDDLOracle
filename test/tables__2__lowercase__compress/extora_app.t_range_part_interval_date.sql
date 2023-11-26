@@ -88,15 +88,17 @@ storage    (
 
 
 alter table extora_app.t_range_part_interval_date add (
+  constraint "ck_lowercase_T_RANGE_PART_INTERVAL_DATE"
+  check (amount BETWEEN 1 and 1000000 )
+  deferrable initially deferred
+  enable validate,
   constraint "pk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk"
-  primary key
-  (sale_date, region)
+  primary key (sale_date, region)
   deferrable initially deferred
   using index extora_app."pk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk"
   enable validate,
   constraint "uk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk"
-  unique
-  (amount)
+  unique (amount)
   deferrable initially deferred
   using index extora_app."uk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk"
   enable validate);

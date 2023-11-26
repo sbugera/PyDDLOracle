@@ -20,11 +20,12 @@ result_cache (mode default);
 
 
 alter table extora_app.t_compress_for_oltp add (
+  constraint ck_t_compress_for_oltp
+  check ( V2 IN ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J') )
+  disable validate,
   constraint pk_t_compress_for_oltp
-  primary key
-  (v1)
+  primary key (v1)
   disable validate,
   constraint uk_t_compress_for_oltp
-  unique
-  (v2)
+  unique (v2)
   disable validate);

@@ -200,12 +200,10 @@ STORAGE    (
 
 ALTER TABLE extora_app.t_standard_datatypes ADD (
   CONSTRAINT pk_t_standard_datatypes
-  PRIMARY KEY
-  (c_varchar2, c_number)
+  PRIMARY KEY (c_varchar2, c_number)
   USING INDEX extora_app.pk_t_standard_datatypes
   ENABLE VALIDATE,
   CONSTRAINT uk_t_standard_datatypes
-  UNIQUE
-  (c_char, c_number)
+  UNIQUE (c_char, c_number)
   USING INDEX extora_app.uk_t_standard_datatypes
   ENABLE VALIDATE);

@@ -73,15 +73,17 @@ STORAGE    (
 
 
 ALTER TABLE extora_app.sales ADD (
+  CONSTRAINT ck_sales
+  CHECK (sale_amount > 0)
+  DEFERRABLE INITIALLY IMMEDIATE
+  ENABLE VALIDATE,
   CONSTRAINT pk_sales
-  PRIMARY KEY
-  (sale_id)
+  PRIMARY KEY (sale_id)
   DEFERRABLE INITIALLY IMMEDIATE
   USING INDEX extora_app.pk_sales
   ENABLE VALIDATE,
   CONSTRAINT uk_sales
-  UNIQUE
-  (sale_amount)
+  UNIQUE (sale_amount)
   DEFERRABLE INITIALLY IMMEDIATE
   USING INDEX extora_app.uk_sales
   ENABLE VALIDATE);

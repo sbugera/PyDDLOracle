@@ -80,12 +80,10 @@ storage    (
 
 alter table extora_app.t_range_part_interval_number add (
   constraint pk_t_range_part_interval_number
-  primary key
-  (sale_id)
+  primary key (sale_id)
   using index extora_app.uq_t_range_part_interval_number
   enable validate,
   constraint uk_t_range_part_interval_number
-  unique
-  (region)
+  unique (region)
   using index extora_app.uk_t_range_part_interval_number
   enable validate);

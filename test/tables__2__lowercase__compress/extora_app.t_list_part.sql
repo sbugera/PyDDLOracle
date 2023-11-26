@@ -90,7 +90,6 @@ storage    (
 
 alter table extora_app.t_list_part add (
   constraint pk_t_list_part
-  primary key
-  (sale_date)
+  primary key (sale_date)
   using index extora_app.pk_t_list_part
   enable validate);

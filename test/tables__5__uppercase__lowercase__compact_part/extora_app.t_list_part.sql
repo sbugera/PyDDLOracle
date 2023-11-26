@@ -96,7 +96,6 @@ STORAGE    (
 
 ALTER TABLE extora_app.t_list_part ADD (
   CONSTRAINT pk_t_list_part
-  PRIMARY KEY
-  (sale_date)
+  PRIMARY KEY (sale_date)
   USING INDEX extora_app.pk_t_list_part
   ENABLE VALIDATE);
