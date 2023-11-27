@@ -1,8 +1,9 @@
-create table EXTORA_APP.T_RANGE_PART_INTERVAL_DATE
+create table EXTORA_APP."t_lowercase_RANGE_PART_INTERVAL_DATE"
 (
-    SALE_DATE  date,
-    REGION     varchar2(50 byte),
-    AMOUNT     number
+    SALE_DATE        date,
+    REGION           varchar2(50 byte),
+    AMOUNT           number,
+    "Col_lowercase"  varchar2(10 byte) default 'test' not null
 )
 nocompress
 tablespace EXTORA_APP_DATA
@@ -56,3 +57,8 @@ interval (NUMTOYMINTERVAL(1, 'MONTH'))
 )
 nocache
 result_cache (mode default);
+
+
+comment on table EXTORA_APP."t_lowercase_RANGE_PART_INTERVAL_DATE" is 'Comment for table t_lowercase_RANGE_PART_INTERVAL_DATE';
+comment on column EXTORA_APP."t_lowercase_RANGE_PART_INTERVAL_DATE".SALE_DATE       is 'Column comment for SALES_DATE in t_lowercase_RANGE_PART_INTERVAL_DATE';
+comment on column EXTORA_APP."t_lowercase_RANGE_PART_INTERVAL_DATE"."Col_lowercase" is 'Column comment for "Col_lowercase" in t_lowercase_RANGE_PART_INTERVAL_DATE';
