@@ -185,6 +185,18 @@ STORAGE    (
             BUFFER_POOL      default
             );
 
+CREATE UNIQUE INDEX extora_app."T_STANDARD_DATATYPES_uk_02" ON extora_app.t_standard_datatypes
+("c_Camel_Case_Name       32 Chars")
+LOGGING
+TABLESPACE extora_app_data
+PCTFREE    10
+INITRANS   2
+MAXTRANS   255
+STORAGE    (
+            PCTINCREASE      0
+            BUFFER_POOL      default
+            );
+
 CREATE UNIQUE INDEX extora_app.uk_t_standard_datatypes ON extora_app.t_standard_datatypes
 (c_char, c_number)
 LOGGING
@@ -202,6 +214,10 @@ ALTER TABLE extora_app.t_standard_datatypes ADD (
   CONSTRAINT pk_t_standard_datatypes
   PRIMARY KEY (c_varchar2, c_number)
   USING INDEX extora_app.pk_t_standard_datatypes
+  ENABLE VALIDATE,
+  CONSTRAINT "T_STANDARD_DATATYPES_uk_02"
+  UNIQUE ("c_Camel_Case_Name       32 Chars")
+  USING INDEX extora_app."T_STANDARD_DATATYPES_uk_02"
   ENABLE VALIDATE,
   CONSTRAINT uk_t_standard_datatypes
   UNIQUE (c_char, c_number)

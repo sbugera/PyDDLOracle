@@ -1,8 +1,9 @@
-CREATE TABLE extora_app.t_range_part_interval_date
+CREATE TABLE extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE"
 (
-    sale_date  DATE,
-    region     VARCHAR2(50 BYTE),
-    amount     NUMBER
+    sale_date        DATE,
+    region           VARCHAR2(50 BYTE),
+    amount           NUMBER,
+    "Col_lowercase"  VARCHAR2(10 BYTE) DEFAULT 'test' NOT NULL
 )
 NOCOMPRESS
 TABLESPACE extora_app_data
@@ -30,7 +31,14 @@ NOCACHE
 RESULT_CACHE (MODE DEFAULT);
 
 
-CREATE INDEX extora_app."pk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk" ON extora_app.t_range_part_interval_date
+COMMENT ON TABLE extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE" IS 'Comment for table t_lowercase_RANGE_PART_INTERVAL_DATE';
+
+COMMENT ON COLUMN extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE".sale_date IS 'Column comment for SALES_DATE in t_lowercase_RANGE_PART_INTERVAL_DATE';
+
+COMMENT ON COLUMN extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE"."Col_lowercase" IS 'Column comment for "Col_lowercase" in t_lowercase_RANGE_PART_INTERVAL_DATE';
+
+
+CREATE INDEX extora_app."pk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk" ON extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE"
 (sale_date, region)
 LOGGING
 TABLESPACE extora_app_index
@@ -46,7 +54,7 @@ STORAGE    (
             BUFFER_POOL      default
             );
 
-CREATE INDEX extora_app."uk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk" ON extora_app.t_range_part_interval_date
+CREATE INDEX extora_app."uk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk" ON extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE"
 (amount)
 LOGGING
 TABLESPACE extora_app_index
@@ -63,7 +71,7 @@ STORAGE    (
             );
 
 
-ALTER TABLE extora_app.t_range_part_interval_date ADD (
+ALTER TABLE extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE" ADD (
   CONSTRAINT "ck_lowercase_T_RANGE_PART_INTERVAL_DATE"
   CHECK (amount BETWEEN 1 and 1000000 )
   DEFERRABLE INITIALLY DEFERRED

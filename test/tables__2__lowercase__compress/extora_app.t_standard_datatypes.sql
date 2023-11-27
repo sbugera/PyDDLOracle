@@ -181,6 +181,18 @@ storage    (
             buffer_pool      default
             );
 
+create unique index extora_app."T_STANDARD_DATATYPES_uk_02" on extora_app.t_standard_datatypes
+("c_Camel_Case_Name       32 Chars")
+logging
+tablespace extora_app_data
+pctfree    10
+initrans   2
+maxtrans   255
+storage    (
+            pctincrease      0
+            buffer_pool      default
+            );
+
 create unique index extora_app.uk_t_standard_datatypes on extora_app.t_standard_datatypes
 (c_char, c_number)
 logging
@@ -198,6 +210,10 @@ alter table extora_app.t_standard_datatypes add (
   constraint pk_t_standard_datatypes
   primary key (c_varchar2, c_number)
   using index extora_app.pk_t_standard_datatypes
+  enable validate,
+  constraint "T_STANDARD_DATATYPES_uk_02"
+  unique ("c_Camel_Case_Name       32 Chars")
+  using index extora_app."T_STANDARD_DATATYPES_uk_02"
   enable validate,
   constraint uk_t_standard_datatypes
   unique (c_char, c_number)

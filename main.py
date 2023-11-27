@@ -144,6 +144,11 @@ def get_full_storage(indentation, tablespace_name, pct_free, ini_trans, max_tran
     return storage
 
 
+def get_object_name(object_owner, object_name, config_name_for_upper):
+    return (get_case_formatted(object_owner, config_name_for_upper) + "."
+            + get_case_formatted(object_name, config_name_for_upper))
+
+
 class Column:
     def __init__(self, column_row, max_column_name_length):
         self.max_column_name_length = max_column_name_length
@@ -167,8 +172,11 @@ class Column:
         return padded_column_name
 
     def get_data_type(self):
-        data_type = get_case_formatted(self.data_type, "keyword") if pd.isnull(
-            self.data_type_owner) else get_case_formatted(f"{self.data_type_owner}.{self.data_type}", "keyword")
+        if self.data_type_owner and str(self.data_type_owner) != "None" and str(self.data_type_owner) != "nan":
+            data_type = get_object_name(self.data_type_owner, self.data_type, "keyword")
+        else:
+            data_type = get_case_formatted(self.data_type, "keyword")
+
         if data_type.upper() == "NUMBER":
             if not pd.isnull(self.data_precision) and self.data_scale > 0:
                 data_type = f"{data_type}({int(self.data_precision)},{int(self.data_scale)})"
@@ -388,7 +396,7 @@ class Index:
         self.index_columns = index_columns
 
     def get_index(self):
-        statement = get_case_formatted("\nCREATE<:1> INDEX <:2.1>.<:2.2> ON <:3.1>.<:3.2>\n(<:4>)", "keyword")
+        statement = get_case_formatted("\nCREATE<:1> INDEX <:2> ON <:3>\n(<:4>)", "keyword")
 
         index_type = ""
         if self.index_type == "BITMAP":
@@ -396,10 +404,8 @@ class Index:
         if self.uniqueness == "UNIQUE":
             index_type += get_case_formatted(" UNIQUE", "keyword")
 
-        index_owner = get_case_formatted(f"{self.owner}", "identifier")
-        index_name = get_case_formatted(f"{self.index_name}", "identifier")
-        table_owner = get_case_formatted(f"{self.table_owner}", "identifier")
-        table_name = get_case_formatted(f"{self.table_name}", "identifier")
+        index_name = get_object_name(self.owner, self.index_name, "identifier")
+        table_name = get_object_name(self.table_owner, self.table_name, "identifier")
 
         index_columns = ""
         for i, index_column in enumerate(self.index_columns.itertuples()):
@@ -409,10 +415,8 @@ class Index:
 
         index = (statement
                  .replace("<:1>", index_type)
-                 .replace("<:2.1>", index_owner)
-                 .replace("<:2.2>", index_name)
-                 .replace("<:3.1>", table_owner)
-                 .replace("<:3.2>", table_name)
+                 .replace("<:2>", index_name)
+                 .replace("<:3>", table_name)
                  .replace("<:4>", index_columns))
 
         logging = ""
@@ -457,8 +461,8 @@ class Index:
             index += "\n"
 
         if self.monitoring == "YES":
-            statement = get_case_formatted("\nALTER INDEX <:1>.<:2>\n  MONITORING USAGE;\n", "keyword")
-            index += statement.replace("<:1>", index_owner).replace("<:2>", index_name)
+            statement = get_case_formatted("\nALTER INDEX <:1>\n  MONITORING USAGE;\n", "keyword")
+            index += statement.replace("<:1>", index_name)
 
         return index
 
@@ -503,10 +507,9 @@ class Constraint:
             constraint += get_case_formatted(f"\n  DEFERRABLE INITIALLY {self.deferred}", "keyword")
 
         if self.index_name and str(self.index_name) not in ("nan", "None"):
-            statement = get_case_formatted("\n  USING INDEX <:1>.<:2>", "keyword")
-            index_owner = get_case_formatted(f"{self.index_owner}", "identifier")
-            index_name = get_case_formatted(f"{self.index_name}", "identifier")
-            constraint += statement.replace("<:1>", index_owner).replace("<:2>", index_name)
+            statement = get_case_formatted("\n  USING INDEX <:1>", "keyword")
+            index_name = get_object_name(self.index_owner, self.index_name, "identifier")
+            constraint += statement.replace("<:1>", index_name)
 
         if self.status == "ENABLED":
             status = get_case_formatted("ENABLE", "keyword")
@@ -540,6 +543,7 @@ class Table:
         self.tab_partitions = tab_partitions
         self.owner = table.owner
         self.table_name = table.table_name
+        self.table_full_name = None
         self.default_collation = table.default_collation
         self.logging = table.logging
         self.cache = table.cache
@@ -669,8 +673,7 @@ class Table:
         if conf["constraints"]["constraints"] == "yes":
             if len(self.tab_constraints) > 0:
                 statement = get_case_formatted("\nALTER TABLE <:1> ADD (\n", "keyword")
-                table_name = get_case_formatted(f"{self.owner}.{self.table_name}", "identifier")
-                constraints += statement.replace("<:1>", table_name)
+                constraints += statement.replace("<:1>", self.table_full_name)
             for i, constraint_row in enumerate(self.tab_constraints.itertuples()):
                 constraint_columns = self.tab_constraint_columns[
                     self.tab_constraint_columns["constraint_name"] == constraint_row.constraint_name]
@@ -687,28 +690,30 @@ class Table:
         end_line_char = ""
         if conf["comments"]["empty_line_after_comment"] == "yes":
             end_line_char = "\n"
-        max_column_name_length = self.max_column_name_length + len(self.owner) + len(self.table_name) + 2
         if conf["comments"]["comments"] == "yes":
             for comment_row in self.comments.itertuples():
                 if not comment_row.column_name or str(comment_row.column_name) == "nan":
                     statement = get_case_formatted(f"\nCOMMENT ON TABLE <:1> IS '<:2>';{end_line_char}", "keyword")
-                    table_name = get_case_formatted(f"{self.owner}.{self.table_name}", "identifier")
-                    comments += statement.replace("<:1>", table_name).replace("<:2>", comment_row.comments)
+                    comments += statement.replace("<:1>", self.table_full_name).replace("<:2>", comment_row.comments)
                 else:
-                    statement = get_case_formatted(f"\nCOMMENT ON COLUMN <:1> IS '<:2>';{end_line_char}", "keyword")
-                    column_name = get_case_formatted(f"{self.owner}.{self.table_name}.{comment_row.column_name}", "identifier")
+                    statement = get_case_formatted(f"\nCOMMENT ON COLUMN <:1>.<:2> IS '<:3>';{end_line_char}", "keyword")
+                    column_name = get_case_formatted(comment_row.column_name, "identifier")
                     if conf["comments"]["vertical_alignment"] == "yes":
-                        column_name = column_name.ljust(max_column_name_length)
-                    comments += statement.replace("<:1>", column_name).replace("<:2>", comment_row.comments)
+                        # todo: Vertical alignment consider maximum column name length only for columns with comments
+                        column_name = column_name.ljust(self.max_column_name_length)
+                    comments += (statement
+                                 .replace("<:1>", self.table_full_name)
+                                 .replace("<:2>", column_name)
+                                 .replace("<:3>", comment_row.comments))
         if comments != "":
             comments = comments+"\n"
         return comments
 
     def generate_ddl(self):
-        table_name = get_case_formatted(f"{self.owner}.{self.table_name}", "identifier")
+        self.table_full_name = get_object_name(self.owner, self.table_name, "identifier")
         self.max_column_name_length = self.get_maximum_column_name_length()
-
-        ddl = f"""{get_case_formatted("CREATE TABLE", "keyword")} {table_name}\n(\n"""
+        statement = get_case_formatted("CREATE TABLE <:1>\n(\n", "keyword")
+        ddl = statement.replace("<:1>", self.table_full_name)
 
         for i, column_row in enumerate(self.columns.itertuples()):
             column = Column(column_row, self.max_column_name_length)
