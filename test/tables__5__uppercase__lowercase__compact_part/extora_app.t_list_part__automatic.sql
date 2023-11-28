@@ -46,5 +46,4 @@ PARTITION BY LIST (country_code)
                 BUFFER_POOL      default
                 )
 )
-NOCACHE
 RESULT_CACHE (MODE DEFAULT);

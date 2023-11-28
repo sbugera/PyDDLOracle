@@ -17,5 +17,4 @@ storage    (
             )
 logging
 compress for oltp
-nocache
-result_cache (mode default);
+nocache;

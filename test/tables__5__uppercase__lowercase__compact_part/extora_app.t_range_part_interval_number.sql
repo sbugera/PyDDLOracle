@@ -31,7 +31,6 @@ INTERVAL (1000)
                 BUFFER_POOL      default
                 )
 )
-NOCACHE
 RESULT_CACHE (MODE DEFAULT);
 
 

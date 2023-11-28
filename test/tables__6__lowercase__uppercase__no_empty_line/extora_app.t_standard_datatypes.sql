@@ -92,5 +92,4 @@ storage    (
             )
 logging
 nocompress
-nocache
-result_cache (mode default);
+nocache;

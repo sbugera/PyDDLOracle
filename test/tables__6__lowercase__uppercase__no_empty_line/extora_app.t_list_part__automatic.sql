@@ -74,5 +74,4 @@ partition by list (COUNTRY_CODE)
                 buffer_pool      DEFAULT
                 )
 )
-nocache
-result_cache (mode default);
+nocache;

@@ -65,5 +65,4 @@ partition by range (SALE_DATE)
                 buffer_pool      DEFAULT
                 )
 )
-nocache
-result_cache (mode default);
+nocache;

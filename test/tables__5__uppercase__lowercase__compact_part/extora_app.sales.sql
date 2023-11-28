@@ -27,7 +27,6 @@ INTERVAL (NUMTOYMINTERVAL(1, 'MONTH'))
                 BUFFER_POOL      default
                 )
 )
-NOCACHE
 RESULT_CACHE (MODE DEFAULT);
 
 

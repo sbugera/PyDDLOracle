@@ -56,8 +56,7 @@ interval (NUMTOYMINTERVAL(1, 'MONTH'))
                 buffer_pool      DEFAULT
                 )
 )
-nocache
-result_cache (mode default);
+nocache;
 
 
 comment on table EXTORA_APP."t_lowercase_RANGE_PART_INTERVAL_DATE" is 'Comment for table t_lowercase_RANGE_PART_INTERVAL_DATE';

@@ -45,5 +45,4 @@ interval (1000)
                 buffer_pool      DEFAULT
                 )
 )
-nocache
-result_cache (mode default);
+nocache;

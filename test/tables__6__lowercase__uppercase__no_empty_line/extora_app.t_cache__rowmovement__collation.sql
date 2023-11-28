@@ -19,5 +19,4 @@ storage    (
 logging
 nocompress
 cache
-result_cache (mode force)
 enable row movement;

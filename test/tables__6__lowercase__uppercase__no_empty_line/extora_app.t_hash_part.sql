@@ -17,5 +17,4 @@ storage    (
 partition by hash (EMPLOYEE_ID)
     partitions 4
     store in (EXTORA_APP_DATA, EXTORA_APP_DATA, EXTORA_APP_DATA, EXTORA_APP_DATA)
-nocache
-result_cache (mode default);
+nocache;

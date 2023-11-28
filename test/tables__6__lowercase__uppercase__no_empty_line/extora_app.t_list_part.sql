@@ -74,5 +74,4 @@ partition by list (REGION)
                 buffer_pool      DEFAULT
                 )
 )
-nocache
-result_cache (mode default);
+nocache;

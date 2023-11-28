@@ -75,5 +75,4 @@ PARTITION BY LIST (region, product_category)
                 BUFFER_POOL      default
                 )
 )
-NOCACHE
 RESULT_CACHE (MODE DEFAULT);

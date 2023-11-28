@@ -17,5 +17,4 @@ storage    (
             )
 logging
 compress basic
-nocache
-result_cache (mode default);
+nocache;
