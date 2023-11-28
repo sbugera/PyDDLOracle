@@ -19,14 +19,8 @@ comments:
   empty_line_after_comment: "no" # yes|no
   vertical_alignment: "yes" # yes|no
 
-indexes:
-  indexes: "yes" # yes|no
-  empty_line_after_index: "no" # yes|no
-
-constraints:
-  constraints: "yes" # yes|no
-  empty_line_after_constraint: "no" # yes|no
-
+indexes: "yes" # yes|no
+constraints: "yes" # yes|no
 prompts: "yes" # yes|no
 
 directory:

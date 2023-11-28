@@ -463,9 +463,7 @@ class Index:
         if self.index_type == "NORMAL/REV":
             index += get_case_formatted("\nREVERSE", "keyword")
 
-        index += ";"
-        if conf["indexes"]["empty_line_after_index"] == "yes":
-            index += "\n"
+        index += ";\n"
 
         if self.monitoring == "YES":
             statement = get_case_formatted("\nALTER INDEX <:1>\n  MONITORING USAGE;\n", "keyword")
@@ -666,7 +664,7 @@ class Table:
 
     def get_indexes(self):
         indexes = ""
-        if conf["indexes"]["indexes"] == "yes":
+        if conf["indexes"] == "yes":
             for index_row in self.indexes.itertuples():
                 index_columns = self.index_columns[self.index_columns["index_name"] == index_row.index_name]
                 index = Index(index_row, index_columns)
@@ -677,7 +675,7 @@ class Table:
 
     def get_constraints(self):
         constraints = ""
-        if conf["constraints"]["constraints"] == "yes":
+        if conf["constraints"] == "yes":
             if len(self.tab_constraints) > 0:
                 statement = get_case_formatted("\nALTER TABLE <:1> ADD (\n", "keyword")
                 constraints += statement.replace("<:1>", self.table_full_name)
