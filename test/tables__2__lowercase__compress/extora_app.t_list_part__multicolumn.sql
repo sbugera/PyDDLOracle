@@ -1,3 +1,4 @@
+prompt Table extora_app.t_list_part__multicolumn
 create table extora_app.t_list_part__multicolumn
 (
     sale_date         date,

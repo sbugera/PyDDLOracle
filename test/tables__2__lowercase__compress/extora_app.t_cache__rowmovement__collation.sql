@@ -1,3 +1,4 @@
+prompt Table extora_app.t_cache__rowmovement__collation
 create table extora_app.t_cache__rowmovement__collation
 (
     id  number not null

@@ -1,3 +1,4 @@
+prompt Table extora_app.sales_simple_range
 create table extora_app.sales_simple_range
 (
     sale_date  date not null,

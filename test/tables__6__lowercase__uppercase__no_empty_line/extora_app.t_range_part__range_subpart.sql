@@ -1,3 +1,4 @@
+prompt Table EXTORA_APP.T_RANGE_PART__RANGE_SUBPART
 create table EXTORA_APP.T_RANGE_PART__RANGE_SUBPART
 (
     ID      number,

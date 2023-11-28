@@ -1,3 +1,4 @@
+prompt Table EXTORA_APP.T_LIST_PART__MULTICOLUMN
 create table EXTORA_APP.T_LIST_PART__MULTICOLUMN
 (
     SALE_DATE         date,

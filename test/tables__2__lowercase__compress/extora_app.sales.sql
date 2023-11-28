@@ -1,3 +1,4 @@
+prompt Table extora_app.sales
 create table extora_app.sales
 (
     sale_id      number,

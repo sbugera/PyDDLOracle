@@ -1,3 +1,4 @@
+PROMPT Table extora_app.t_list_part
 CREATE TABLE extora_app.t_list_part
 (
     sale_date  DATE NOT NULL,

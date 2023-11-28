@@ -1,3 +1,4 @@
+prompt Table EXTORA_APP.T_HASH_PART
 create table EXTORA_APP.T_HASH_PART
 (
     EMPLOYEE_ID  number,

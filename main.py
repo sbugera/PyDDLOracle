@@ -149,6 +149,13 @@ def get_object_name(object_owner, object_name, config_name_for_upper):
             + get_case_formatted(object_name, config_name_for_upper))
 
 
+def get_prompt(prompt_text, object_name):
+    if conf["prompts"] == "yes":
+        return f"""{get_case_formatted("PROMPT", "keyword")} {prompt_text}{object_name}\n"""
+    else:
+        return ""
+
+
 class Column:
     def __init__(self, column_row, max_column_name_length):
         self.max_column_name_length = max_column_name_length
@@ -712,8 +719,8 @@ class Table:
     def generate_ddl(self):
         self.table_full_name = get_object_name(self.owner, self.table_name, "identifier")
         self.max_column_name_length = self.get_maximum_column_name_length()
-        statement = get_case_formatted("CREATE TABLE <:1>\n(\n", "keyword")
-        ddl = statement.replace("<:1>", self.table_full_name)
+        statement = get_case_formatted(f"CREATE TABLE <:1>\n(\n", "keyword")
+        ddl = get_prompt("Table ", self.table_full_name) + statement.replace("<:1>", self.table_full_name)
 
         for i, column_row in enumerate(self.columns.itertuples()):
             column = Column(column_row, self.max_column_name_length)

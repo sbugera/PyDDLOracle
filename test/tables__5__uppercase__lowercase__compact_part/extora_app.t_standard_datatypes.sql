@@ -1,3 +1,4 @@
+PROMPT Table extora_app.t_standard_datatypes
 CREATE TABLE extora_app.t_standard_datatypes
 (
     c_varchar2                          VARCHAR2(10 BYTE) NOT NULL,

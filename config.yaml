@@ -27,6 +27,8 @@ constraints:
   constraints: "yes" # yes|no
   empty_line_after_constraint: "no" # yes|no
 
+prompts: "yes" # yes|no
+
 directory:
   # Examples:
   # ./tables/{object_owner}             => ./tables/my_schema

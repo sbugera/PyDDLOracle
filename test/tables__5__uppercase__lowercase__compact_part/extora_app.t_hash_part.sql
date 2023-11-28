@@ -1,3 +1,4 @@
+PROMPT Table extora_app.t_hash_part
 CREATE TABLE extora_app.t_hash_part
 (
     employee_id  NUMBER,

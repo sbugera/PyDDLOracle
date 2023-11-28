@@ -1,3 +1,4 @@
+prompt Table EXTORA_APP.T_LIST_PART__AUTOMATIC
 create table EXTORA_APP.T_LIST_PART__AUTOMATIC
 (
     ID            number,

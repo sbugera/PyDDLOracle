@@ -1,3 +1,4 @@
+PROMPT Table extora_app.sales
 CREATE TABLE extora_app.sales
 (
     sale_id      NUMBER,

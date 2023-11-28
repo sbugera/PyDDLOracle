@@ -1,3 +1,4 @@
+PROMPT Table extora_app.t_range_part_interval_number
 CREATE TABLE extora_app.t_range_part_interval_number
 (
     sale_id  NUMBER NOT NULL,

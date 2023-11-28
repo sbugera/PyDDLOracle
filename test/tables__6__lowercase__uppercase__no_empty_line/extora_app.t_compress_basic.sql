@@ -1,3 +1,4 @@
+prompt Table EXTORA_APP.T_COMPRESS_BASIC
 create table EXTORA_APP.T_COMPRESS_BASIC
 (
     ID  number,

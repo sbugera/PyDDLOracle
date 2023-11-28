@@ -1,3 +1,4 @@
+PROMPT Table extora_app.t_compress_basic
 CREATE TABLE extora_app.t_compress_basic
 (
     id  NUMBER,

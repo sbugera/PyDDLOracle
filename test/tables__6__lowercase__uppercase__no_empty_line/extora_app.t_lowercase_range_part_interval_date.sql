@@ -1,3 +1,4 @@
+prompt Table EXTORA_APP."t_lowercase_RANGE_PART_INTERVAL_DATE"
 create table EXTORA_APP."t_lowercase_RANGE_PART_INTERVAL_DATE"
 (
     SALE_DATE        date,

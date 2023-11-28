@@ -1,3 +1,4 @@
+prompt Table extora_app.t_compress_for_oltp
 create table extora_app.t_compress_for_oltp
 (
     id  number,
