@@ -217,12 +217,12 @@ def test_tables_ddl__3__no_storage():
     m.conf["storage"]["compression"] = "yes"
     m.conf["storage"]["cache"] = "no"
     m.conf["storage"]["result_cache"] = "yes"
-    m.conf["comments"]["comments"] = "yes"
+    m.conf["comments"]["comments"] = "no"
     m.conf["comments"]["empty_line_after_comment"] = "yes"
     m.conf["comments"]["vertical_alignment"] = "yes"
     m.conf["indexes"] = "yes"
     m.conf["constraints"] = "yes"
-    m.conf["prompts"] = "yes"
+    m.conf["prompts"] = "no"
     checking_tables_ddl("3__no_storage")
 
 
