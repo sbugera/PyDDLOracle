@@ -20,12 +20,9 @@ comments:
   comments: "yes"
   empty_line_after_comment: "no"
   vertical_alignment: "yes"
-indexes:
-  indexes: "yes"
-  empty_line_after_index: "no"
-constraints:
-  constraints: "yes"
-  empty_line_after_constraint: "no"
+indexes: "yes"
+constraints: "yes"
+prompts: "yes"
 """)
 m.conf = conf
 
@@ -185,9 +182,9 @@ def test_tables_ddl__1__uppercase__logging():
     m.conf["comments"]["comments"] = "yes"
     m.conf["comments"]["empty_line_after_comment"] = "yes"
     m.conf["comments"]["vertical_alignment"] = "yes"
-    m.conf["indexes"]["indexes"] = "yes"
-    m.conf["constraints"]["constraints"] = "yes"
-    m.conf["indexes"]["empty_line_after_index"] = "yes"
+    m.conf["indexes"] = "yes"
+    m.conf["constraints"] = "yes"
+    m.conf["prompts"] = "yes"
     checking_tables_ddl("1__uppercase__logging")
 
 
@@ -204,9 +201,9 @@ def test_tables_ddl__2__lowercase__compress():
     m.conf["comments"]["comments"] = "yes"
     m.conf["comments"]["empty_line_after_comment"] = "yes"
     m.conf["comments"]["vertical_alignment"] = "yes"
-    m.conf["indexes"]["indexes"] = "yes"
-    m.conf["constraints"]["constraints"] = "yes"
-    m.conf["indexes"]["empty_line_after_index"] = "yes"
+    m.conf["indexes"] = "yes"
+    m.conf["constraints"] = "yes"
+    m.conf["prompts"] = "yes"
     checking_tables_ddl("2__lowercase__compress")
 
 
@@ -220,12 +217,12 @@ def test_tables_ddl__3__no_storage():
     m.conf["storage"]["compression"] = "yes"
     m.conf["storage"]["cache"] = "no"
     m.conf["storage"]["result_cache"] = "yes"
-    m.conf["comments"]["comments"] = "yes"
+    m.conf["comments"]["comments"] = "no"
     m.conf["comments"]["empty_line_after_comment"] = "yes"
     m.conf["comments"]["vertical_alignment"] = "yes"
-    m.conf["indexes"]["indexes"] = "yes"
-    m.conf["constraints"]["constraints"] = "yes"
-    m.conf["indexes"]["empty_line_after_index"] = "yes"
+    m.conf["indexes"] = "yes"
+    m.conf["constraints"] = "yes"
+    m.conf["prompts"] = "no"
     checking_tables_ddl("3__no_storage")
 
 
@@ -233,18 +230,18 @@ def test_tables_ddl__4__only_tablespace():
     m.conf["case"]["keyword"] = "uppercase"
     m.conf["case"]["identifier"] = "uppercase"
     m.conf["storage"]["storage"] = "only_tablespace"
-    m.conf["storage"]["partitions"] = "all"
+    m.conf["storage"]["partitions"] = "none"
     m.conf["storage"]["collation"] = "yes"
     m.conf["storage"]["logging"] = "yes"
     m.conf["storage"]["compression"] = "yes"
     m.conf["storage"]["cache"] = "yes"
     m.conf["storage"]["result_cache"] = "no"
-    m.conf["comments"]["comments"] = "yes"
+    m.conf["comments"]["comments"] = "no"
     m.conf["comments"]["empty_line_after_comment"] = "yes"
     m.conf["comments"]["vertical_alignment"] = "yes"
-    m.conf["indexes"]["indexes"] = "yes"
-    m.conf["constraints"]["constraints"] = "yes"
-    m.conf["indexes"]["empty_line_after_index"] = "yes"
+    m.conf["indexes"] = "yes"
+    m.conf["constraints"] = "yes"
+    m.conf["prompts"] = "no"
     checking_tables_ddl("4__only_tablespace")
 
 
@@ -256,14 +253,14 @@ def test_tables_ddl__5__uppercase__lowercase__compact_part():
     m.conf["storage"]["collation"] = "yes"
     m.conf["storage"]["logging"] = "yes"
     m.conf["storage"]["compression"] = "yes"
-    m.conf["storage"]["cache"] = "yes"
+    m.conf["storage"]["cache"] = "no"
     m.conf["storage"]["result_cache"] = "yes"
     m.conf["comments"]["comments"] = "yes"
     m.conf["comments"]["empty_line_after_comment"] = "yes"
     m.conf["comments"]["vertical_alignment"] = "no"
-    m.conf["indexes"]["indexes"] = "yes"
-    m.conf["constraints"]["constraints"] = "yes"
-    m.conf["indexes"]["empty_line_after_index"] = "yes"
+    m.conf["indexes"] = "yes"
+    m.conf["constraints"] = "yes"
+    m.conf["prompts"] = "yes"
     checking_tables_ddl("5__uppercase__lowercase__compact_part")
 
 
@@ -276,33 +273,14 @@ def test_tables_ddl__6__lowercase__uppercase__no_empty_line():
     m.conf["storage"]["logging"] = "yes"
     m.conf["storage"]["compression"] = "yes"
     m.conf["storage"]["cache"] = "yes"
-    m.conf["storage"]["result_cache"] = "yes"
+    m.conf["storage"]["result_cache"] = "no"
     m.conf["comments"]["comments"] = "yes"
     m.conf["comments"]["empty_line_after_comment"] = "no"
     m.conf["comments"]["vertical_alignment"] = "yes"
-    m.conf["indexes"]["indexes"] = "no"
-    m.conf["constraints"]["constraints"] = "no"
-    m.conf["indexes"]["empty_line_after_index"] = "yes"
+    m.conf["indexes"] = "no"
+    m.conf["constraints"] = "no"
+    m.conf["prompts"] = "yes"
     checking_tables_ddl("6__lowercase__uppercase__no_empty_line")
-
-
-def test_tables_ddl__7__no_storage__no_part__no_comments():
-    m.conf["case"]["keyword"] = "uppercase"
-    m.conf["case"]["identifier"] = "uppercase"
-    m.conf["storage"]["storage"] = "no_storage"
-    m.conf["storage"]["partitions"] = "none"
-    m.conf["storage"]["collation"] = "yes"
-    m.conf["storage"]["logging"] = "yes"
-    m.conf["storage"]["compression"] = "yes"
-    m.conf["storage"]["cache"] = "yes"
-    m.conf["storage"]["result_cache"] = "yes"
-    m.conf["comments"]["comments"] = "no"
-    m.conf["comments"]["empty_line_after_comment"] = "yes"
-    m.conf["comments"]["vertical_alignment"] = "yes"
-    m.conf["indexes"]["indexes"] = "yes"
-    m.conf["constraints"]["constraints"] = "yes"
-    m.conf["indexes"]["empty_line_after_index"] = "no"
-    checking_tables_ddl("7__no_storage__no_part__no_comments")
 
 
 # store_metadata_into_xlsx()

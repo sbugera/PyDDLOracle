@@ -1,3 +1,4 @@
+prompt Table EXTORA_APP.T_STANDARD_DATATYPES
 create table EXTORA_APP.T_STANDARD_DATATYPES
 (
     C_VARCHAR2                          varchar2(10 byte) not null,
@@ -91,5 +92,4 @@ storage    (
             )
 logging
 nocompress
-nocache
-result_cache (mode default);
+nocache;

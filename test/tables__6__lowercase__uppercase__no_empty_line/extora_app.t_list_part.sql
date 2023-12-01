@@ -1,3 +1,4 @@
+prompt Table EXTORA_APP.T_LIST_PART
 create table EXTORA_APP.T_LIST_PART
 (
     SALE_DATE  date not null,
@@ -73,5 +74,4 @@ partition by list (REGION)
                 buffer_pool      DEFAULT
                 )
 )
-nocache
-result_cache (mode default);
+nocache;

@@ -1,3 +1,4 @@
+prompt Table extora_app.t_cache__rowmovement__collation
 create table extora_app.t_cache__rowmovement__collation
 (
     id  number not null
@@ -21,6 +22,7 @@ result_cache (mode force)
 enable row movement;
 
 
+prompt Index extora_app.pk_t_cache__rowmovement__collation
 create unique index extora_app.pk_t_cache__rowmovement__collation on extora_app.t_cache__rowmovement__collation
 (id)
 logging
@@ -34,6 +36,7 @@ storage    (
             );
 
 
+prompt Constraints for table extora_app.t_cache__rowmovement__collation
 alter table extora_app.t_cache__rowmovement__collation add (
   constraint pk_t_cache__rowmovement__collation
   primary key (id)

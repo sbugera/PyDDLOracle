@@ -1,3 +1,4 @@
+prompt Table extora_app.sales_simple_range
 create table extora_app.sales_simple_range
 (
     sale_date  date not null,
@@ -62,6 +63,7 @@ nocache
 result_cache (mode default);
 
 
+prompt Index extora_app.idx_sales_simple_range_01
 create unique index extora_app.idx_sales_simple_range_01 on extora_app.sales_simple_range
 (sale_date)
 logging
@@ -74,6 +76,7 @@ storage    (
             buffer_pool      default
             );
 
+prompt Index extora_app.idx_sales_simple_range_local
 create index extora_app.idx_sales_simple_range_local on extora_app.sales_simple_range
 (amount)
 storage    (
@@ -81,6 +84,7 @@ storage    (
             )
 local;
 
+prompt Index extora_app.idx_sales_simple_range_monitored
 create index extora_app.idx_sales_simple_range_monitored on extora_app.sales_simple_range
 (sale_date, amount)
 logging
@@ -97,6 +101,7 @@ alter index extora_app.idx_sales_simple_range_monitored
   monitoring usage;
 
 
+prompt Constraints for table extora_app.sales_simple_range
 alter table extora_app.sales_simple_range add (
   constraint ck_sales_simple_range
   check (SALE_DATE = trunc(SALE_DATE))

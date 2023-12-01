@@ -1,3 +1,4 @@
+prompt Table EXTORA_APP.T_HASH_PART
 create table EXTORA_APP.T_HASH_PART
 (
     EMPLOYEE_ID  number,
@@ -16,5 +17,4 @@ storage    (
 partition by hash (EMPLOYEE_ID)
     partitions 4
     store in (EXTORA_APP_DATA, EXTORA_APP_DATA, EXTORA_APP_DATA, EXTORA_APP_DATA)
-nocache
-result_cache (mode default);
+nocache;

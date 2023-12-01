@@ -1,3 +1,4 @@
+prompt Table extora_app.t_compress_basic
 create table extora_app.t_compress_basic
 (
     id  number,
@@ -19,6 +20,7 @@ nocache
 result_cache (mode default);
 
 
+prompt Constraints for table extora_app.t_compress_basic
 alter table extora_app.t_compress_basic add (
   constraint ck_t_compress_basic
   check (v2 = upper(v2))

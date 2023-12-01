@@ -1,3 +1,4 @@
+PROMPT Table extora_app.t_list_part__automatic
 CREATE TABLE extora_app.t_list_part__automatic
 (
     id            NUMBER,
@@ -45,5 +46,4 @@ PARTITION BY LIST (country_code)
                 BUFFER_POOL      default
                 )
 )
-NOCACHE
 RESULT_CACHE (MODE DEFAULT);

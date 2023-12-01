@@ -1,3 +1,4 @@
+PROMPT Table extora_app.t_list_part__multicolumn
 CREATE TABLE extora_app.t_list_part__multicolumn
 (
     sale_date         DATE,
@@ -74,5 +75,4 @@ PARTITION BY LIST (region, product_category)
                 BUFFER_POOL      default
                 )
 )
-NOCACHE
 RESULT_CACHE (MODE DEFAULT);

@@ -149,6 +149,13 @@ def get_object_name(object_owner, object_name, config_name_for_upper):
             + get_case_formatted(object_name, config_name_for_upper))
 
 
+def get_prompt(prompt_text, object_name):
+    if conf["prompts"] == "yes":
+        return f"""{get_case_formatted("PROMPT", "keyword")} {prompt_text}{object_name}\n"""
+    else:
+        return ""
+
+
 class Column:
     def __init__(self, column_row, max_column_name_length):
         self.max_column_name_length = max_column_name_length
@@ -396,7 +403,7 @@ class Index:
         self.index_columns = index_columns
 
     def get_index(self):
-        statement = get_case_formatted("\nCREATE<:1> INDEX <:2> ON <:3>\n(<:4>)", "keyword")
+        statement = get_case_formatted("CREATE<:1> INDEX <:2> ON <:3>\n(<:4>)", "keyword")
 
         index_type = ""
         if self.index_type == "BITMAP":
@@ -413,11 +420,12 @@ class Index:
             if i != len(self.index_columns) - 1:
                 index_columns += ", "
 
-        index = (statement
-                 .replace("<:1>", index_type)
-                 .replace("<:2>", index_name)
-                 .replace("<:3>", table_name)
-                 .replace("<:4>", index_columns))
+        index = get_prompt("Index ", index_name)
+        index += (statement
+                  .replace("<:1>", index_type)
+                  .replace("<:2>", index_name)
+                  .replace("<:3>", table_name)
+                  .replace("<:4>", index_columns))
 
         logging = ""
         if conf["storage"]["logging"] == "yes":
@@ -456,12 +464,10 @@ class Index:
         if self.index_type == "NORMAL/REV":
             index += get_case_formatted("\nREVERSE", "keyword")
 
-        index += ";"
-        if conf["indexes"]["empty_line_after_index"] == "yes":
-            index += "\n"
+        index += ";\n\n"
 
         if self.monitoring == "YES":
-            statement = get_case_formatted("\nALTER INDEX <:1>\n  MONITORING USAGE;\n", "keyword")
+            statement = get_case_formatted("ALTER INDEX <:1>\n  MONITORING USAGE;\n\n", "keyword")
             index += statement.replace("<:1>", index_name)
 
         return index
@@ -659,7 +665,7 @@ class Table:
 
     def get_indexes(self):
         indexes = ""
-        if conf["indexes"]["indexes"] == "yes":
+        if conf["indexes"] == "yes":
             for index_row in self.indexes.itertuples():
                 index_columns = self.index_columns[self.index_columns["index_name"] == index_row.index_name]
                 index = Index(index_row, index_columns)
@@ -670,9 +676,10 @@ class Table:
 
     def get_constraints(self):
         constraints = ""
-        if conf["constraints"]["constraints"] == "yes":
+        if conf["constraints"] == "yes":
             if len(self.tab_constraints) > 0:
-                statement = get_case_formatted("\nALTER TABLE <:1> ADD (\n", "keyword")
+                constraints = get_prompt("Constraints for table ", self.table_full_name)
+                statement = get_case_formatted("ALTER TABLE <:1> ADD (\n", "keyword")
                 constraints += statement.replace("<:1>", self.table_full_name)
             for i, constraint_row in enumerate(self.tab_constraints.itertuples()):
                 constraint_columns = self.tab_constraint_columns[
@@ -682,7 +689,7 @@ class Table:
                     constraints += ",\n"
                 constraints += constraint.get_constraint()
         if constraints != "":
-            constraints += ");\n"
+            constraints += ");\n\n"
         return constraints
 
     def get_comments(self):
@@ -693,10 +700,10 @@ class Table:
         if conf["comments"]["comments"] == "yes":
             for comment_row in self.comments.itertuples():
                 if not comment_row.column_name or str(comment_row.column_name) == "nan":
-                    statement = get_case_formatted(f"\nCOMMENT ON TABLE <:1> IS '<:2>';{end_line_char}", "keyword")
+                    statement = get_case_formatted(f"COMMENT ON TABLE <:1> IS '<:2>';\n{end_line_char}", "keyword")
                     comments += statement.replace("<:1>", self.table_full_name).replace("<:2>", comment_row.comments)
                 else:
-                    statement = get_case_formatted(f"\nCOMMENT ON COLUMN <:1>.<:2> IS '<:3>';{end_line_char}", "keyword")
+                    statement = get_case_formatted(f"COMMENT ON COLUMN <:1>.<:2> IS '<:3>';\n{end_line_char}", "keyword")
                     column_name = get_case_formatted(comment_row.column_name, "identifier")
                     if conf["comments"]["vertical_alignment"] == "yes":
                         # todo: Vertical alignment consider maximum column name length only for columns with comments
@@ -712,8 +719,8 @@ class Table:
     def generate_ddl(self):
         self.table_full_name = get_object_name(self.owner, self.table_name, "identifier")
         self.max_column_name_length = self.get_maximum_column_name_length()
-        statement = get_case_formatted("CREATE TABLE <:1>\n(\n", "keyword")
-        ddl = statement.replace("<:1>", self.table_full_name)
+        statement = get_case_formatted(f"CREATE TABLE <:1>\n(\n", "keyword")
+        ddl = get_prompt("Table ", self.table_full_name) + statement.replace("<:1>", self.table_full_name)
 
         for i, column_row in enumerate(self.columns.itertuples()):
             column = Column(column_row, self.max_column_name_length)
@@ -734,7 +741,7 @@ class Table:
         ddl += self.get_result_cache()
         ddl += self.get_tab_row_movement()
         # todo: Add LOB storage
-        ddl += ";\n\n"
+        ddl += ";\n\n\n"
 
         ddl += self.get_comments()
         ddl += self.get_indexes()

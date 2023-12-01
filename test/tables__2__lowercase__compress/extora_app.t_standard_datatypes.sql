@@ -1,3 +1,4 @@
+prompt Table extora_app.t_standard_datatypes
 create table extora_app.t_standard_datatypes
 (
     c_varchar2                          varchar2(10 byte) not null,
@@ -94,6 +95,7 @@ nocache
 result_cache (mode default);
 
 
+prompt Index extora_app.idf_standard_datatypes_compress_low
 create index extora_app.idf_standard_datatypes_compress_low on extora_app.t_standard_datatypes
 (c_nvarchar2, c_varchar, c_char, c_char_varying)
 logging
@@ -106,6 +108,7 @@ storage    (
             buffer_pool      default
             );
 
+prompt Index extora_app.idx_standard_datatypes_bitmap
 create bitmap index extora_app.idx_standard_datatypes_bitmap on extora_app.t_standard_datatypes
 (c_integer, c_date)
 logging
@@ -118,6 +121,7 @@ storage    (
             buffer_pool      default
             );
 
+prompt Index extora_app.idx_standard_datatypes_compressed_prefix
 create index extora_app.idx_standard_datatypes_compressed_prefix on extora_app.t_standard_datatypes
 (c_varchar2, c_varchar2_not_null, c_varchar2_def_y_char, c_varchar2_def_on_null_byte)
 logging
@@ -130,6 +134,7 @@ storage    (
             buffer_pool      default
             );
 
+prompt Index extora_app.idx_standard_datatypes_compress_high
 create index extora_app.idx_standard_datatypes_compress_high on extora_app.t_standard_datatypes
 (c_char_no_length, c_nchar)
 logging
@@ -142,6 +147,7 @@ storage    (
             buffer_pool      default
             );
 
+prompt Index extora_app.idx_standard_datatypes_invisible
 create index extora_app.idx_standard_datatypes_invisible on extora_app.t_standard_datatypes
 (c_varchar2_def_on_null_no_def)
 logging
@@ -155,6 +161,7 @@ storage    (
             )
 invisible;
 
+prompt Index extora_app.idx_standard_datatypes_reverse_nolog_parallel
 create index extora_app.idx_standard_datatypes_reverse_nolog_parallel on extora_app.t_standard_datatypes
 (c_varchar2_comment, c_binary_float)
 nologging
@@ -169,6 +176,7 @@ storage    (
 parallel ( degree 16 instances default )
 reverse;
 
+prompt Index extora_app.pk_t_standard_datatypes
 create unique index extora_app.pk_t_standard_datatypes on extora_app.t_standard_datatypes
 (c_varchar2, c_number)
 logging
@@ -181,6 +189,7 @@ storage    (
             buffer_pool      default
             );
 
+prompt Index extora_app."T_STANDARD_DATATYPES_uk_02"
 create unique index extora_app."T_STANDARD_DATATYPES_uk_02" on extora_app.t_standard_datatypes
 ("c_Camel_Case_Name       32 Chars")
 logging
@@ -193,6 +202,7 @@ storage    (
             buffer_pool      default
             );
 
+prompt Index extora_app.uk_t_standard_datatypes
 create unique index extora_app.uk_t_standard_datatypes on extora_app.t_standard_datatypes
 (c_char, c_number)
 logging
@@ -206,6 +216,7 @@ storage    (
             );
 
 
+prompt Constraints for table extora_app.t_standard_datatypes
 alter table extora_app.t_standard_datatypes add (
   constraint pk_t_standard_datatypes
   primary key (c_varchar2, c_number)

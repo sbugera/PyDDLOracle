@@ -1,3 +1,4 @@
+PROMPT Table extora_app.t_list_part
 CREATE TABLE extora_app.t_list_part
 (
     sale_date  DATE NOT NULL,
@@ -73,10 +74,10 @@ PARTITION BY LIST (region)
                 BUFFER_POOL      default
                 )
 )
-NOCACHE
 RESULT_CACHE (MODE DEFAULT);
 
 
+PROMPT Index extora_app.pk_t_list_part
 CREATE UNIQUE INDEX extora_app.pk_t_list_part ON extora_app.t_list_part
 (sale_date)
 LOGGING
@@ -94,6 +95,7 @@ STORAGE    (
             );
 
 
+PROMPT Constraints for table extora_app.t_list_part
 ALTER TABLE extora_app.t_list_part ADD (
   CONSTRAINT pk_t_list_part
   PRIMARY KEY (sale_date)

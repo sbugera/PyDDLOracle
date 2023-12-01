@@ -1,3 +1,4 @@
+PROMPT Table extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE"
 CREATE TABLE extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE"
 (
     sale_date        DATE,
@@ -27,7 +28,6 @@ INTERVAL (NUMTOYMINTERVAL(1, 'MONTH'))
                 BUFFER_POOL      default
                 )
 )
-NOCACHE
 RESULT_CACHE (MODE DEFAULT);
 
 
@@ -38,6 +38,7 @@ COMMENT ON COLUMN extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE".sale_date IS
 COMMENT ON COLUMN extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE"."Col_lowercase" IS 'Column comment for "Col_lowercase" in t_lowercase_RANGE_PART_INTERVAL_DATE';
 
 
+PROMPT Index extora_app."pk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk"
 CREATE INDEX extora_app."pk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk" ON extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE"
 (sale_date, region)
 LOGGING
@@ -54,6 +55,7 @@ STORAGE    (
             BUFFER_POOL      default
             );
 
+PROMPT Index extora_app."uk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk"
 CREATE INDEX extora_app."uk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk" ON extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE"
 (amount)
 LOGGING
@@ -71,6 +73,7 @@ STORAGE    (
             );
 
 
+PROMPT Constraints for table extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE"
 ALTER TABLE extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE" ADD (
   CONSTRAINT "ck_lowercase_T_RANGE_PART_INTERVAL_DATE"
   CHECK (amount BETWEEN 1 and 1000000 )

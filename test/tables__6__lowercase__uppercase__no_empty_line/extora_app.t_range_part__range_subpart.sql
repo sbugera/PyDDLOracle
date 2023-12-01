@@ -1,3 +1,4 @@
+prompt Table EXTORA_APP.T_RANGE_PART__RANGE_SUBPART
 create table EXTORA_APP.T_RANGE_PART__RANGE_SUBPART
 (
     ID      number,
@@ -25,5 +26,4 @@ interval (10)
                 buffer_pool      DEFAULT
                 )
 )
-nocache
-result_cache (mode default);
+nocache;

@@ -1,3 +1,4 @@
+prompt Table EXTORA_APP.SALES_SIMPLE_RANGE
 create table EXTORA_APP.SALES_SIMPLE_RANGE
 (
     SALE_DATE  date not null,
@@ -64,5 +65,4 @@ partition by range (SALE_DATE)
                 buffer_pool      DEFAULT
                 )
 )
-nocache
-result_cache (mode default);
+nocache;

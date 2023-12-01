@@ -1,3 +1,4 @@
+PROMPT Table extora_app.t_range_part__range_subpart
 CREATE TABLE extora_app.t_range_part__range_subpart
 (
     id      NUMBER,
@@ -25,5 +26,4 @@ INTERVAL (10)
                 BUFFER_POOL      default
                 )
 )
-NOCACHE
 RESULT_CACHE (MODE DEFAULT);

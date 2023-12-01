@@ -1,3 +1,4 @@
+prompt Table EXTORA_APP.SALES
 create table EXTORA_APP.SALES
 (
     SALE_ID      number,
@@ -96,8 +97,7 @@ interval (NUMTOYMINTERVAL(1, 'MONTH'))
                 buffer_pool      DEFAULT
                 )
 )
-nocache
-result_cache (mode default);
+nocache;
 
 
 comment on table EXTORA_APP.SALES is 'Sales';

@@ -1,3 +1,4 @@
+prompt Table EXTORA_APP.T_LIST_PART__AUTOMATIC
 create table EXTORA_APP.T_LIST_PART__AUTOMATIC
 (
     ID            number,
@@ -73,5 +74,4 @@ partition by list (COUNTRY_CODE)
                 buffer_pool      DEFAULT
                 )
 )
-nocache
-result_cache (mode default);
+nocache;

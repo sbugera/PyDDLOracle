@@ -1,3 +1,4 @@
+PROMPT Table extora_app.t_hash_part
 CREATE TABLE extora_app.t_hash_part
 (
     employee_id  NUMBER,
@@ -16,5 +17,4 @@ STORAGE    (
 PARTITION BY HASH (employee_id)
     PARTITIONS 4
     STORE IN (extora_app_data, extora_app_data, extora_app_data, extora_app_data)
-NOCACHE
 RESULT_CACHE (MODE DEFAULT);

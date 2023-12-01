@@ -1,3 +1,4 @@
+prompt Table EXTORA_APP.T_LIST_PART__MULTICOLUMN
 create table EXTORA_APP.T_LIST_PART__MULTICOLUMN
 (
     SALE_DATE         date,
@@ -74,5 +75,4 @@ partition by list (REGION, PRODUCT_CATEGORY)
                 buffer_pool      DEFAULT
                 )
 )
-nocache
-result_cache (mode default);
+nocache;

@@ -1,3 +1,4 @@
+PROMPT Table extora_app.sales
 CREATE TABLE extora_app.sales
 (
     sale_id      NUMBER,
@@ -26,7 +27,6 @@ INTERVAL (NUMTOYMINTERVAL(1, 'MONTH'))
                 BUFFER_POOL      default
                 )
 )
-NOCACHE
 RESULT_CACHE (MODE DEFAULT);
 
 
@@ -39,6 +39,7 @@ COMMENT ON COLUMN extora_app.sales.sale_date IS 'Sale Date';
 COMMENT ON COLUMN extora_app.sales.sale_amount IS 'Sale Ammount';
 
 
+PROMPT Index extora_app.pk_sales
 CREATE INDEX extora_app.pk_sales ON extora_app.sales
 (sale_id)
 LOGGING
@@ -55,6 +56,7 @@ STORAGE    (
             BUFFER_POOL      default
             );
 
+PROMPT Index extora_app.uk_sales
 CREATE INDEX extora_app.uk_sales ON extora_app.sales
 (sale_amount)
 LOGGING
@@ -72,6 +74,7 @@ STORAGE    (
             );
 
 
+PROMPT Constraints for table extora_app.sales
 ALTER TABLE extora_app.sales ADD (
   CONSTRAINT ck_sales
   CHECK (sale_amount > 0)

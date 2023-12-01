@@ -1,3 +1,4 @@
+PROMPT Table extora_app.t_compress_for_oltp
 CREATE TABLE extora_app.t_compress_for_oltp
 (
     id  NUMBER,
@@ -16,10 +17,10 @@ STORAGE    (
             )
 LOGGING
 COMPRESS FOR OLTP
-NOCACHE
 RESULT_CACHE (MODE DEFAULT);
 
 
+PROMPT Constraints for table extora_app.t_compress_for_oltp
 ALTER TABLE extora_app.t_compress_for_oltp ADD (
   CONSTRAINT ck_t_compress_for_oltp
   CHECK ( V2 IN ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J') )

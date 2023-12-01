@@ -1,3 +1,4 @@
+PROMPT Table extora_app.t_range_part_interval_number
 CREATE TABLE extora_app.t_range_part_interval_number
 (
     sale_id  NUMBER NOT NULL,
@@ -30,10 +31,10 @@ INTERVAL (1000)
                 BUFFER_POOL      default
                 )
 )
-NOCACHE
 RESULT_CACHE (MODE DEFAULT);
 
 
+PROMPT Index extora_app.uk_t_range_part_interval_number
 CREATE INDEX extora_app.uk_t_range_part_interval_number ON extora_app.t_range_part_interval_number
 (region)
 LOGGING
@@ -50,6 +51,7 @@ STORAGE    (
             BUFFER_POOL      default
             );
 
+PROMPT Index extora_app.uq_t_range_part_interval_number
 CREATE UNIQUE INDEX extora_app.uq_t_range_part_interval_number ON extora_app.t_range_part_interval_number
 (sale_id)
 LOGGING
@@ -67,6 +69,7 @@ STORAGE    (
             );
 
 
+PROMPT Constraints for table extora_app.t_range_part_interval_number
 ALTER TABLE extora_app.t_range_part_interval_number ADD (
   CONSTRAINT pk_t_range_part_interval_number
   PRIMARY KEY (sale_id)

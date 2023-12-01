@@ -1,3 +1,4 @@
+prompt Table extora_app.t_list_part
 create table extora_app.t_list_part
 (
     sale_date  date not null,
@@ -71,6 +72,7 @@ nocache
 result_cache (mode default);
 
 
+prompt Index extora_app.pk_t_list_part
 create unique index extora_app.pk_t_list_part on extora_app.t_list_part
 (sale_date)
 logging
@@ -88,6 +90,7 @@ storage    (
             );
 
 
+prompt Constraints for table extora_app.t_list_part
 alter table extora_app.t_list_part add (
   constraint pk_t_list_part
   primary key (sale_date)

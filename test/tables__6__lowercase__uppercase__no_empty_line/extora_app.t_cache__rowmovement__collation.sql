@@ -1,3 +1,4 @@
+prompt Table EXTORA_APP.T_CACHE__ROWMOVEMENT__COLLATION
 create table EXTORA_APP.T_CACHE__ROWMOVEMENT__COLLATION
 (
     ID  number not null
@@ -18,5 +19,4 @@ storage    (
 logging
 nocompress
 cache
-result_cache (mode force)
 enable row movement;
