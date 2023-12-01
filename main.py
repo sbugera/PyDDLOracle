@@ -403,7 +403,7 @@ class Index:
         self.index_columns = index_columns
 
     def get_index(self):
-        statement = get_case_formatted("\nCREATE<:1> INDEX <:2> ON <:3>\n(<:4>)", "keyword")
+        statement = get_case_formatted("CREATE<:1> INDEX <:2> ON <:3>\n(<:4>)", "keyword")
 
         index_type = ""
         if self.index_type == "BITMAP":
@@ -420,11 +420,12 @@ class Index:
             if i != len(self.index_columns) - 1:
                 index_columns += ", "
 
-        index = (statement
-                 .replace("<:1>", index_type)
-                 .replace("<:2>", index_name)
-                 .replace("<:3>", table_name)
-                 .replace("<:4>", index_columns))
+        index = get_prompt("Index ", index_name)
+        index += (statement
+                  .replace("<:1>", index_type)
+                  .replace("<:2>", index_name)
+                  .replace("<:3>", table_name)
+                  .replace("<:4>", index_columns))
 
         logging = ""
         if conf["storage"]["logging"] == "yes":
@@ -463,10 +464,10 @@ class Index:
         if self.index_type == "NORMAL/REV":
             index += get_case_formatted("\nREVERSE", "keyword")
 
-        index += ";\n"
+        index += ";\n\n"
 
         if self.monitoring == "YES":
-            statement = get_case_formatted("\nALTER INDEX <:1>\n  MONITORING USAGE;\n", "keyword")
+            statement = get_case_formatted("ALTER INDEX <:1>\n  MONITORING USAGE;\n\n", "keyword")
             index += statement.replace("<:1>", index_name)
 
         return index
@@ -670,7 +671,7 @@ class Table:
                 index = Index(index_row, index_columns)
                 indexes += index.get_index()
         if indexes != "":
-            indexes = indexes+"\n"
+            indexes = "\n"+indexes
         return indexes
 
     def get_constraints(self):

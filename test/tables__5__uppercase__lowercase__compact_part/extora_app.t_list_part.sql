@@ -77,6 +77,7 @@ PARTITION BY LIST (region)
 RESULT_CACHE (MODE DEFAULT);
 
 
+PROMPT Index extora_app.pk_t_list_part
 CREATE UNIQUE INDEX extora_app.pk_t_list_part ON extora_app.t_list_part
 (sale_date)
 LOGGING

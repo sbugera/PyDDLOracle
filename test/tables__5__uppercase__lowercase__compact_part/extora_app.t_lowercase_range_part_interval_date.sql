@@ -38,6 +38,7 @@ COMMENT ON COLUMN extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE".sale_date IS
 COMMENT ON COLUMN extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE"."Col_lowercase" IS 'Column comment for "Col_lowercase" in t_lowercase_RANGE_PART_INTERVAL_DATE';
 
 
+PROMPT Index extora_app."pk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk"
 CREATE INDEX extora_app."pk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk" ON extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE"
 (sale_date, region)
 LOGGING
@@ -54,6 +55,7 @@ STORAGE    (
             BUFFER_POOL      default
             );
 
+PROMPT Index extora_app."uk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk"
 CREATE INDEX extora_app."uk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk" ON extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE"
 (amount)
 LOGGING

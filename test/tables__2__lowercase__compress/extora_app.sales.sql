@@ -103,6 +103,7 @@ comment on column extora_app.sales.sale_date   is 'Sale Date';
 comment on column extora_app.sales.sale_amount is 'Sale Ammount';
 
 
+prompt Index extora_app.pk_sales
 create index extora_app.pk_sales on extora_app.sales
 (sale_id)
 logging
@@ -119,6 +120,7 @@ storage    (
             buffer_pool      default
             );
 
+prompt Index extora_app.uk_sales
 create index extora_app.uk_sales on extora_app.sales
 (sale_amount)
 logging

@@ -22,6 +22,7 @@ result_cache (mode force)
 enable row movement;
 
 
+prompt Index extora_app.pk_t_cache__rowmovement__collation
 create unique index extora_app.pk_t_cache__rowmovement__collation on extora_app.t_cache__rowmovement__collation
 (id)
 logging

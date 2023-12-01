@@ -95,6 +95,7 @@ NOCOMPRESS
 RESULT_CACHE (MODE DEFAULT);
 
 
+PROMPT Index extora_app.idf_standard_datatypes_compress_low
 CREATE INDEX extora_app.idf_standard_datatypes_compress_low ON extora_app.t_standard_datatypes
 (c_nvarchar2, c_varchar, c_char, c_char_varying)
 LOGGING
@@ -108,6 +109,7 @@ STORAGE    (
             )
 COMPRESS ADVANCED LOW;
 
+PROMPT Index extora_app.idx_standard_datatypes_bitmap
 CREATE BITMAP INDEX extora_app.idx_standard_datatypes_bitmap ON extora_app.t_standard_datatypes
 (c_integer, c_date)
 LOGGING
@@ -120,6 +122,7 @@ STORAGE    (
             BUFFER_POOL      default
             );
 
+PROMPT Index extora_app.idx_standard_datatypes_compressed_prefix
 CREATE INDEX extora_app.idx_standard_datatypes_compressed_prefix ON extora_app.t_standard_datatypes
 (c_varchar2, c_varchar2_not_null, c_varchar2_def_y_char, c_varchar2_def_on_null_byte)
 LOGGING
@@ -133,6 +136,7 @@ STORAGE    (
             )
 COMPRESS 2;
 
+PROMPT Index extora_app.idx_standard_datatypes_compress_high
 CREATE INDEX extora_app.idx_standard_datatypes_compress_high ON extora_app.t_standard_datatypes
 (c_char_no_length, c_nchar)
 LOGGING
@@ -146,6 +150,7 @@ STORAGE    (
             )
 COMPRESS ADVANCED HIGH;
 
+PROMPT Index extora_app.idx_standard_datatypes_invisible
 CREATE INDEX extora_app.idx_standard_datatypes_invisible ON extora_app.t_standard_datatypes
 (c_varchar2_def_on_null_no_def)
 LOGGING
@@ -159,6 +164,7 @@ STORAGE    (
             )
 INVISIBLE;
 
+PROMPT Index extora_app.idx_standard_datatypes_reverse_nolog_parallel
 CREATE INDEX extora_app.idx_standard_datatypes_reverse_nolog_parallel ON extora_app.t_standard_datatypes
 (c_varchar2_comment, c_binary_float)
 NOLOGGING
@@ -173,6 +179,7 @@ STORAGE    (
 PARALLEL ( DEGREE 16 INSTANCES DEFAULT )
 REVERSE;
 
+PROMPT Index extora_app.pk_t_standard_datatypes
 CREATE UNIQUE INDEX extora_app.pk_t_standard_datatypes ON extora_app.t_standard_datatypes
 (c_varchar2, c_number)
 LOGGING
@@ -185,6 +192,7 @@ STORAGE    (
             BUFFER_POOL      default
             );
 
+PROMPT Index extora_app."T_STANDARD_DATATYPES_uk_02"
 CREATE UNIQUE INDEX extora_app."T_STANDARD_DATATYPES_uk_02" ON extora_app.t_standard_datatypes
 ("c_Camel_Case_Name       32 Chars")
 LOGGING
@@ -197,6 +205,7 @@ STORAGE    (
             BUFFER_POOL      default
             );
 
+PROMPT Index extora_app.uk_t_standard_datatypes
 CREATE UNIQUE INDEX extora_app.uk_t_standard_datatypes ON extora_app.t_standard_datatypes
 (c_char, c_number)
 LOGGING

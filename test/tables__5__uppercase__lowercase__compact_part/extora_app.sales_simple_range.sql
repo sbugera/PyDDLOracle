@@ -68,6 +68,7 @@ PARTITION BY RANGE (sale_date)
 RESULT_CACHE (MODE DEFAULT);
 
 
+PROMPT Index extora_app.idx_sales_simple_range_01
 CREATE UNIQUE INDEX extora_app.idx_sales_simple_range_01 ON extora_app.sales_simple_range
 (sale_date)
 LOGGING
@@ -80,6 +81,7 @@ STORAGE    (
             BUFFER_POOL      default
             );
 
+PROMPT Index extora_app.idx_sales_simple_range_local
 CREATE INDEX extora_app.idx_sales_simple_range_local ON extora_app.sales_simple_range
 (amount)
 STORAGE    (
@@ -87,6 +89,7 @@ STORAGE    (
             )
 LOCAL;
 
+PROMPT Index extora_app.idx_sales_simple_range_monitored
 CREATE INDEX extora_app.idx_sales_simple_range_monitored ON extora_app.sales_simple_range
 (sale_date, amount)
 LOGGING

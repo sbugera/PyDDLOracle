@@ -46,6 +46,7 @@ nocache
 result_cache (mode default);
 
 
+prompt Index extora_app.uk_t_range_part_interval_number
 create index extora_app.uk_t_range_part_interval_number on extora_app.t_range_part_interval_number
 (region)
 logging
@@ -62,6 +63,7 @@ storage    (
             buffer_pool      default
             );
 
+prompt Index extora_app.uq_t_range_part_interval_number
 create unique index extora_app.uq_t_range_part_interval_number on extora_app.t_range_part_interval_number
 (sale_id)
 logging
