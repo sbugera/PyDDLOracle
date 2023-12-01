@@ -20,6 +20,7 @@ nocache
 result_cache (mode default);
 
 
+prompt Constraints for table extora_app.t_compress_for_oltp
 alter table extora_app.t_compress_for_oltp add (
   constraint ck_t_compress_for_oltp
   check ( V2 IN ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J') )

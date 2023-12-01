@@ -81,6 +81,7 @@ storage    (
             );
 
 
+prompt Constraints for table extora_app.t_range_part_interval_number
 alter table extora_app.t_range_part_interval_number add (
   constraint pk_t_range_part_interval_number
   primary key (sale_id)

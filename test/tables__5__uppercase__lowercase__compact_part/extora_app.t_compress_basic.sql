@@ -20,6 +20,7 @@ COMPRESS BASIC
 RESULT_CACHE (MODE DEFAULT);
 
 
+PROMPT Constraints for table extora_app.t_compress_basic
 ALTER TABLE extora_app.t_compress_basic ADD (
   CONSTRAINT ck_t_compress_basic
   CHECK (v2 = upper(v2))

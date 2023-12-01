@@ -106,6 +106,7 @@ ALTER INDEX extora_app.idx_sales_simple_range_monitored
   MONITORING USAGE;
 
 
+PROMPT Constraints for table extora_app.sales_simple_range
 ALTER TABLE extora_app.sales_simple_range ADD (
   CONSTRAINT ck_sales_simple_range
   CHECK (SALE_DATE = trunc(SALE_DATE))

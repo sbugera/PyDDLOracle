@@ -90,6 +90,7 @@ storage    (
             );
 
 
+prompt Constraints for table extora_app.t_list_part
 alter table extora_app.t_list_part add (
   constraint pk_t_list_part
   primary key (sale_date)

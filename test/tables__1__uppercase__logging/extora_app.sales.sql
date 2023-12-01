@@ -137,6 +137,7 @@ STORAGE    (
             );
 
 
+PROMPT Constraints for table EXTORA_APP.SALES
 ALTER TABLE EXTORA_APP.SALES ADD (
   CONSTRAINT CK_SALES
   CHECK (sale_amount > 0)

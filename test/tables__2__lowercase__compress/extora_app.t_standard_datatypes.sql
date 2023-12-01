@@ -216,6 +216,7 @@ storage    (
             );
 
 
+prompt Constraints for table extora_app.t_standard_datatypes
 alter table extora_app.t_standard_datatypes add (
   constraint pk_t_standard_datatypes
   primary key (c_varchar2, c_number)

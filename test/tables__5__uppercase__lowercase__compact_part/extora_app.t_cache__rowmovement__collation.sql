@@ -36,6 +36,7 @@ STORAGE    (
             );
 
 
+PROMPT Constraints for table extora_app.t_cache__rowmovement__collation
 ALTER TABLE extora_app.t_cache__rowmovement__collation ADD (
   CONSTRAINT pk_t_cache__rowmovement__collation
   PRIMARY KEY (id)

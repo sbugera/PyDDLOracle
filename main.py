@@ -671,14 +671,15 @@ class Table:
                 index = Index(index_row, index_columns)
                 indexes += index.get_index()
         if indexes != "":
-            indexes = "\n"+indexes
+            indexes = indexes+"\n"
         return indexes
 
     def get_constraints(self):
         constraints = ""
         if conf["constraints"] == "yes":
             if len(self.tab_constraints) > 0:
-                statement = get_case_formatted("\nALTER TABLE <:1> ADD (\n", "keyword")
+                constraints = get_prompt("Constraints for table ", self.table_full_name)
+                statement = get_case_formatted("ALTER TABLE <:1> ADD (\n", "keyword")
                 constraints += statement.replace("<:1>", self.table_full_name)
             for i, constraint_row in enumerate(self.tab_constraints.itertuples()):
                 constraint_columns = self.tab_constraint_columns[
@@ -688,7 +689,7 @@ class Table:
                     constraints += ",\n"
                 constraints += constraint.get_constraint()
         if constraints != "":
-            constraints += ");\n"
+            constraints += ");\n\n"
         return constraints
 
     def get_comments(self):
@@ -699,10 +700,10 @@ class Table:
         if conf["comments"]["comments"] == "yes":
             for comment_row in self.comments.itertuples():
                 if not comment_row.column_name or str(comment_row.column_name) == "nan":
-                    statement = get_case_formatted(f"\nCOMMENT ON TABLE <:1> IS '<:2>';{end_line_char}", "keyword")
+                    statement = get_case_formatted(f"COMMENT ON TABLE <:1> IS '<:2>';\n{end_line_char}", "keyword")
                     comments += statement.replace("<:1>", self.table_full_name).replace("<:2>", comment_row.comments)
                 else:
-                    statement = get_case_formatted(f"\nCOMMENT ON COLUMN <:1>.<:2> IS '<:3>';{end_line_char}", "keyword")
+                    statement = get_case_formatted(f"COMMENT ON COLUMN <:1>.<:2> IS '<:3>';\n{end_line_char}", "keyword")
                     column_name = get_case_formatted(comment_row.column_name, "identifier")
                     if conf["comments"]["vertical_alignment"] == "yes":
                         # todo: Vertical alignment consider maximum column name length only for columns with comments
@@ -740,7 +741,7 @@ class Table:
         ddl += self.get_result_cache()
         ddl += self.get_tab_row_movement()
         # todo: Add LOB storage
-        ddl += ";\n\n"
+        ddl += ";\n\n\n"
 
         ddl += self.get_comments()
         ddl += self.get_indexes()

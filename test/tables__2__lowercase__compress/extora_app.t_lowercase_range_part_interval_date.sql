@@ -98,6 +98,7 @@ storage    (
             );
 
 
+prompt Constraints for table extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE"
 alter table extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE" add (
   constraint "ck_lowercase_T_RANGE_PART_INTERVAL_DATE"
   check (amount BETWEEN 1 and 1000000 )
