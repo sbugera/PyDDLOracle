@@ -15,9 +15,9 @@ MAXTRANS   255
 STORAGE    (
             BUFFER_POOL      default
             )
-PARTITION BY LIST (country_code)
+PARTITION BY LIST (country_code) AUTOMATIC
 (
-  PARTITION part_usa VALUES ('USA') AUTOMATIC
+  PARTITION part_usa VALUES ('USA')
     LOGGING
     NOCOMPRESS
     TABLESPACE extora_app_data
@@ -31,7 +31,7 @@ PARTITION BY LIST (country_code)
                 MAXEXTENTS       UNLIMITED
                 BUFFER_POOL      default
                 ),
-  PARTITION part_uk_and_ireland VALUES ('GBR', 'IRL') AUTOMATIC
+  PARTITION part_uk_and_ireland VALUES ('GBR', 'IRL')
     LOGGING
     NOCOMPRESS
     TABLESPACE extora_app_data

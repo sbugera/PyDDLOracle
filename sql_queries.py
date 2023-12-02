@@ -141,6 +141,7 @@ SELECT name,
   FROM sys.dba_part_key_columns
  WHERE owner = :schema_name
    AND object_type = 'TABLE'
+ ORDER BY name, column_position
 """
 
 sql_tab_partitions = """

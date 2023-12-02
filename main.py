@@ -242,9 +242,8 @@ class Column:
 
 
 class Partition:
-    def __init__(self, partitioning_type, autolist, tab_partition):
+    def __init__(self, partitioning_type, tab_partition):
         self.partitioning_type = partitioning_type
-        self.autolist = autolist
         self.partition_name = tab_partition.partition_name
         self.high_value = tab_partition.high_value
         self.partition_position = tab_partition.partition_position
@@ -289,10 +288,8 @@ class Partition:
         statement = ""
         if self.partitioning_type == "RANGE":
             statement = get_case_formatted("\n  PARTITION<:1>VALUES LESS THAN (<:2>)", "keyword")
-        elif self.partitioning_type == "LIST" and self.autolist == "NO":
+        elif self.partitioning_type == "LIST":
             statement = get_case_formatted("\n  PARTITION<:1>VALUES (<:2>)", "keyword")
-        elif self.partitioning_type == "LIST" and self.autolist == "YES":
-            statement = get_case_formatted("\n  PARTITION<:1>VALUES (<:2>) AUTOMATIC", "keyword")
         partition_name = " "
         if not self.partition_name.startswith("SYS_P"):
             partition_name = get_case_formatted(f" {self.partition_name} ", "identifier")
@@ -337,6 +334,8 @@ class Partitioning:
             if str(self.interval) not in ("nan", "None"):
                 statement = get_case_formatted("INTERVAL", "keyword")
                 partitioning += f"\n{statement} ({self.interval})"
+            if self.partitioning_type == "LIST" and self.autolist == "YES":
+                partitioning += get_case_formatted(" AUTOMATIC", "keyword")
             if self.partitioning_type in ("RANGE", "LIST"):
                 partitioning += "\n("
                 for i, tab_partition in enumerate(self.tab_partitions.itertuples()):
@@ -347,7 +346,7 @@ class Partitioning:
                     if (tab_partition.partition_name.startswith("SYS_P")
                             and conf["storage"]["partitions"] == "compact"):
                         break
-                    partition = Partition(self.partitioning_type, self.autolist, tab_partition)
+                    partition = Partition(self.partitioning_type, tab_partition)
                     partitioning += f"{partition.get_partition()},"
                 partitioning = partitioning[:-1]
                 partitioning += "\n)"
