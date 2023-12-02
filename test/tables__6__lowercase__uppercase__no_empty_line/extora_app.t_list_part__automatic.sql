@@ -15,9 +15,9 @@ maxtrans   255
 storage    (
             buffer_pool      DEFAULT
             )
-partition by list (COUNTRY_CODE)
+partition by list (COUNTRY_CODE) automatic
 (
-  partition PART_USA values ('USA') automatic
+  partition PART_USA values ('USA')
     logging
     nocompress
     tablespace EXTORA_APP_DATA
@@ -31,7 +31,7 @@ partition by list (COUNTRY_CODE)
                 maxextents       unlimited
                 buffer_pool      DEFAULT
                 ),
-  partition PART_UK_AND_IRELAND values ('GBR', 'IRL') automatic
+  partition PART_UK_AND_IRELAND values ('GBR', 'IRL')
     logging
     nocompress
     tablespace EXTORA_APP_DATA
@@ -45,7 +45,7 @@ partition by list (COUNTRY_CODE)
                 maxextents       unlimited
                 buffer_pool      DEFAULT
                 ),
-  partition values ('BGR') automatic
+  partition values ('BGR')
     logging
     nocompress
     tablespace EXTORA_APP_DATA
@@ -59,7 +59,7 @@ partition by list (COUNTRY_CODE)
                 maxextents       unlimited
                 buffer_pool      DEFAULT
                 ),
-  partition values ('POL') automatic
+  partition values ('POL')
     logging
     nocompress
     tablespace EXTORA_APP_DATA

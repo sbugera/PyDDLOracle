@@ -77,7 +77,6 @@ create table EXTORA_APP.T_STANDARD_DATATYPES
     C_TIMESTAMP_LTZ6                    timestamp(6) with local time zone,
     C_TIMESTAMP_LTZ0                    timestamp(0) with local time zone,
     C_ANYDATA                           sys.anydata,
-    C_JSON                              json,
     "c_Camel_Case_Name       32 Chars"  varchar2(100 byte),
     C_VARCHAR2_NOT_VISIBLE              varchar2(16 byte) invisible,
     C_DATE_INVISIBLE                    date invisible default sysdate not null
