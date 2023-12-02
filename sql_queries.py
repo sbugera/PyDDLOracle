@@ -1,3 +1,21 @@
+sql_column_exists = """
+WITH f(view_name, column_name) AS (
+    SELECT 'DBA_TABLES'     , 'DEFAULT_COLLATION'     FROM dual UNION ALL
+    SELECT 'DBA_TAB_COLS'   , 'COLLATION'             FROM dual UNION ALL
+    SELECT 'DBA_PART_TABLES', 'AUTOLIST'              FROM dual UNION ALL
+    SELECT 'DBA_PART_TABLES', 'AUTOLIST_SUBPARTITION' FROM dual
+)
+SELECT f.view_name,
+       f.column_name,
+       decode(c.column_name, NULL, 'N', 'Y') AS column_exists,
+       c.data_type,
+       c.char_length
+  FROM f
+  LEFT JOIN sys.dba_tab_cols c
+    ON f.view_name = c.table_name
+   AND f.column_name = c.column_name
+"""
+
 sql_tables = """
 SELECT t.owner,
        t.table_name,
@@ -37,21 +55,7 @@ SELECT t.owner,
        t.cell_flash_cache,
        t.result_cache,
        t.segment_created,
-       t.inmemory,
-       t.inmemory_priority,
-       t.inmemory_distribute,
-       t.inmemory_compression,
-       t.inmemory_duplicate,
-       t.clustering,
-       t.inmemory_service,
-       t.inmemory_service_name,
-       t.default_collation,
-       t.sharded,
-       t.duplicated,
-       t.external,
-       t.memoptimize_read,
-       t.memoptimize_write,
-       t.hybrid
+       CAST(NULL AS VARCHAR2(100)) AS default_collation
   FROM sys.dba_tables t
  WHERE t.owner = :schema_name
  ORDER BY t.table_name
@@ -85,7 +89,7 @@ SELECT c.table_name,
        c.evaluation_edition,
        c.unusable_before,
        c.unusable_beginning,
-       c.collation
+       CAST(NULL AS VARCHAR2(100)) AS collation
   FROM sys.dba_tab_cols   c
   JOIN sys.dba_all_tables t
     ON c.table_name = t.table_name
@@ -96,50 +100,39 @@ SELECT c.table_name,
 """
 
 sql_part_tables = """
-SELECT owner,
-       table_name,
-       partitioning_type,
-       subpartitioning_type,
-       interval,
-       autolist,
-       interval_subpartition,
-       autolist_subpartition,
-       is_nested,
-       auto,
-       def_tablespace_name,
-       def_pct_free,
-       def_pct_used,
-       def_ini_trans,
-       def_max_trans,
-       def_initial_extent,
-       def_next_extent,
-       def_min_extents,
-       def_max_extents,
-       def_max_size,
-       def_pct_increase,
-       def_freelists,
-       def_freelist_groups,
-       def_logging,
-       def_compression,
-       def_compress_for,
-       def_buffer_pool,
-       def_flash_cache,
-       def_cell_flash_cache,
-       ref_ptn_constraint_name,
-       def_segment_creation,
-       def_indexing,
-       def_inmemory,
-       def_inmemory_priority,
-       def_inmemory_distribute,
-       def_inmemory_compression,
-       def_inmemory_duplicate,
-       def_read_only,
-       def_cellmemory,
-       def_inmemory_service,
-       def_inmemory_service_name
-  FROM sys.dba_part_tables
- WHERE owner = :schema_name
- ORDER BY table_name
+SELECT pt.owner,
+       pt.table_name,
+       pt.partitioning_type,
+       pt.subpartitioning_type,
+       pt.interval,
+       CAST('NO' AS VARCHAR2(3)) AS autolist,
+       CAST('NO' AS VARCHAR2(3)) AS autolist_subpartition,
+       pt.is_nested,
+       pt.def_tablespace_name,
+       pt.def_pct_free,
+       pt.def_pct_used,
+       pt.def_ini_trans,
+       pt.def_max_trans,
+       pt.def_initial_extent,
+       pt.def_next_extent,
+       pt.def_min_extents,
+       pt.def_max_extents,
+       pt.def_max_size,
+       pt.def_pct_increase,
+       pt.def_freelists,
+       pt.def_freelist_groups,
+       pt.def_logging,
+       pt.def_compression,
+       pt.def_compress_for,
+       pt.def_buffer_pool,
+       pt.def_flash_cache,
+       pt.def_cell_flash_cache,
+       pt.ref_ptn_constraint_name,
+       pt.def_segment_creation,
+       pt.def_indexing
+  FROM sys.dba_part_tables pt
+ WHERE pt.owner = :schema_name
+ ORDER BY pt.table_name
 """
 
 sql_part_key_columns = """
@@ -175,15 +168,7 @@ SELECT table_name,
        compress_for,
        flash_cache,
        cell_flash_cache,
-       indexing,
-       inmemory,
-       inmemory_priority,
-       inmemory_distribute,
-       inmemory_compression,
-       inmemory_duplicate,
-       read_only,
-       inmemory_service,
-       inmemory_service_name
+       indexing
   FROM sys.dba_tab_partitions
  WHERE table_owner = :schema_name
  ORDER BY table_name, partition_position
@@ -197,7 +182,6 @@ SELECT table_name,
   FROM sys.dba_tab_comments
  WHERE owner = :schema_name
    AND comments IS NOT NULL
-   AND origin_con_id = TO_NUMBER (SYS_CONTEXT ('USERENV', 'CON_ID'))
  UNION ALL
 SELECT cc.table_name,
        cc.column_name,
@@ -210,7 +194,6 @@ SELECT cc.table_name,
    AND cc.owner = tc.owner
  WHERE cc.owner = :schema_name
    AND cc.comments IS NOT NULL
-   AND cc.origin_con_id = TO_NUMBER (SYS_CONTEXT ('USERENV', 'CON_ID'))
  ORDER BY table_name, order_num
 """
 

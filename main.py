@@ -588,7 +588,8 @@ class Table:
 
     def get_collation(self):
         collation = ""
-        if self.default_collation and self.default_collation != "USING_NLS_COMP":
+        if (self.default_collation and self.default_collation != "USING_NLS_COMP"
+                and str(self.default_collation) != "nan"):
             collation = f"\nDEFAULT COLLATION {self.default_collation}"
         return get_case_formatted(collation, "keyword")
 
@@ -769,16 +770,32 @@ class Table:
         print(f"   Stored in {file_directory}/{file_name}")
 
 
-def get_df_tables(engine, schema_name):
-    return pd.read_sql_query(sql.sql_tables, engine, params={'schema_name': schema_name})
+def get_column_exists(df_column_exists, view_name, column_name):
+    return df_column_exists.loc[(df_column_exists['view_name'] == view_name) &
+                                (df_column_exists['column_name'] == column_name), 'column_exists'].values[0]
 
 
-def get_df_tab_columns(engine, schema_name):
-    return pd.read_sql_query(sql.sql_tab_columns, engine, params={'schema_name': schema_name})
+def get_df_tables(engine, schema_name, df_column_exists):
+    sql_tables = sql.sql_tables
+    if get_column_exists(df_column_exists, 'DBA_TABLES', 'DEFAULT_COLLATION') == "Y":
+        sql_tables = sql_tables.replace("CAST(NULL AS VARCHAR2(100)) AS default_collation", "t.default_collation")
+    return pd.read_sql_query(sql_tables, engine, params={'schema_name': schema_name})
 
 
-def get_df_part_tables(engine, schema_name):
-    return pd.read_sql_query(sql.sql_part_tables, engine, params={'schema_name': schema_name})
+def get_df_tab_columns(engine, schema_name, df_column_exists):
+    sql_tab_columns = sql.sql_tab_columns
+    if get_column_exists(df_column_exists, 'DBA_TAB_COLS', 'COLLATION') == "Y":
+        sql_tab_columns = sql_tab_columns.replace("CAST(NULL AS VARCHAR2(100)) AS collation", "c.collation")
+    return pd.read_sql_query(sql_tab_columns, engine, params={'schema_name': schema_name})
+
+
+def get_df_part_tables(engine, schema_name, df_column_exists):
+    sql_part_tables = sql.sql_part_tables
+    if get_column_exists(df_column_exists, 'DBA_PART_TABLES', 'AUTOLIST') == "Y":
+        sql_part_tables = sql_part_tables.replace("CAST('NO' AS VARCHAR2(3)) AS autolist", "pt.autolist")
+    if get_column_exists(df_column_exists, 'DBA_PART_TABLES', 'AUTOLIST_SUBPARTITION') == "Y":
+        sql_part_tables = sql_part_tables.replace("CAST('NO' AS VARCHAR2(3)) AS autolist_subpartition", "pt.autolist_subpartition")
+    return pd.read_sql_query(sql_part_tables, engine, params={'schema_name': schema_name})
 
 
 def get_df_part_key_columns(engine, schema_name):
@@ -815,8 +832,12 @@ def get_db_engine():
     db_password = conf_con['database']['password']
     db_host = conf_con['database']['host']
     db_port = conf_con['database']['port']
-    db_service_name = conf_con['database']['service_name']
-    connection_string = f"oracle+cx_oracle://{db_username}:{db_password}@{db_host}:{db_port}/?service_name={db_service_name}"
+    try:
+        db_service_name = conf_con['database']['service_name']
+        connection_string = f"oracle+cx_oracle://{db_username}:{db_password}@{db_host}:{db_port}/?service_name={db_service_name}"
+    except KeyError:
+        db_sid= conf_con['database']['sid']
+        connection_string = f"oracle+cx_oracle://{db_username}:{db_password}@{db_host}:{db_port}/{db_sid}"
     return create_engine(connection_string, arraysize=1000)
 
 
@@ -836,11 +857,16 @@ def get_args():
     return arg_parser.parse_args()
 
 
+def get_df_column_exists(engine):
+    return pd.read_sql_query(sql.sql_column_exists, engine)
+
+
 def get_db_metadata(schema_name):
     engine = get_db_engine()
-    db_metadata = (get_df_tables(engine, schema_name),
-                   get_df_tab_columns(engine, schema_name),
-                   get_df_part_tables(engine, schema_name),
+    df_column_exists = get_df_column_exists(engine)
+    db_metadata = (get_df_tables(engine, schema_name, df_column_exists),
+                   get_df_tab_columns(engine, schema_name, df_column_exists),
+                   get_df_part_tables(engine, schema_name, df_column_exists),
                    get_df_part_key_columns(engine, schema_name),
                    get_df_tab_partitions(engine, schema_name),
                    get_df_comments(engine, schema_name),
