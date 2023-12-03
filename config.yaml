@@ -22,6 +22,7 @@ comments:
 indexes: "yes" # yes|no
 constraints: "yes" # yes|no
 prompts: "yes" # yes|no
+grants: "yes" # yes|no
 
 directory:
   # Examples:

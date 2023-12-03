@@ -62,3 +62,20 @@ nocache;
 comment on table EXTORA_APP."t_lowercase_RANGE_PART_INTERVAL_DATE" is 'Comment for table t_lowercase_RANGE_PART_INTERVAL_DATE';
 comment on column EXTORA_APP."t_lowercase_RANGE_PART_INTERVAL_DATE".SALE_DATE       is 'Column comment for SALES_DATE in t_lowercase_RANGE_PART_INTERVAL_DATE';
 comment on column EXTORA_APP."t_lowercase_RANGE_PART_INTERVAL_DATE"."Col_lowercase" is 'Column comment for "Col_lowercase" in t_lowercase_RANGE_PART_INTERVAL_DATE';
+
+
+prompt Grants on table EXTORA_APP."t_lowercase_RANGE_PART_INTERVAL_DATE" to APP_ROLE
+grant alter, debug, delete, flashback, insert, on commit refresh, query rewrite, read, select, update on EXTORA_APP."t_lowercase_RANGE_PART_INTERVAL_DATE" to APP_ROLE;
+
+prompt Grants on table EXTORA_APP."t_lowercase_RANGE_PART_INTERVAL_DATE" to EXTORA_USR
+grant alter, debug, flashback, index, on commit refresh, query rewrite, read, references on EXTORA_APP."t_lowercase_RANGE_PART_INTERVAL_DATE" to EXTORA_USR;
+grant delete, insert, select, update on EXTORA_APP."t_lowercase_RANGE_PART_INTERVAL_DATE" to EXTORA_USR with grant option;
+
+prompt Grants on table EXTORA_APP."t_lowercase_RANGE_PART_INTERVAL_DATE" to READ_ROLE
+grant read on EXTORA_APP."t_lowercase_RANGE_PART_INTERVAL_DATE" to READ_ROLE;
+
+prompt Grants on table EXTORA_APP."t_lowercase_RANGE_PART_INTERVAL_DATE" to USER_ROLE
+grant select on EXTORA_APP."t_lowercase_RANGE_PART_INTERVAL_DATE" to USER_ROLE;
+
+prompt Grants on table EXTORA_APP."t_lowercase_RANGE_PART_INTERVAL_DATE" to "lowercase_Role"
+grant delete, insert, update on EXTORA_APP."t_lowercase_RANGE_PART_INTERVAL_DATE" to "lowercase_Role";

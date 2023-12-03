@@ -149,9 +149,18 @@ def get_object_name(object_owner, object_name, config_name_for_upper):
             + get_case_formatted(object_name, config_name_for_upper))
 
 
-def get_prompt(prompt_text, object_name):
+def get_prompt(prompt_text, *values):
     if conf["prompts"] == "yes":
-        return f"""{get_case_formatted("PROMPT", "keyword")} {prompt_text}{object_name}\n"""
+        has_placeholders = re.search(r'<:1>', prompt_text)
+        prompt = get_case_formatted("PROMPT", "keyword")
+        if has_placeholders:
+            prompt += f" {prompt_text}\n"
+        else:
+            prompt += f" {prompt_text}<:1>\n"
+        for i, value in enumerate(values, 1):
+            placeholder = '<:' + str(i) + '>'
+            prompt = prompt.replace(placeholder, str(value))
+        return prompt
     else:
         return ""
 
@@ -534,18 +543,19 @@ class Constraint:
 class Table:
     def __init__(self,
                  table, part_table, columns, comments, part_key_columns, tab_partitions, indexes, index_columns,
-                 tab_constraints, tab_constraint_columns):
+                 tab_constraints, tab_constraint_columns, tab_grants):
         self.max_column_name_length = None
         self.ddl = ""
+        self.part_table = part_table
         self.columns = columns
         self.comments = comments
-        self.indexes = indexes
-        self.tab_constraints = tab_constraints
-        self.tab_constraint_columns = tab_constraint_columns
-        self.index_columns = index_columns
-        self.part_table = part_table
         self.part_key_columns = part_key_columns
         self.tab_partitions = tab_partitions
+        self.indexes = indexes
+        self.index_columns = index_columns
+        self.tab_constraints = tab_constraints
+        self.tab_constraint_columns = tab_constraint_columns
+        self.tab_grants = tab_grants
         self.owner = table.owner
         self.table_name = table.table_name
         self.table_full_name = None
@@ -689,7 +699,7 @@ class Table:
                     constraints += ",\n"
                 constraints += constraint.get_constraint()
         if constraints != "":
-            constraints += ");\n\n"
+            constraints += ");\n\n\n"
         return constraints
 
     def get_comments(self):
@@ -714,7 +724,39 @@ class Table:
                                  .replace("<:3>", comment_row.comments))
         if comments != "":
             comments = comments+"\n"
+            if conf["comments"]["empty_line_after_comment"] == "no":
+                comments = comments+"\n"
         return comments
+
+    def get_grants(self):
+        grants = ""
+        if conf["grants"] == "yes":
+            tab_grants_grouped = (self.tab_grants
+                                  .groupby(['grantee', 'grantable'])['privilege']
+                                  .apply(lambda x: ', '.join(sorted(x)))
+                                  .reset_index()
+                                  .sort_values(['grantee', 'grantable']))
+            previous_grantee = ""
+            for tab_grants_group in tab_grants_grouped.itertuples():
+                grantee = get_case_formatted(tab_grants_group.grantee, "identifier")
+                privileges = get_case_formatted(tab_grants_group.privilege, "keyword")
+                grant_option = ""
+                if tab_grants_group.grantable == "YES":
+                    grant_option = " WITH GRANT OPTION"
+
+                prompt = get_prompt("Grants on table <:1> to <:2>", self.table_full_name, grantee)
+                if previous_grantee == grantee:
+                    prompt = ""
+                    grants = grants[:-1]  # remove last newline
+                grant = get_case_formatted(f"GRANT <:1> ON <:2> TO <:3>{grant_option};\n\n", "keyword")
+                grants += prompt + (grant
+                                    .replace("<:1>", privileges)
+                                    .replace("<:2>", self.table_full_name)
+                                    .replace("<:3>", grantee))
+                previous_grantee = grantee
+        if grants != "":
+            grants = grants+"\n"
+        return grants
 
     def generate_ddl(self):
         self.table_full_name = get_object_name(self.owner, self.table_name, "identifier")
@@ -746,6 +788,7 @@ class Table:
         ddl += self.get_comments()
         ddl += self.get_indexes()
         ddl += self.get_constraints()
+        ddl += self.get_grants()
 
         self.ddl = replace_multiple_newlines(ddl)
 
@@ -825,6 +868,10 @@ def get_df_constraint_columns(engine, schema_name):
     return pd.read_sql_query(sql.sql_constraint_columns, engine, params={'schema_name': schema_name})
 
 
+def get_df_grants(engine, schema_name):
+    return pd.read_sql_query(sql.sql_grants, engine, params={'schema_name': schema_name})
+
+
 def get_db_engine():
     conf_con = load_config('config_con.yaml')
     db_username = conf_con['database']['username']
@@ -872,7 +919,8 @@ def get_db_metadata(schema_name):
                    get_df_indexes(engine, schema_name),
                    get_df_index_columns(engine, schema_name),
                    get_df_constraints(engine, schema_name),
-                   get_df_constraint_columns(engine, schema_name))
+                   get_df_constraint_columns(engine, schema_name),
+                   get_df_grants(engine, schema_name))
     engine.dispose()
     return db_metadata
 
@@ -886,7 +934,8 @@ def get_table_dfs(table_row, metadata):
      df_all_indexes,
      df_all_index_columns,
      df_all_constraints,
-     df_all_constraint_columns) = metadata
+     df_all_constraint_columns,
+     df_all_grants) = metadata
 
     df_tab_columns = df_all_tab_columns[df_all_tab_columns["table_name"] == table_row.table_name]
     df_part_tables = df_all_part_tables[df_all_part_tables["table_name"] == table_row.table_name]
@@ -897,6 +946,7 @@ def get_table_dfs(table_row, metadata):
     df_tab_index_columns = df_all_index_columns[df_all_index_columns["table_name"] == table_row.table_name]
     df_tab_constraints = df_all_constraints[df_all_constraints["table_name"] == table_row.table_name]
     df_tab_constraint_columns = df_all_constraint_columns[df_all_constraint_columns["table_name"] == table_row.table_name]
+    df_tab_grants = df_all_grants[df_all_grants["table_name"] == table_row.table_name]
     part_table_row = get_dataframe_namedtuple(df_part_tables, 0)
 
     return (table_row,
@@ -908,7 +958,8 @@ def get_table_dfs(table_row, metadata):
             df_tab_indexes,
             df_tab_index_columns,
             df_tab_constraints,
-            df_tab_constraint_columns)
+            df_tab_constraint_columns,
+            df_tab_grants)
 
 
 if __name__ == "__main__":

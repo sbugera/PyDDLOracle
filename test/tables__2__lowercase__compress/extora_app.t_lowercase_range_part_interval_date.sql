@@ -114,3 +114,20 @@ alter table extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE" add (
   deferrable initially deferred
   using index extora_app."uk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk"
   enable validate);
+
+
+prompt Grants on table extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE" to app_role
+grant alter, debug, delete, flashback, insert, on commit refresh, query rewrite, read, select, update on extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE" to app_role;
+
+prompt Grants on table extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE" to extora_usr
+grant alter, debug, flashback, index, on commit refresh, query rewrite, read, references on extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE" to extora_usr;
+grant delete, insert, select, update on extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE" to extora_usr with grant option;
+
+prompt Grants on table extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE" to read_role
+grant read on extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE" to read_role;
+
+prompt Grants on table extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE" to user_role
+grant select on extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE" to user_role;
+
+prompt Grants on table extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE" to "lowercase_Role"
+grant delete, insert, update on extora_app."t_lowercase_RANGE_PART_INTERVAL_DATE" to "lowercase_Role";
