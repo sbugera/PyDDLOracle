@@ -90,3 +90,20 @@ ALTER TABLE extora_app.sales ADD (
   DEFERRABLE INITIALLY IMMEDIATE
   USING INDEX extora_app.uk_sales
   ENABLE VALIDATE);
+
+
+PROMPT Grants on table extora_app.sales to app_role
+GRANT ALTER, DEBUG, DELETE, FLASHBACK, INSERT, ON COMMIT REFRESH, QUERY REWRITE, READ, SELECT, UPDATE ON extora_app.sales TO app_role;
+
+PROMPT Grants on table extora_app.sales to extora_usr
+GRANT ALTER, DEBUG, FLASHBACK, INDEX, ON COMMIT REFRESH, QUERY REWRITE, READ, REFERENCES ON extora_app.sales TO extora_usr;
+GRANT DELETE, INSERT, SELECT, UPDATE ON extora_app.sales TO extora_usr WITH GRANT OPTION;
+
+PROMPT Grants on table extora_app.sales to read_role
+GRANT READ ON extora_app.sales TO read_role;
+
+PROMPT Grants on table extora_app.sales to user_role
+GRANT SELECT ON extora_app.sales TO user_role;
+
+PROMPT Grants on table extora_app.sales to "lowercase_Role"
+GRANT DELETE, INSERT, UPDATE ON extora_app.sales TO "lowercase_Role";

@@ -104,3 +104,20 @@ comment on table EXTORA_APP.SALES is 'Sales';
 comment on column EXTORA_APP.SALES.SALE_ID     is 'Sale ID';
 comment on column EXTORA_APP.SALES.SALE_DATE   is 'Sale Date';
 comment on column EXTORA_APP.SALES.SALE_AMOUNT is 'Sale Ammount';
+
+
+prompt Grants on table EXTORA_APP.SALES to APP_ROLE
+grant alter, debug, delete, flashback, insert, on commit refresh, query rewrite, read, select, update on EXTORA_APP.SALES to APP_ROLE;
+
+prompt Grants on table EXTORA_APP.SALES to EXTORA_USR
+grant alter, debug, flashback, index, on commit refresh, query rewrite, read, references on EXTORA_APP.SALES to EXTORA_USR;
+grant delete, insert, select, update on EXTORA_APP.SALES to EXTORA_USR with grant option;
+
+prompt Grants on table EXTORA_APP.SALES to READ_ROLE
+grant read on EXTORA_APP.SALES to READ_ROLE;
+
+prompt Grants on table EXTORA_APP.SALES to USER_ROLE
+grant select on EXTORA_APP.SALES to USER_ROLE;
+
+prompt Grants on table EXTORA_APP.SALES to "lowercase_Role"
+grant delete, insert, update on EXTORA_APP.SALES to "lowercase_Role";

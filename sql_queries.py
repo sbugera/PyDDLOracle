@@ -296,3 +296,18 @@ SELECT cc.table_name,
    AND c.constraint_type IN ('P', 'U')
  ORDER BY cc.table_name, cc.constraint_name, cc.position
 """
+
+sql_grants = """
+SELECT tp.grantee,
+       tp.owner,
+       tp.table_name,
+       tp.privilege,
+       tp.grantable
+  FROM sys.dba_tab_privs tp
+ WHERE tp.owner = :schema_name
+ ORDER BY tp.owner,
+          tp.table_name,
+          tp.grantee,
+          tp.grantable,
+          tp.privilege
+"""

@@ -154,3 +154,20 @@ alter table extora_app.sales add (
   deferrable initially immediate
   using index extora_app.uk_sales
   enable validate);
+
+
+prompt Grants on table extora_app.sales to app_role
+grant alter, debug, delete, flashback, insert, on commit refresh, query rewrite, read, select, update on extora_app.sales to app_role;
+
+prompt Grants on table extora_app.sales to extora_usr
+grant alter, debug, flashback, index, on commit refresh, query rewrite, read, references on extora_app.sales to extora_usr;
+grant delete, insert, select, update on extora_app.sales to extora_usr with grant option;
+
+prompt Grants on table extora_app.sales to read_role
+grant read on extora_app.sales to read_role;
+
+prompt Grants on table extora_app.sales to user_role
+grant select on extora_app.sales to user_role;
+
+prompt Grants on table extora_app.sales to "lowercase_Role"
+grant delete, insert, update on extora_app.sales to "lowercase_Role";

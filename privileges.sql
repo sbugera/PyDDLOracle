@@ -12,3 +12,4 @@ grant select on sys.dba_ind_columns      to <your_db_username>;
 grant select on sys.dba_constraints      to <your_db_username>;
 grant select on sys.dba_recyclebin       to <your_db_username>;
 grant select on sys.dba_cons_columns     to <your_db_username>;
+grant select on sys.dba_tab_privs        to <your_db_username>;

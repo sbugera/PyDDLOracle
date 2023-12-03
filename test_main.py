@@ -23,6 +23,7 @@ comments:
 indexes: "yes"
 constraints: "yes"
 prompts: "yes"
+grants: "yes"
 """)
 m.conf = conf
 
@@ -43,7 +44,8 @@ def store_metadata_into_xlsx():
      df_all_indexes,
      df_all_index_columns,
      df_all_constraints,
-     df_all_constraint_columns) = db_metadata
+     df_all_constraint_columns,
+     df_all_grants) = db_metadata
 
     df_tables.to_excel("test/dfs/df_tables.xlsx", index=False)
     df_all_tab_columns.to_excel("test/dfs/df_all_tab_columns.xlsx", index=False)
@@ -55,6 +57,7 @@ def store_metadata_into_xlsx():
     df_all_index_columns.to_excel("test/dfs/df_all_index_columns.xlsx", index=False)
     df_all_constraints.to_excel("test/dfs/df_all_constraints.xlsx", index=False)
     df_all_constraint_columns.to_excel("test/dfs/df_all_constraint_columns.xlsx", index=False)
+    df_all_grants.to_excel("test/dfs/df_all_grants.xlsx", index=False)
 
 
 def store_metadata_into_files():
@@ -69,7 +72,8 @@ def store_metadata_into_files():
      df_all_indexes,
      df_all_index_columns,
      df_all_constraints,
-     df_all_constraint_columns) = db_metadata
+     df_all_constraint_columns,
+     df_all_grants) = db_metadata
 
     df_tables.to_csv("test/dfs/df_tables.csv", index=False)
     df_all_tab_columns.to_csv("test/dfs/df_all_tab_columns.csv", index=False)
@@ -81,6 +85,7 @@ def store_metadata_into_files():
     df_all_index_columns.to_csv("test/dfs/df_all_index_columns.csv", index=False)
     df_all_constraints.to_csv("test/dfs/df_all_constraints.csv", index=False)
     df_all_constraint_columns.to_csv("test/dfs/df_all_constraint_columns.csv", index=False)
+    df_all_grants.to_csv("test/dfs/df_all_grants.csv", index=False)
 
 
 def get_metadata_from_xlsx():
@@ -94,6 +99,7 @@ def get_metadata_from_xlsx():
     df_all_index_columns = pd.read_excel("test/dfs/df_all_index_columns.xlsx", na_values=[""])
     df_all_constraints = pd.read_excel("test/dfs/df_all_constraints.xlsx", na_values=[""])
     df_all_constraint_columns = pd.read_excel("test/dfs/df_all_constraint_columns.xlsx", na_values=[""])
+    df_all_grants = pd.read_excel("test/dfs/df_all_grants.xlsx", na_values=[""])
 
     return (df_tables,
             df_all_tab_columns,
@@ -104,7 +110,8 @@ def get_metadata_from_xlsx():
             df_all_indexes,
             df_all_index_columns,
             df_all_constraints,
-            df_all_constraint_columns)
+            df_all_constraint_columns,
+            df_all_grants)
 
 
 def get_metadata_from_files():
@@ -118,6 +125,7 @@ def get_metadata_from_files():
     df_all_index_columns = pd.read_csv("test/dfs/df_all_index_columns.csv", na_values=[""])
     df_all_constraints = pd.read_csv("test/dfs/df_all_constraints.csv", na_values=[""])
     df_all_constraint_columns = pd.read_csv("test/dfs/df_all_constraint_columns.csv", na_values=[""])
+    df_all_grants = pd.read_csv("test/dfs/df_all_grants.csv", na_values=[""])
 
     return (df_tables,
             df_all_tab_columns,
@@ -128,7 +136,8 @@ def get_metadata_from_files():
             df_all_indexes,
             df_all_index_columns,
             df_all_constraints,
-            df_all_constraint_columns)
+            df_all_constraint_columns,
+            df_all_grants)
 
 
 def get_content_from_file(file_path):
@@ -156,7 +165,7 @@ def test_get_table_dfs():
     df_tables, *db_metadata = get_metadata_from_files()
     db_table_row = df_tables.iloc[0]
     tabel_dfs = m.get_table_dfs(db_table_row, db_metadata)
-    assert len(tabel_dfs) == 10
+    assert len(tabel_dfs) == 11
 
 
 def test_table_ddl():
@@ -185,6 +194,7 @@ def test_tables_ddl__1__uppercase__logging():
     m.conf["indexes"] = "yes"
     m.conf["constraints"] = "yes"
     m.conf["prompts"] = "yes"
+    m.conf["grants"] = "yes"
     checking_tables_ddl("1__uppercase__logging")
 
 
@@ -204,6 +214,7 @@ def test_tables_ddl__2__lowercase__compress():
     m.conf["indexes"] = "yes"
     m.conf["constraints"] = "yes"
     m.conf["prompts"] = "yes"
+    m.conf["grants"] = "yes"
     checking_tables_ddl("2__lowercase__compress")
 
 
@@ -223,6 +234,7 @@ def test_tables_ddl__3__no_storage():
     m.conf["indexes"] = "yes"
     m.conf["constraints"] = "yes"
     m.conf["prompts"] = "no"
+    m.conf["grants"] = "yes"
     checking_tables_ddl("3__no_storage")
 
 
@@ -242,6 +254,7 @@ def test_tables_ddl__4__only_tablespace():
     m.conf["indexes"] = "yes"
     m.conf["constraints"] = "yes"
     m.conf["prompts"] = "no"
+    m.conf["grants"] = "no"
     checking_tables_ddl("4__only_tablespace")
 
 
@@ -261,6 +274,7 @@ def test_tables_ddl__5__uppercase__lowercase__compact_part():
     m.conf["indexes"] = "yes"
     m.conf["constraints"] = "yes"
     m.conf["prompts"] = "yes"
+    m.conf["grants"] = "yes"
     checking_tables_ddl("5__uppercase__lowercase__compact_part")
 
 
@@ -280,6 +294,7 @@ def test_tables_ddl__6__lowercase__uppercase__no_empty_line():
     m.conf["indexes"] = "no"
     m.conf["constraints"] = "no"
     m.conf["prompts"] = "yes"
+    m.conf["grants"] = "yes"
     checking_tables_ddl("6__lowercase__uppercase__no_empty_line")
 
 
