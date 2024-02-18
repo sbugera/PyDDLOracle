@@ -7,22 +7,24 @@ import main as m
 import pandas as pd
 import utils as ut
 from utils import conf
+from table import get_table_dfs
+from db_metadata import get_db_metadata
 
 
 def store_metadata_into_xlsx():
-    db_metadata = m.get_db_metadata("EXTORA_APP")
+    metadata = get_db_metadata("EXTORA_APP")
 
-    (df_tables,
-     df_all_tab_columns,
-     df_all_part_tables,
-     df_all_part_key_columns,
-     df_all_tab_partitions,
-     df_all_comments,
-     df_all_indexes,
-     df_all_index_columns,
-     df_all_constraints,
-     df_all_constraint_columns,
-     df_all_grants) = db_metadata
+    df_tables = metadata["tables"]
+    df_all_tab_columns = metadata["tab_columns"]
+    df_all_part_tables = metadata["part_tables"]
+    df_all_part_key_columns = metadata["part_key_columns"]
+    df_all_tab_partitions = metadata["tab_partitions"]
+    df_all_comments = metadata["comments"]
+    df_all_indexes = metadata["indexes"]
+    df_all_index_columns = metadata["index_columns"]
+    df_all_constraints = metadata["constraints"]
+    df_all_constraint_columns = metadata["constraint_columns"]
+    df_all_grants = metadata["grants"]
 
     df_tables.to_excel("test/dfs/df_tables.xlsx", index=False)
     df_all_tab_columns.to_excel("test/dfs/df_all_tab_columns.xlsx", index=False)
@@ -38,19 +40,19 @@ def store_metadata_into_xlsx():
 
 
 def store_metadata_into_files():
-    db_metadata = m.get_db_metadata("EXTORA_APP")
+    metadata = get_db_metadata("EXTORA_APP")
 
-    (df_tables,
-     df_all_tab_columns,
-     df_all_part_tables,
-     df_all_part_key_columns,
-     df_all_tab_partitions,
-     df_all_comments,
-     df_all_indexes,
-     df_all_index_columns,
-     df_all_constraints,
-     df_all_constraint_columns,
-     df_all_grants) = db_metadata
+    df_tables = metadata["tables"]
+    df_all_tab_columns = metadata["tab_columns"]
+    df_all_part_tables = metadata["part_tables"]
+    df_all_part_key_columns = metadata["part_key_columns"]
+    df_all_tab_partitions = metadata["tab_partitions"]
+    df_all_comments = metadata["comments"]
+    df_all_indexes = metadata["indexes"]
+    df_all_index_columns = metadata["index_columns"]
+    df_all_constraints = metadata["constraints"]
+    df_all_constraint_columns = metadata["constraint_columns"]
+    df_all_grants = metadata["grants"]
 
     df_tables.to_csv("test/dfs/df_tables.csv", index=False)
     df_all_tab_columns.to_csv("test/dfs/df_all_tab_columns.csv", index=False)
@@ -78,17 +80,18 @@ def get_metadata_from_xlsx():
     df_all_constraint_columns = pd.read_excel("test/dfs/df_all_constraint_columns.xlsx", na_values=[""])
     df_all_grants = pd.read_excel("test/dfs/df_all_grants.xlsx", na_values=[""])
 
-    return (df_tables,
-            df_all_tab_columns,
-            df_all_part_tables,
-            df_all_part_key_columns,
-            df_all_tab_partitions,
-            df_all_comments,
-            df_all_indexes,
-            df_all_index_columns,
-            df_all_constraints,
-            df_all_constraint_columns,
-            df_all_grants)
+    metadata = {"tables": df_tables,
+                "tab_columns": df_all_tab_columns,
+                "part_tables": df_all_part_tables,
+                "part_key_columns": df_all_part_key_columns,
+                "tab_partitions": df_all_tab_partitions,
+                "comments": df_all_comments,
+                "indexes": df_all_indexes,
+                "index_columns": df_all_index_columns,
+                "constraints": df_all_constraints,
+                "constraint_columns": df_all_constraint_columns,
+                "grants": df_all_grants}
+    return metadata
 
 
 def get_metadata_from_files():
@@ -104,17 +107,18 @@ def get_metadata_from_files():
     df_all_constraint_columns = pd.read_csv("test/dfs/df_all_constraint_columns.csv", na_values=[""])
     df_all_grants = pd.read_csv("test/dfs/df_all_grants.csv", na_values=[""])
 
-    return (df_tables,
-            df_all_tab_columns,
-            df_all_part_tables,
-            df_all_part_key_columns,
-            df_all_tab_partitions,
-            df_all_comments,
-            df_all_indexes,
-            df_all_index_columns,
-            df_all_constraints,
-            df_all_constraint_columns,
-            df_all_grants)
+    metadata = {"tables": df_tables,
+                "tab_columns": df_all_tab_columns,
+                "part_tables": df_all_part_tables,
+                "part_key_columns": df_all_part_key_columns,
+                "tab_partitions": df_all_tab_partitions,
+                "comments": df_all_comments,
+                "indexes": df_all_indexes,
+                "index_columns": df_all_index_columns,
+                "constraints": df_all_constraints,
+                "constraint_columns": df_all_constraint_columns,
+                "grants": df_all_grants}
+    return metadata
 
 
 def get_content_from_file(file_path):
@@ -125,9 +129,8 @@ def get_content_from_file(file_path):
 
 def checking_tables_ddl(case_name):
     schema_name = "EXTORA_APP"
-    # df_tables, *db_metadata = get_metadata_from_xlsx()
-    df_tables, *db_metadata = get_metadata_from_files()
-    # df_tables, *db_metadata = m.get_db_metadata(schema_name)
+    db_metadata = get_metadata_from_files()
+    df_tables = db_metadata["tables"]
     for db_table_row in df_tables.itertuples():
         tabel_dfs = m.get_table_dfs(db_table_row, db_metadata)
         table = m.Table(*tabel_dfs)
@@ -139,25 +142,26 @@ def checking_tables_ddl(case_name):
 
 
 def test_get_table_dfs():
-    # df_tables, *db_metadata = get_metadata_from_xlsx()
-    df_tables, *db_metadata = get_metadata_from_files()
+    db_metadata = get_metadata_from_files()
+    df_tables = db_metadata["tables"]
     db_table_row = df_tables.iloc[0]
-    tabel_dfs = m.get_table_dfs(db_table_row, db_metadata)
+    tabel_dfs = get_table_dfs(db_table_row, db_metadata)
     assert len(tabel_dfs) == 11
 
 
 def test_table_ddl():
-    # df_tables, *db_metadata = get_metadata_from_xlsx()
-    df_tables, *db_metadata = get_metadata_from_files()
+    db_metadata = get_metadata_from_files()
+    df_tables = db_metadata["tables"]
     db_table_row = df_tables.iloc[0]
-    tabel_dfs = m.get_table_dfs(db_table_row, db_metadata)
+    tabel_dfs = get_table_dfs(db_table_row, db_metadata)
     table = m.Table(*tabel_dfs)
     table.generate_ddl()
     assert len(table.ddl) > 0
 
 
 def test_store_ddl_into_file():
-    df_tables, *db_metadata = get_metadata_from_files()
+    db_metadata = get_metadata_from_files()
+    df_tables = db_metadata["tables"]
     df_table = df_tables.iloc[0]
     tabel_dfs = m.get_table_dfs(df_table, db_metadata)
     table = m.Table(*tabel_dfs)
@@ -303,5 +307,6 @@ def test_tables_ddl__6__lowercase__uppercase__no_empty_line():
     checking_tables_ddl("6__lowercase__uppercase__no_empty_line")
 
 
-# store_metadata_into_xlsx()
-# store_metadata_into_files()
+if os.environ.get('RUN_LOCAL_ONLY', 'False') == 'True':
+    store_metadata_into_xlsx()
+    store_metadata_into_files()
