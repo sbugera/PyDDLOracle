@@ -156,7 +156,8 @@ def checking_tables_ddl(case_name):
         table = m.Table(*tabel_dfs)
         table.generate_ddl()
         ddl = table.ddl
-        expected_ddl = get_content_from_file(f"test/tables__{case_name}/{schema_name.lower()}.{table.table_name.lower()}.sql")
+        file_path = f"test/tables__{case_name}/{schema_name.lower()}.{table.table_name.lower()}.sql"
+        expected_ddl = get_content_from_file(file_path)
         assert ddl == expected_ddl
 
 

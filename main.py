@@ -46,15 +46,15 @@ def pprint(variable):
         pp.pprint(variable)
 
 
-def get_case_formatted(str, config_name_for_upper):
-    if not str:
+def get_case_formatted(value, config_name_for_upper):
+    if not value:
         return ""
-    if str != str.upper():
-        return f'"{str}"'
+    if value != value.upper():
+        return f'"{value}"'
     if conf["case"][config_name_for_upper] == "uppercase":
-        return str.upper()
+        return value.upper()
     else:
-        return str.lower()
+        return value.lower()
 
 
 def add_quotes(value):
@@ -125,7 +125,8 @@ def get_full_storage(indentation, tablespace_name, pct_free, ini_trans, max_tran
         if max_extents == 2147483645:
             storage_tmp += get_case_formatted(f"\n{indentation}            MAXEXTENTS       UNLIMITED", "keyword")
         else:
-            storage_tmp += get_case_formatted(f"\n{indentation}            MAXEXTENTS       {int(max_extents)}", "keyword")
+            storage_tmp += get_case_formatted(
+                f"\n{indentation}            MAXEXTENTS       {int(max_extents)}", "keyword")
     if pct_increase and str(pct_increase) not in ("nan", "DEFAULT", "-1"):
         storage_tmp += get_case_formatted(f"\n{indentation}            PCTINCREASE      {int(pct_increase)}", "keyword")
     if str(pct_increase) in ("nan", "None") and local_index != "YES":
@@ -206,7 +207,7 @@ class Column:
             data_type = f"{data_type}({int(self.data_length)} {char_used})"
         elif data_type.upper() in ("UROWID", "RAW", "NCHAR", "NVARCHAR2"):
             data_type = f"{data_type}({int(self.data_length)})"
-        elif data_type.upper() in ("FLOAT"):
+        elif data_type.upper() == "FLOAT":
             data_type = f"{data_type}({int(self.data_precision)})"
         return data_type
 
@@ -360,7 +361,8 @@ class Partitioning:
                 partitioning = partitioning[:-1]
                 partitioning += "\n)"
             if self.partitioning_type == "HASH":
-                partitioning += get_case_formatted(f"\n{get_indentation()}PARTITIONS {len(self.tab_partitions)}", "keyword")
+                partitioning += get_case_formatted(
+                    f"\n{get_indentation()}PARTITIONS {len(self.tab_partitions)}", "keyword")
                 if conf["storage"]["storage"] in ("only_tablespace", "with_storage"):
                     all_tablespaces = ""
                     for partition in self.tab_partitions.itertuples():
@@ -467,7 +469,8 @@ class Index:
             index += get_case_formatted("\nINVISIBLE", "keyword")
 
         if int(self.degree) > 1:
-            index += get_case_formatted(f"\nPARALLEL ( DEGREE {int(self.degree)} INSTANCES {self.instances} )", "keyword")
+            index += get_case_formatted(
+                f"\nPARALLEL ( DEGREE {int(self.degree)} INSTANCES {self.instances} )", "keyword")
 
         if self.index_type == "NORMAL/REV":
             index += get_case_formatted("\nREVERSE", "keyword")
@@ -542,7 +545,7 @@ class Constraint:
 
 class Table:
     def __init__(self,
-                 table, part_table, columns, comments, part_key_columns, tab_partitions, indexes, index_columns,
+                 table_attr, part_table, columns, comments, part_key_columns, tab_partitions, indexes, index_columns,
                  tab_constraints, tab_constraint_columns, tab_grants):
         self.max_column_name_length = None
         self.ddl = ""
@@ -556,27 +559,27 @@ class Table:
         self.tab_constraints = tab_constraints
         self.tab_constraint_columns = tab_constraint_columns
         self.tab_grants = tab_grants
-        self.owner = table.owner
-        self.table_name = table.table_name
+        self.owner = table_attr.owner
+        self.table_name = table_attr.table_name
         self.table_full_name = None
-        self.default_collation = table.default_collation
-        self.logging = table.logging
-        self.cache = table.cache
-        self.result_cache = table.result_cache
-        self.row_movement = table.row_movement
-        self.compression = table.compression
-        self.compress_for = table.compress_for
-        self.partitioned = table.partitioned
-        self.tablespace_name = table.tablespace_name
-        self.pct_free = table.pct_free
-        self.ini_trans = table.ini_trans
-        self.max_trans = table.max_trans
-        self.min_extents = table.min_extents
-        self.max_extents = table.max_extents
-        self.pct_increase = table.pct_increase
-        self.buffer_pool = table.buffer_pool
-        self.flash_cache = table.flash_cache
-        self.cell_flash_cache = table.cell_flash_cache
+        self.default_collation = table_attr.default_collation
+        self.logging = table_attr.logging
+        self.cache = table_attr.cache
+        self.result_cache = table_attr.result_cache
+        self.row_movement = table_attr.row_movement
+        self.compression = table_attr.compression
+        self.compress_for = table_attr.compress_for
+        self.partitioned = table_attr.partitioned
+        self.tablespace_name = table_attr.tablespace_name
+        self.pct_free = table_attr.pct_free
+        self.ini_trans = table_attr.ini_trans
+        self.max_trans = table_attr.max_trans
+        self.min_extents = table_attr.min_extents
+        self.max_extents = table_attr.max_extents
+        self.pct_increase = table_attr.pct_increase
+        self.buffer_pool = table_attr.buffer_pool
+        self.flash_cache = table_attr.flash_cache
+        self.cell_flash_cache = table_attr.cell_flash_cache
         self.def_tablespace_name = part_table.def_tablespace_name if part_table else ""
         self.def_logging = part_table.def_logging if part_table else ""
         self.def_compression = part_table.def_compression if part_table else ""
@@ -713,7 +716,8 @@ class Table:
                     statement = get_case_formatted(f"COMMENT ON TABLE <:1> IS '<:2>';\n{end_line_char}", "keyword")
                     comments += statement.replace("<:1>", self.table_full_name).replace("<:2>", comment_row.comments)
                 else:
-                    statement = get_case_formatted(f"COMMENT ON COLUMN <:1>.<:2> IS '<:3>';\n{end_line_char}", "keyword")
+                    statement = get_case_formatted(
+                        f"COMMENT ON COLUMN <:1>.<:2> IS '<:3>';\n{end_line_char}", "keyword")
                     column_name = get_case_formatted(comment_row.column_name, "identifier")
                     if conf["comments"]["vertical_alignment"] == "yes":
                         # todo: Vertical alignment consider maximum column name length only for columns with comments
@@ -836,7 +840,8 @@ def get_df_part_tables(engine, schema_name, df_column_exists):
     if get_column_exists(df_column_exists, 'DBA_PART_TABLES', 'AUTOLIST') == "Y":
         sql_part_tables = sql_part_tables.replace("CAST('NO' AS VARCHAR2(3)) AS autolist", "pt.autolist")
     if get_column_exists(df_column_exists, 'DBA_PART_TABLES', 'AUTOLIST_SUBPARTITION') == "Y":
-        sql_part_tables = sql_part_tables.replace("CAST('NO' AS VARCHAR2(3)) AS autolist_subpartition", "pt.autolist_subpartition")
+        sql_part_tables = sql_part_tables.replace("CAST('NO' AS VARCHAR2(3)) AS autolist_subpartition",
+                                                  "pt.autolist_subpartition")
     return pd.read_sql_query(sql_part_tables, engine, params={'schema_name': schema_name})
 
 
@@ -880,9 +885,10 @@ def get_db_engine():
     db_port = conf_con['database']['port']
     try:
         db_service_name = conf_con['database']['service_name']
-        connection_string = f"oracle+cx_oracle://{db_username}:{db_password}@{db_host}:{db_port}/?service_name={db_service_name}"
+        connection_string = (f"oracle+cx_oracle://{db_username}:{db_password}@{db_host}:{db_port}"
+                             f"/?service_name={db_service_name}")
     except KeyError:
-        db_sid= conf_con['database']['sid']
+        db_sid = conf_con['database']['sid']
         connection_string = f"oracle+cx_oracle://{db_username}:{db_password}@{db_host}:{db_port}/{db_sid}"
     return create_engine(connection_string, arraysize=1000)
 
@@ -910,19 +916,19 @@ def get_df_column_exists(engine):
 def get_db_metadata(schema_name):
     engine = get_db_engine()
     df_column_exists = get_df_column_exists(engine)
-    db_metadata = (get_df_tables(engine, schema_name, df_column_exists),
-                   get_df_tab_columns(engine, schema_name, df_column_exists),
-                   get_df_part_tables(engine, schema_name, df_column_exists),
-                   get_df_part_key_columns(engine, schema_name),
-                   get_df_tab_partitions(engine, schema_name),
-                   get_df_comments(engine, schema_name),
-                   get_df_indexes(engine, schema_name),
-                   get_df_index_columns(engine, schema_name),
-                   get_df_constraints(engine, schema_name),
-                   get_df_constraint_columns(engine, schema_name),
-                   get_df_grants(engine, schema_name))
+    metadata = (get_df_tables(engine, schema_name, df_column_exists),
+                get_df_tab_columns(engine, schema_name, df_column_exists),
+                get_df_part_tables(engine, schema_name, df_column_exists),
+                get_df_part_key_columns(engine, schema_name),
+                get_df_tab_partitions(engine, schema_name),
+                get_df_comments(engine, schema_name),
+                get_df_indexes(engine, schema_name),
+                get_df_index_columns(engine, schema_name),
+                get_df_constraints(engine, schema_name),
+                get_df_constraint_columns(engine, schema_name),
+                get_df_grants(engine, schema_name))
     engine.dispose()
-    return db_metadata
+    return metadata
 
 
 def get_table_dfs(table_row, metadata):
@@ -945,7 +951,9 @@ def get_table_dfs(table_row, metadata):
     df_tab_indexes = df_all_indexes[df_all_indexes["table_name"] == table_row.table_name]
     df_tab_index_columns = df_all_index_columns[df_all_index_columns["table_name"] == table_row.table_name]
     df_tab_constraints = df_all_constraints[df_all_constraints["table_name"] == table_row.table_name]
-    df_tab_constraint_columns = df_all_constraint_columns[df_all_constraint_columns["table_name"] == table_row.table_name]
+    df_tab_constraint_columns = df_all_constraint_columns[
+        df_all_constraint_columns["table_name"] == table_row.table_name
+    ]
     df_tab_grants = df_all_grants[df_all_grants["table_name"] == table_row.table_name]
     part_table_row = get_dataframe_namedtuple(df_part_tables, 0)
 
@@ -966,8 +974,8 @@ if __name__ == "__main__":
     args = get_args()
     conf = load_config('config.yaml')
 
-    schema_name = get_db_schema_name(args.schema_name)
-    df_tables, *db_metadata = get_db_metadata(schema_name)
+    db_schema_name = get_db_schema_name(args.schema_name)
+    df_tables, *db_metadata = get_db_metadata(db_schema_name)
 
     for db_table_row in df_tables.itertuples():
         print(db_table_row.table_name)
