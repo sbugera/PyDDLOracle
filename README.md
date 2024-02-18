@@ -43,7 +43,8 @@ python main.py
 * Tables
   * Columns
   * Constraints (Foreign Key constraints are not implemented yet)
-  * Partitions (subpartitions are not implemented yet)
-  * Storage parameters
+  * Partitions (sub-partitions and reference partitions are not implemented yet)
+  * Storage parameters (LOB storage parameters are not implemented yet)
   * Indexes
   * Comments
+  * Grants
