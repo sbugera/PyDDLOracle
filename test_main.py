@@ -2,30 +2,8 @@ import os
 import shutil
 import main as m
 import pandas as pd
-import yaml
 
-conf = yaml.safe_load("""
-case:
-  keyword: "uppercase"
-  identifier: "uppercase"
-storage:
-  storage: "with_storage"
-  partitions: "compact"
-  collation: "yes"
-  logging: "yes"
-  compression: "yes"
-  cache: "yes"
-  result_cache: "yes"
-comments:
-  comments: "yes"
-  empty_line_after_comment: "no"
-  vertical_alignment: "yes"
-indexes: "yes"
-constraints: "yes"
-prompts: "yes"
-grants: "yes"
-""")
-m.conf = conf
+m.conf = m.load_config("config.yaml")
 
 
 if not os.path.isfile("config_con.yaml"):
@@ -177,6 +155,33 @@ def test_table_ddl():
     table = m.Table(*tabel_dfs)
     table.generate_ddl()
     assert len(table.ddl) > 0
+
+
+def test_store_ddl_into_file():
+    df_tables, *db_metadata = get_metadata_from_files()
+    df_table = df_tables.iloc[0]
+    tabel_dfs = m.get_table_dfs(df_table, db_metadata)
+    table = m.Table(*tabel_dfs)
+    table.generate_ddl()
+    m.conf["file_path"]["table"] = "./test_results/{OBJECT_OWNER}/tables/{object_owner}.{object_name}.sql"
+    table.store_ddl_into_file()
+    file_path = m.conf["file_path"]["table"].format(OBJECT_OWNER=df_table.owner.upper(),
+                                                    object_owner=df_table.owner.lower(),
+                                                    object_name=df_table.table_name.lower())
+    assert os.path.isfile(file_path)
+    shutil.rmtree("./test_results")
+
+
+def test_get_file_path_1():
+    m.conf["file_path"]["table"] = "./{OBJECT_OWNER}/{object_type}/{OBJECT_OWNER}.{object_name}.sql"
+    file_path = m.get_file_path("table", "SCHEMA_NAME", "TABLE_NAME")
+    assert file_path == "./SCHEMA_NAME/table/SCHEMA_NAME.table_name.sql"
+
+
+def test_get_file_path_2():
+    m.conf["file_path"]["trigger"] = "./{object_owner}/{OBJECT_TYPE}S/{object_owner}.{OBJECT_NAME}.trg"
+    file_path = m.get_file_path("trigger", "schema_name", "trigger_name")
+    assert file_path == "./schema_name/TRIGGERS/schema_name.TRIGGER_NAME.trg"
 
 
 def test_tables_ddl__1__uppercase__logging():

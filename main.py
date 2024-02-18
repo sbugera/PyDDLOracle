@@ -68,22 +68,31 @@ def get_indentation():
     return "    "
 
 
-def get_entity_name(template_name, object_type, object_owner, object_name):
+def get_file_path(object_type, object_owner, object_name):
+    file_path_template = conf['file_path'][object_type]
     pattern = r'\{(.*?)\}'
-    matches = re.findall(pattern, template_name)
-    entity_name = template_name
+    matches = re.findall(pattern, file_path_template)
+    file_path = file_path_template
+
     for match in matches:
         case_function = str.lower
         if match == match.upper():
             case_function = str.upper
 
         if match.lower() == 'object_type':
-            entity_name = entity_name.replace(case_function('{object_type}'), case_function(object_type))
+            file_path = file_path.replace(case_function('{object_type}'), case_function(object_type))
         elif match.lower() == 'object_owner':
-            entity_name = entity_name.replace(case_function('{object_owner}'), case_function(object_owner))
+            file_path = file_path.replace(case_function('{object_owner}'), case_function(object_owner))
         elif match.lower() == 'object_name':
-            entity_name = entity_name.replace(case_function('{object_name}'), case_function(object_name))
-    return entity_name
+            file_path = file_path.replace(case_function('{object_name}'), case_function(object_name))
+
+    return file_path
+
+
+def prepare_directories(file_path):
+    directory = os.path.dirname(file_path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
 
 def get_size_formatted(initial_extent):
@@ -796,24 +805,14 @@ class Table:
 
         self.ddl = replace_multiple_newlines(ddl)
 
-    def get_file_directory(self):
-        file_directory_template = conf['directory']['table']
-        file_directory = get_entity_name(file_directory_template, 'table', self.owner, self.table_name)
-        return file_directory
-
-    def get_file_name(self):
-        file_name_template = conf['filename']['table']
-        file_name = get_entity_name(file_name_template, 'table', self.owner, self.table_name)
-        return file_name
-
     def store_ddl_into_file(self):
-        file_directory = self.get_file_directory()
-        file_name = self.get_file_name()
-        if not os.path.exists(file_directory):
-            os.makedirs(file_directory)
-        with open(os.path.join(file_directory, file_name), 'w') as file:
+        file_path = get_file_path('table', self.owner, self.table_name)
+        prepare_directories(file_path)
+
+        with open(file_path, 'w') as file:
             file.write(self.ddl)
-        print(f"   Stored in {file_directory}/{file_name}")
+
+        print(f"   Stored in {file_path}")
 
 
 def get_column_exists(df_column_exists, view_name, column_name):
