@@ -4,9 +4,6 @@ import yaml
 import re
 import os
 
-conf = {}
-conf_con = {}
-
 
 def load_config(file_path):
     with open(file_path, 'r') as stream:
@@ -118,3 +115,7 @@ def get_prompt(prompt_text, *values):
         return prompt
     else:
         return ""
+
+
+conf = load_config('config.yaml')
+conf_con = load_config('config_con.yaml')
