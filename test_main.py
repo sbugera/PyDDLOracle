@@ -1,9 +1,13 @@
 import os
 import shutil
 import main as m
+import utils as ut
 import pandas as pd
 
-m.conf = m.load_config("config.yaml")
+ut.conf = ut.load_config("config.yaml")
+ut.conf_con = ut.load_config('config_con.yaml')
+m.conf = ut.conf
+m.conf_con = ut.conf_con
 
 
 if not os.path.isfile("config_con.yaml"):
@@ -174,13 +178,13 @@ def test_store_ddl_into_file():
 
 def test_get_file_path_1():
     m.conf["file_path"]["table"] = "./{OBJECT_OWNER}/{object_type}/{OBJECT_OWNER}.{object_name}.sql"
-    file_path = m.get_file_path("table", "SCHEMA_NAME", "TABLE_NAME")
+    file_path = ut.get_file_path("table", "SCHEMA_NAME", "TABLE_NAME")
     assert file_path == "./SCHEMA_NAME/table/SCHEMA_NAME.table_name.sql"
 
 
 def test_get_file_path_2():
     m.conf["file_path"]["trigger"] = "./{object_owner}/{OBJECT_TYPE}S/{object_owner}.{OBJECT_NAME}.trg"
-    file_path = m.get_file_path("trigger", "schema_name", "trigger_name")
+    file_path = ut.get_file_path("trigger", "schema_name", "trigger_name")
     assert file_path == "./schema_name/TRIGGERS/schema_name.TRIGGER_NAME.trg"
 
 
@@ -305,4 +309,4 @@ def test_tables_ddl__6__lowercase__uppercase__no_empty_line():
 
 
 # store_metadata_into_xlsx()
-# store_metadata_into_files()
+store_metadata_into_files()
