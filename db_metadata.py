@@ -96,16 +96,16 @@ def get_df_column_exists(engine):
 def get_db_metadata(schema_name):
     engine = get_db_engine()
     df_column_exists = get_df_column_exists(engine)
-    metadata = (get_df_tables(engine, schema_name, df_column_exists),
-                get_df_tab_columns(engine, schema_name, df_column_exists),
-                get_df_part_tables(engine, schema_name, df_column_exists),
-                get_df_part_key_columns(engine, schema_name),
-                get_df_tab_partitions(engine, schema_name),
-                get_df_comments(engine, schema_name),
-                get_df_indexes(engine, schema_name),
-                get_df_index_columns(engine, schema_name),
-                get_df_constraints(engine, schema_name),
-                get_df_constraint_columns(engine, schema_name),
-                get_df_grants(engine, schema_name))
+    metadata = {"tables": get_df_tables(engine, schema_name, df_column_exists),
+                "tab_columns": get_df_tab_columns(engine, schema_name, df_column_exists),
+                "part_tables": get_df_part_tables(engine, schema_name, df_column_exists),
+                "part_key_columns": get_df_part_key_columns(engine, schema_name),
+                "tab_partitions": get_df_tab_partitions(engine, schema_name),
+                "comments": get_df_comments(engine, schema_name),
+                "indexes": get_df_indexes(engine, schema_name),
+                "index_columns": get_df_index_columns(engine, schema_name),
+                "constraints": get_df_constraints(engine, schema_name),
+                "constraint_columns": get_df_constraint_columns(engine, schema_name),
+                "grants": get_df_grants(engine, schema_name)}
     engine.dispose()
     return metadata

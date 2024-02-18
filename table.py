@@ -8,16 +8,16 @@ from utils import (conf, get_case_formatted, get_object_name, get_prompt, get_fi
 
 
 def get_table_dfs(table_row, metadata):
-    (df_all_tab_columns,
-     df_all_part_tables,
-     df_all_part_key_columns,
-     df_all_tab_partitions,
-     df_all_comments,
-     df_all_indexes,
-     df_all_index_columns,
-     df_all_constraints,
-     df_all_constraint_columns,
-     df_all_grants) = metadata
+    df_all_tab_columns = metadata["tab_columns"]
+    df_all_part_tables = metadata["part_tables"]
+    df_all_part_key_columns = metadata["part_key_columns"]
+    df_all_tab_partitions = metadata["tab_partitions"]
+    df_all_comments = metadata["comments"]
+    df_all_indexes = metadata["indexes"]
+    df_all_index_columns = metadata["index_columns"]
+    df_all_constraints = metadata["constraints"]
+    df_all_constraint_cols = metadata["constraint_columns"]
+    df_all_grants = metadata["grants"]
 
     df_tab_columns = df_all_tab_columns[df_all_tab_columns["table_name"] == table_row.table_name]
     df_part_tables = df_all_part_tables[df_all_part_tables["table_name"] == table_row.table_name]
@@ -27,9 +27,7 @@ def get_table_dfs(table_row, metadata):
     df_tab_indexes = df_all_indexes[df_all_indexes["table_name"] == table_row.table_name]
     df_tab_index_columns = df_all_index_columns[df_all_index_columns["table_name"] == table_row.table_name]
     df_tab_constraints = df_all_constraints[df_all_constraints["table_name"] == table_row.table_name]
-    df_tab_constraint_columns = df_all_constraint_columns[
-        df_all_constraint_columns["table_name"] == table_row.table_name
-    ]
+    df_tab_constraint_columns = df_all_constraint_cols[df_all_constraint_cols["table_name"] == table_row.table_name]
     df_tab_grants = df_all_grants[df_all_grants["table_name"] == table_row.table_name]
     part_table_row = get_dataframe_namedtuple(df_part_tables, 0)
 

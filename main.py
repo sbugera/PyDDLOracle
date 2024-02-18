@@ -19,10 +19,10 @@ def get_args():
 
 if __name__ == "__main__":
     args = get_args()
-
     db_schema_name = get_db_schema_name(args.schema_name)
-    df_tables, *db_metadata = get_db_metadata(db_schema_name)
+    db_metadata = get_db_metadata(db_schema_name)
 
+    df_tables = db_metadata["tables"]
     for db_table_row in df_tables.itertuples():
         print(db_table_row.table_name)
         tabel_dfs = get_table_dfs(db_table_row, db_metadata)

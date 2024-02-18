@@ -304,4 +304,4 @@ def test_tables_ddl__6__lowercase__uppercase__no_empty_line():
 
 
 # store_metadata_into_xlsx()
-store_metadata_into_files()
+# store_metadata_into_files()
