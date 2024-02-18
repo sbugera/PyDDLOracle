@@ -24,18 +24,14 @@ constraints: "yes" # yes|no
 prompts: "yes" # yes|no
 grants: "yes" # yes|no
 
-directory:
-  # Examples:
-  # ./tables/{object_owner}             => ./tables/my_schema
-  # ./DDLS/{OBJECT_TYPE}/{OBJECT_OWNER} => ./DDLS/TABLES/MY_SCHEMA
-  # ./{OBJECT_NAME}                     => ./MY_TABLE
-  table: "../extora_generated_ddls/{OBJECT_OWNER}/tables"
-
-filename:
-    # Examples:
-    # {object_owner}.{object_name}.sql => my_schema.my_table.sql
-    # {OBJECT_OWNER}.{OBJECT_NAME}.sql => MY_SCHEMA.MY_TABLE.sql
-    # {OBJECT_TYPE}.{OBJECT_NAME}.sql  => TABLE.MY_TABLE.sql
-    # {OBJECT_NAME}.TRG                => MY_TRIGGER.TRG
-    table: "{object_owner}.{object_name}.sql"
-
+file_path:
+    # Directory name examples:
+    #   ./tables/{object_owner}             => ./tables/my_schema
+    #   ./DDLS/{OBJECT_TYPE}/{OBJECT_OWNER} => ./DDLS/TABLES/MY_SCHEMA
+    #   ./{OBJECT_NAME}                     => ./MY_TABLE
+    # Filename examples:
+    #   {object_owner}.{object_name}.sql => my_schema.my_table.sql
+    #   {OBJECT_OWNER}.{OBJECT_NAME}.sql => MY_SCHEMA.MY_TABLE.sql
+    #   {OBJECT_TYPE}.{OBJECT_NAME}.sql  => TABLE.MY_TABLE.sql
+    #   {OBJECT_NAME}.TRG                => MY_TRIGGER.TRG
+    table: "../extora_generated_ddls/{OBJECT_OWNER}/tables/{object_owner}.{object_name}.sql"
