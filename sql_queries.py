@@ -287,9 +287,11 @@ SELECT c.table_name,
 """
 
 sql_constraint_columns = """
-SELECT cc.table_name,
+SELECT c.owner,
+       cc.table_name,
        cc.constraint_name,
-       cc.column_name
+       cc.column_name,
+       cc.position
   FROM sys.dba_constraints c
   JOIN sys.dba_cons_columns cc
     ON c.constraint_name = cc.constraint_name
@@ -298,10 +300,27 @@ SELECT cc.table_name,
     ON c.table_name = b.object_name
    AND c.owner = b.owner
    AND b.type = 'TABLE'
- WHERE c.owner = :schema_name
-   AND b.object_name IS NULL
-   AND c.constraint_type IN ('P', 'U')
- ORDER BY cc.table_name, cc.constraint_name, cc.position
+ WHERE b.object_name IS NULL
+   AND c.owner = :schema_name
+   AND c.constraint_type IN ('P', 'U', 'R')
+ UNION
+SELECT cc.owner,
+       cc.table_name,
+       cc.constraint_name,
+       cc.column_name,
+       cc.position
+  FROM sys.dba_constraints c
+  JOIN sys.dba_cons_columns cc
+    ON c.constraint_name = cc.constraint_name
+   AND c.owner = cc.owner
+ WHERE EXISTS (SELECT NULL
+                 FROM sys.dba_constraints sc
+                WHERE sc.constraint_type = 'R'
+                  AND sc.r_constraint_name = c.constraint_name
+                  AND sc.r_owner = c.owner
+                  AND sc.owner = :schema_name
+                  AND sc.owner != c.owner)
+ ORDER BY owner, table_name, constraint_name, position   
 """
 
 sql_grants = """
