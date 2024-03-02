@@ -306,4 +306,4 @@ class Table:
         with open(file_path, 'w') as file:
             file.write(self.ddl)
 
-        print(f"   Stored in {file_path}")
+        print(f"   Table stored in {file_path}")

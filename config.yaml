@@ -35,3 +35,4 @@ file_path:
     #   {OBJECT_TYPE}.{OBJECT_NAME}.sql  => TABLE.MY_TABLE.sql
     #   {OBJECT_NAME}.TRG                => MY_TRIGGER.TRG
     table: "../extora_generated_ddls/{OBJECT_OWNER}/tables/{object_owner}.{object_name}.sql"
+    foreign_key: "../extora_generated_ddls/{OBJECT_OWNER}/foreign_key/{object_owner}.{object_name}.sql"

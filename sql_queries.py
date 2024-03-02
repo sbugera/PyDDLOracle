@@ -257,7 +257,8 @@ SELECT ic.index_owner,
 """
 
 sql_constraints = """
-SELECT c.table_name,
+SELECT c.owner,
+       c.table_name,
        c.constraint_name,
        c.constraint_type,
        c.search_condition,
