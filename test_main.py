@@ -352,6 +352,7 @@ def test_fk_2_uppercase_lowercase_no_prompt():
     checking_fks_ddl("2_uppercase_lowercase_no_prompt")
 
 
+update_expected_ddl_files = False
 if os.environ.get('RUN_LOCAL_ONLY', 'False') == 'True':
     update_expected_ddl_files = False
     store_metadata_into_xlsx()
