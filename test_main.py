@@ -122,9 +122,22 @@ def get_metadata_from_files():
 
 
 def get_content_from_file(file_path):
-    with open(file_path, 'r') as f:
-        content = f.read()
+    try:
+        with open(file_path, 'r') as f:
+            content = f.read()
+    except FileNotFoundError:
+        content = ""
     return content
+
+
+def update_expected_ddl_file(file_path, ddl):
+    try:
+        with open(file_path, 'w') as f:
+            f.write(ddl)
+    except FileNotFoundError:
+        os.makedirs(os.path.dirname(file_path))
+        with open(file_path, 'w') as f:
+            f.write(ddl)
 
 
 def checking_tables_ddl(case_name):
@@ -137,6 +150,24 @@ def checking_tables_ddl(case_name):
         table.generate_ddl()
         ddl = table.ddl
         file_path = f"test/tables__{case_name}/{schema_name.lower()}.{table.table_name.lower()}.sql"
+        if update_expected_ddl_files:
+            update_expected_ddl_file(file_path, ddl)
+        expected_ddl = get_content_from_file(file_path)
+        assert ddl == expected_ddl
+
+
+def checking_fks_ddl(case_name):
+    schema_name = "EXTORA_APP"
+    db_metadata = get_metadata_from_files()
+    df_foreign_keys = db_metadata["constraints"].loc[db_metadata["constraints"]["constraint_type"] == "R"]
+    for db_foreign_key_row in df_foreign_keys.itertuples():
+        foreign_key_dfs = m.get_foreign_key_dfs(db_foreign_key_row, db_metadata)
+        foreign_key = m.Constraint(*foreign_key_dfs)
+        foreign_key.generate_ddl()
+        ddl = foreign_key.ddl
+        file_path = f"test/fks__{case_name}/{schema_name.lower()}.{foreign_key.constraint_name.lower()}.sql"
+        if update_expected_ddl_files:
+            update_expected_ddl_file(file_path, ddl)
         expected_ddl = get_content_from_file(file_path)
         assert ddl == expected_ddl
 
@@ -307,6 +338,22 @@ def test_tables_ddl__6__lowercase__uppercase__no_empty_line():
     checking_tables_ddl("6__lowercase__uppercase__no_empty_line")
 
 
+def test_fk_1_lowercase_uppercase_no_prompt():
+    conf["case"]["keyword"] = "lowercase"
+    conf["case"]["identifier"] = "uppercase"
+    conf["prompts"] = "no"
+    checking_fks_ddl("1_lowercase_uppercase_no_prompt")
+
+
+def test_fk_2_uppercase_lowercase_no_prompt():
+    conf["case"]["keyword"] = "uppercase"
+    conf["case"]["identifier"] = "lowercase"
+    conf["prompts"] = "yes"
+    checking_fks_ddl("2_uppercase_lowercase_no_prompt")
+
+
+update_expected_ddl_files = False
 if os.environ.get('RUN_LOCAL_ONLY', 'False') == 'True':
+    update_expected_ddl_files = False
     store_metadata_into_xlsx()
     store_metadata_into_files()

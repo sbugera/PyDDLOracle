@@ -257,7 +257,8 @@ SELECT ic.index_owner,
 """
 
 sql_constraints = """
-SELECT c.table_name,
+SELECT c.owner,
+       c.table_name,
        c.constraint_name,
        c.constraint_type,
        c.search_condition,
@@ -266,23 +267,32 @@ SELECT c.table_name,
        c.deferred,
        c.validated,
        c.index_name,
-       c.index_owner
+       c.index_owner,
+       c.r_owner,
+       rc.table_name AS r_table_name,
+       c.r_constraint_name,
+       c.delete_rule
   FROM sys.dba_constraints c
+  LEFT JOIN sys.dba_constraints rc
+    ON c.r_owner = rc.owner
+   AND c.r_constraint_name = rc.constraint_name
   LEFT JOIN sys.dba_recyclebin b
     ON c.table_name = b.object_name
    AND c.owner = b.owner
    AND b.type = 'TABLE'
  WHERE c.owner = :schema_name
    AND b.object_name IS NULL
-   AND c.constraint_type IN ('P', 'U', 'C')
+   AND c.constraint_type IN ('P', 'U', 'C', 'R')
    AND (c.search_condition_vc IS NULL OR c.search_condition_vc NOT LIKE '"%" IS NOT NULL')
  ORDER BY c.table_name, c.constraint_type, c.constraint_name
 """
 
 sql_constraint_columns = """
-SELECT cc.table_name,
+SELECT c.owner,
+       cc.table_name,
        cc.constraint_name,
-       cc.column_name
+       cc.column_name,
+       cc.position
   FROM sys.dba_constraints c
   JOIN sys.dba_cons_columns cc
     ON c.constraint_name = cc.constraint_name
@@ -291,10 +301,27 @@ SELECT cc.table_name,
     ON c.table_name = b.object_name
    AND c.owner = b.owner
    AND b.type = 'TABLE'
- WHERE c.owner = :schema_name
-   AND b.object_name IS NULL
-   AND c.constraint_type IN ('P', 'U')
- ORDER BY cc.table_name, cc.constraint_name, cc.position
+ WHERE b.object_name IS NULL
+   AND c.owner = :schema_name
+   AND c.constraint_type IN ('P', 'U', 'R')
+ UNION
+SELECT cc.owner,
+       cc.table_name,
+       cc.constraint_name,
+       cc.column_name,
+       cc.position
+  FROM sys.dba_constraints c
+  JOIN sys.dba_cons_columns cc
+    ON c.constraint_name = cc.constraint_name
+   AND c.owner = cc.owner
+ WHERE EXISTS (SELECT NULL
+                 FROM sys.dba_constraints sc
+                WHERE sc.constraint_type = 'R'
+                  AND sc.r_constraint_name = c.constraint_name
+                  AND sc.r_owner = c.owner
+                  AND sc.owner = :schema_name
+                  AND sc.owner != c.owner)
+ ORDER BY owner, table_name, constraint_name, position   
 """
 
 sql_grants = """

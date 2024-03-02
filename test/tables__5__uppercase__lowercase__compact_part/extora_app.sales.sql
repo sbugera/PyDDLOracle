@@ -73,6 +73,23 @@ STORAGE    (
             BUFFER_POOL      default
             );
 
+PROMPT Index extora_app.uk_sales_02
+CREATE INDEX extora_app.uk_sales_02 ON extora_app.sales
+(sale_date, sale_amount)
+LOGGING
+TABLESPACE extora_app_data
+PCTFREE    10
+INITRANS   2
+MAXTRANS   255
+STORAGE    (
+            INITIAL          64K
+            NEXT             1M
+            MINEXTENTS       1
+            MAXEXTENTS       UNLIMITED
+            PCTINCREASE      0
+            BUFFER_POOL      default
+            );
+
 
 PROMPT Constraints for table extora_app.sales
 ALTER TABLE extora_app.sales ADD (
@@ -89,6 +106,11 @@ ALTER TABLE extora_app.sales ADD (
   UNIQUE (sale_amount)
   DEFERRABLE INITIALLY IMMEDIATE
   USING INDEX extora_app.uk_sales
+  ENABLE VALIDATE,
+  CONSTRAINT uk_sales_02
+  UNIQUE (sale_date, sale_amount)
+  DEFERRABLE INITIALLY IMMEDIATE
+  USING INDEX extora_app.uk_sales_02
   ENABLE VALIDATE);
 
 

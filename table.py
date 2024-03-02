@@ -26,8 +26,10 @@ def get_table_dfs(table_row, metadata):
     df_tab_comments = df_all_comments[df_all_comments["table_name"] == table_row.table_name]
     df_tab_indexes = df_all_indexes[df_all_indexes["table_name"] == table_row.table_name]
     df_tab_index_columns = df_all_index_columns[df_all_index_columns["table_name"] == table_row.table_name]
-    df_tab_constraints = df_all_constraints[df_all_constraints["table_name"] == table_row.table_name]
-    df_tab_constraint_columns = df_all_constraint_cols[df_all_constraint_cols["table_name"] == table_row.table_name]
+    df_tab_constraints = df_all_constraints[(df_all_constraints["table_name"] == table_row.table_name) &
+                                            (df_all_constraints["constraint_type"].isin(['P', 'U', 'C']))]
+    df_tab_constraint_columns = df_all_constraint_cols[(df_all_constraint_cols["table_name"] == table_row.table_name) &
+                                                       (df_all_constraint_cols["owner"] == table_row.owner)]
     df_tab_grants = df_all_grants[df_all_grants["table_name"] == table_row.table_name]
     part_table_row = get_dataframe_namedtuple(df_part_tables, 0)
 
@@ -304,4 +306,4 @@ class Table:
         with open(file_path, 'w') as file:
             file.write(self.ddl)
 
-        print(f"   Stored in {file_path}")
+        print(f"   Table stored in {file_path}")
