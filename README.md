@@ -42,7 +42,7 @@ python main.py
 ## Currently supported objects
 * Tables
   * Columns
-  * Constraints (Foreign Key constraints are not implemented yet)
+  * Constraints
   * Partitions (sub-partitions and reference partitions are not implemented yet)
   * Storage parameters (LOB storage parameters are not implemented yet)
   * Indexes
