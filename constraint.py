@@ -1,3 +1,5 @@
+"""Handles Oracle database constraint definitions and DDL generation."""
+
 from utils import (
     get_case_formatted,
     get_object_name,
@@ -8,6 +10,15 @@ from utils import (
 
 
 def get_foreign_key_dfs(foreign_key_row, metadata):
+    """Get DataFrames with columns involved in foreign key relationship.
+
+    Args:
+        foreign_key_row: Foreign key metadata row
+        metadata: Dict containing database metadata DataFrames
+
+    Returns:
+        tuple: (foreign_key_row, foreign_key_cols, remote_key_cols)
+    """
     df_all_constraint_cols = metadata["constraint_columns"]
 
     df_foreign_key_columns = df_all_constraint_cols[
@@ -30,6 +41,29 @@ def get_foreign_key_dfs(foreign_key_row, metadata):
 
 
 class Constraint:
+    """Oracle database constraint with DDL generation.
+
+    Attributes:
+        owner: Schema owner
+        table_name: Table name
+        constraint_name: Constraint name
+        constraint_type: P (PK), U (unique), C (check), R (foreign key)
+        search_condition: Check constraint condition
+        status: ENABLED/DISABLED
+        deferrable: DEFERRABLE/NOT DEFERRABLE
+        deferred: IMMEDIATE/DEFERRED
+        validated: VALIDATED/NOT VALIDATED
+        index_owner: Owner of backing index
+        index_name: Name of backing index
+        r_owner: Referenced constraint owner
+        r_table_name: Referenced table name
+        r_constraint_name: Referenced constraint name
+        delete_rule: ON DELETE action
+        constraint_columns: Constraint columns
+        constraint_columns_remote: Referenced columns
+        ddl: Generated DDL statement
+    """
+
     def __init__(
         self,
         constraint_row,
@@ -56,10 +90,19 @@ class Constraint:
         self.constraint_columns_remote = constraint_columns_remote
 
     def get_constraint(self, standalone=False):
+        """Generate DDL for constraint definition.
+
+        Args:
+            standalone: If True, wrap in ALTER TABLE statement
+
+        Returns:
+            str: Formatted constraint DDL
+        """
         table_name = get_object_name(self.owner, self.table_name, "identifier")
         constraint_name = get_case_formatted(
             self.constraint_name, "identifier"
         )
+        r_table_name = ""
         if self.r_table_name and str(self.r_table_name) not in ("nan", "None"):
             r_table_name = get_object_name(
                 self.r_owner, self.r_table_name, "identifier"
@@ -110,7 +153,8 @@ class Constraint:
             )
         elif self.constraint_type == "R":
             statement = get_case_formatted(
-                "  CONSTRAINT <:1>\n  FOREIGN KEY (<:2>)\n  REFERENCES <:3> (<:4>)",
+                "  CONSTRAINT <:1>\n  FOREIGN KEY (<:2>)\n"
+                "  REFERENCES <:3> (<:4>)",
                 "keyword",
             )
         else:
@@ -163,6 +207,7 @@ class Constraint:
         return constraint
 
     def generate_ddl(self):
+        """Generate complete DDL for constraint creation."""
         constraint_name = get_object_name(
             self.owner, self.constraint_name, "identifier"
         )
@@ -172,12 +217,13 @@ class Constraint:
         self.ddl = ddl
 
     def store_ddl_into_file(self):
+        """Write generated DDL to filesystem."""
         file_path = get_file_path(
             "foreign_key", self.owner, self.constraint_name
         )
         prepare_directories(file_path)
 
-        with open(file_path, "w") as file:
+        with open(file_path, "w", encoding="utf-8") as file:
             file.write(self.ddl)
 
         print(f"   Foreign key stored in {file_path}")
