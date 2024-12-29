@@ -1,8 +1,29 @@
+"""Handles Oracle database column definitions and DDL generation."""
+
 import pandas as pd
 from utils import get_case_formatted, get_object_name, get_indentation
 
 
 class Column:
+    """Oracle database column with properties and DDL generation.
+
+    Attributes:
+        max_column_name_length: Max padding length
+        column_name: Column name
+        data_type: Oracle data type
+        data_length: Length for string types
+        data_precision: Numeric precision
+        data_scale: Numeric scale
+        data_type_owner: Custom type owner
+        char_used: 'B' for byte, 'C' for char
+        hidden_column: 'YES' if hidden
+        collation: Collation setting
+        data_default: Default value
+        virtual_column: 'YES' if virtual
+        default_on_null: 'YES' if DEFAULT ON NULL
+        nullable: 'Y'/'N' for nullability
+    """
+
     def __init__(self, column_row, max_column_name_length):
         self.max_column_name_length = max_column_name_length
         self.column_name = column_row.column_name
@@ -20,26 +41,30 @@ class Column:
         self.nullable = column_row.nullable
 
     def get_name(self):
+        """Format and pad column name."""
         formatted_column_name = get_case_formatted(self.column_name, "identifier")
         padded_column_name = formatted_column_name.ljust(self.max_column_name_length)
         return padded_column_name
 
     def get_data_type(self):
-        if self.data_type_owner and str(self.data_type_owner) != "None" and str(self.data_type_owner) != "nan":
-            data_type = get_object_name(self.data_type_owner, self.data_type, "keyword")
+        """Generate data type with precision, scale, and length."""
+        if (self.data_type_owner and str(self.data_type_owner) != "None" 
+                and str(self.data_type_owner) != "nan"):
+            data_type = get_object_name(
+                self.data_type_owner, self.data_type, "keyword")
         else:
             data_type = get_case_formatted(self.data_type, "keyword")
 
         if data_type.upper() == "NUMBER":
             if not pd.isnull(self.data_precision) and self.data_scale > 0:
-                data_type = f"{data_type}({int(self.data_precision)},{int(self.data_scale)})"
+                data_type = (
+                    f"{data_type}({int(self.data_precision)},{int(self.data_scale)})")
             elif not pd.isnull(self.data_precision):
                 data_type = f"{data_type}({int(self.data_precision)})"
             elif pd.isnull(self.data_precision) and self.data_scale == 0:
                 data_type = get_case_formatted("INTEGER", "keyword")
         elif data_type.upper() in ("CHAR", "VARCHAR", "VARCHAR2", "NVARCHAR"):
-            char_used = get_case_formatted(
-                "BYTE", "keyword") if self.char_used == "B" else get_case_formatted("CHAR", "keyword")
+            char_used = (get_case_formatted("BYTE", "keyword") if self.char_used == "B" else get_case_formatted("CHAR", "keyword"))
             data_type = f"{data_type}({int(self.data_length)} {char_used})"
         elif data_type.upper() in ("UROWID", "RAW", "NCHAR", "NVARCHAR2"):
             data_type = f"{data_type}({int(self.data_length)})"
@@ -48,34 +73,45 @@ class Column:
         return data_type
 
     def get_invisible(self):
+        """Get INVISIBLE clause if column is hidden."""
         invisible = ""
         if self.hidden_column == "YES":
             invisible = " INVISIBLE"
         return get_case_formatted(invisible, "keyword")
 
     def get_collation(self):
+        """Get COLLATE clause if custom collation exists."""
         collation = ""
-        if str(self.collation) not in ("nan", "None") and self.collation != "USING_NLS_COMP":
+        if (str(self.collation) not in ("nan", "None") 
+                and self.collation != "USING_NLS_COMP"):
             collation = f" COLLATE {self.collation}"
         return get_case_formatted(collation, "keyword")
 
     def get_default(self):
+        """Get DEFAULT or GENERATED ALWAYS AS clause."""
         default = ""
-        if str(self.data_default) not in ("nan", "None") and self.virtual_column == "YES":
-            default = f""" {get_case_formatted("GENERATED ALWAYS AS", "keyword")} ({self.data_default})"""
-        elif str(self.data_default) not in ("nan", "None") and self.default_on_null == "YES":
-            default = f""" {get_case_formatted("DEFAULT ON NULL", "keyword")} {self.data_default}"""
+        if (str(self.data_default) not in ("nan", "None") 
+                and self.virtual_column == "YES"):
+            default = (f""" {get_case_formatted("GENERATED ALWAYS AS", "keyword")} """
+                       f"""({self.data_default})""")
+        elif (str(self.data_default) not in ("nan", "None") 
+              and self.default_on_null == "YES"):
+            default = (f""" {get_case_formatted("DEFAULT ON NULL", "keyword")} """
+                       f"""{self.data_default}""")
         elif str(self.data_default) not in ("nan", "None"):
-            default = f""" {get_case_formatted("DEFAULT", "keyword")} {self.data_default}"""
+            default = (f""" {get_case_formatted("DEFAULT", "keyword")} """
+                       f"""{self.data_default}""")
         return default.rstrip()
 
     def get_not_null(self):
+        """Get NOT NULL constraint if applicable."""
         not_null = ""
         if self.nullable == "N":
             not_null = " NOT NULL"
         return get_case_formatted(not_null, "keyword")
 
     def get_ddl(self):
+        """Generate complete column DDL fragment."""
         indentation = get_indentation()
         name = self.get_name()
         data_type = self.get_data_type()
@@ -83,5 +119,6 @@ class Column:
         collation = self.get_collation()
         data_default = self.get_default()
         not_null = self.get_not_null()
-        ddl = f"""{indentation}{name}  {data_type}{invisible}{collation}{data_default}{not_null}"""
+        ddl = f"""{indentation}{name}  {data_type}{invisible}{collation}"""
+        ddl += f"""{data_default}{not_null}"""
         return ddl
