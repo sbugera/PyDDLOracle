@@ -95,7 +95,8 @@ SELECT c.table_name,
     ON c.table_name = t.table_name
    AND c.owner = t.owner
  WHERE c.owner = :schema_name
-   AND NOT (c.column_name LIKE 'SYS\\_%' ESCAPE '\\' AND c.hidden_column = 'YES')
+   AND NOT (c.column_name LIKE 'SYS\\_%' ESCAPE '\\'
+   AND c.hidden_column = 'YES')
  ORDER BY c.table_name, c.column_id, c.internal_column_id
 """
 
@@ -283,7 +284,8 @@ SELECT c.owner,
  WHERE c.owner = :schema_name
    AND b.object_name IS NULL
    AND c.constraint_type IN ('P', 'U', 'C', 'R')
-   AND (c.search_condition_vc IS NULL OR c.search_condition_vc NOT LIKE '"%" IS NOT NULL')
+   AND (c.search_condition_vc IS NULL
+        OR c.search_condition_vc NOT LIKE '"%" IS NOT NULL')
  ORDER BY c.table_name, c.constraint_type, c.constraint_name
 """
 
@@ -321,7 +323,7 @@ SELECT cc.owner,
                   AND sc.r_owner = c.owner
                   AND sc.owner = :schema_name
                   AND sc.owner != c.owner)
- ORDER BY owner, table_name, constraint_name, position   
+ ORDER BY owner, table_name, constraint_name, position
 """
 
 sql_grants = """

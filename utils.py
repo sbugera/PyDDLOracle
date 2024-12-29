@@ -6,7 +6,7 @@ import os
 
 
 def load_config(file_path):
-    with open(file_path, 'r') as stream:
+    with open(file_path, "r", encoding="utf-8") as stream:
         try:
             config = yaml.safe_load(stream)
             return config
@@ -22,16 +22,18 @@ def get_dataframe_namedtuple(df, index):
     if index >= len(df):
         return None
     row = df.iloc[index]
-    row_namedtuple = namedtuple('row', row.index)
+    row_namedtuple = namedtuple("row", row.index)
     return row_namedtuple(*row.values)
 
 
 def replace_multiple_newlines(text):
-    return re.sub(r'\n+$', '\n', text)
+    return re.sub(r"\n+$", "\n", text)
 
 
 def pprint(variable):
-    pp = PrettyPrinter(indent=1, width=80, depth=None, stream=None, compact=False)
+    pp = PrettyPrinter(
+        indent=1, width=80, depth=None, stream=None, compact=False
+    )
     try:
         pp.pprint(variable._asdict())
     except AttributeError:
@@ -61,8 +63,8 @@ def get_indentation():
 
 
 def get_file_path(object_type, object_owner, object_name):
-    file_path_template = conf['file_path'][object_type]
-    pattern = r'\{(.*?)\}'
+    file_path_template = conf["file_path"][object_type]
+    pattern = r"\{(.*?)\}"
     matches = re.findall(pattern, file_path_template)
     file_path = file_path_template
 
@@ -71,12 +73,18 @@ def get_file_path(object_type, object_owner, object_name):
         if match == match.upper():
             case_function = str.upper
 
-        if match.lower() == 'object_type':
-            file_path = file_path.replace(case_function('{object_type}'), case_function(object_type))
-        elif match.lower() == 'object_owner':
-            file_path = file_path.replace(case_function('{object_owner}'), case_function(object_owner))
-        elif match.lower() == 'object_name':
-            file_path = file_path.replace(case_function('{object_name}'), case_function(object_name))
+        if match.lower() == "object_type":
+            file_path = file_path.replace(
+                case_function("{object_type}"), case_function(object_type)
+            )
+        elif match.lower() == "object_owner":
+            file_path = file_path.replace(
+                case_function("{object_owner}"), case_function(object_owner)
+            )
+        elif match.lower() == "object_name":
+            file_path = file_path.replace(
+                case_function("{object_name}"), case_function(object_name)
+            )
 
     return file_path
 
@@ -97,25 +105,28 @@ def get_size_formatted(initial_extent):
 
 
 def get_object_name(object_owner, object_name, config_name_for_upper):
-    return (get_case_formatted(object_owner, config_name_for_upper) + "."
-            + get_case_formatted(object_name, config_name_for_upper))
+    return (
+        get_case_formatted(object_owner, config_name_for_upper)
+        + "."
+        + get_case_formatted(object_name, config_name_for_upper)
+    )
 
 
 def get_prompt(prompt_text, *values):
     if conf["prompts"] == "yes":
-        has_placeholders = re.search(r'<:1>', prompt_text)
+        has_placeholders = re.search(r"<:1>", prompt_text)
         prompt = get_case_formatted("PROMPT", "keyword")
         if has_placeholders:
             prompt += f" {prompt_text}\n"
         else:
             prompt += f" {prompt_text}<:1>\n"
         for i, value in enumerate(values, 1):
-            placeholder = '<:' + str(i) + '>'
+            placeholder = "<:" + str(i) + ">"
             prompt = prompt.replace(placeholder, str(value))
         return prompt
     else:
         return ""
 
 
-conf = load_config('config.yaml')
-conf_con = load_config('config_con.yaml')
+conf = load_config("config.yaml")
+conf_con = load_config("config_con.yaml")

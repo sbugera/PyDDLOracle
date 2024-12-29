@@ -38,7 +38,9 @@ class Index:
         self.index_columns = index_columns
 
     def get_index(self):
-        statement = get_case_formatted("CREATE<:1> INDEX <:2> ON <:3>\n(<:4>)", "keyword")
+        statement = get_case_formatted(
+            "CREATE<:1> INDEX <:2> ON <:3>\n(<:4>)", "keyword"
+        )
 
         index_type = ""
         if self.index_type == "BITMAP":
@@ -47,20 +49,25 @@ class Index:
             index_type += get_case_formatted(" UNIQUE", "keyword")
 
         index_name = get_object_name(self.owner, self.index_name, "identifier")
-        table_name = get_object_name(self.table_owner, self.table_name, "identifier")
+        table_name = get_object_name(
+            self.table_owner, self.table_name, "identifier"
+        )
 
         index_columns = ""
         for i, index_column in enumerate(self.index_columns.itertuples()):
-            index_columns += get_case_formatted(index_column.column_name, "identifier")
+            index_columns += get_case_formatted(
+                index_column.column_name, "identifier"
+            )
             if i != len(self.index_columns) - 1:
                 index_columns += ", "
 
         index = get_prompt("Index ", index_name)
-        index += (statement
-                  .replace("<:1>", index_type)
-                  .replace("<:2>", index_name)
-                  .replace("<:3>", table_name)
-                  .replace("<:4>", index_columns))
+        index += (
+            statement.replace("<:1>", index_type)
+            .replace("<:2>", index_name)
+            .replace("<:3>", table_name)
+            .replace("<:4>", index_columns)
+        )
 
         logging = ""
         if conf["storage"]["logging"] == "yes":
@@ -72,18 +79,39 @@ class Index:
 
         if conf["storage"]["storage"] == "with_storage":
             index += get_full_storage(
-                "", self.tablespace_name, self.pct_free, self.ini_trans, self.max_trans, self.min_extents,
-                self.max_extents, self.pct_increase, self.buffer_pool, self.flash_cache, self.cell_flash_cache,
-                self.initial_extent, self.next_extent, self.partitioned)
-        elif conf["storage"]["storage"] == "only_tablespace" and self.partitioned != "YES":
+                "",
+                self.tablespace_name,
+                self.pct_free,
+                self.ini_trans,
+                self.max_trans,
+                self.min_extents,
+                self.max_extents,
+                self.pct_increase,
+                self.buffer_pool,
+                self.flash_cache,
+                self.cell_flash_cache,
+                self.initial_extent,
+                self.next_extent,
+                self.partitioned,
+            )
+        elif (
+            conf["storage"]["storage"] == "only_tablespace"
+            and self.partitioned != "YES"
+        ):
             statement = get_case_formatted("\nTABLESPACE <:1>", "keyword")
-            index += statement.replace("<:1>", get_case_formatted(self.tablespace_name, "identifier"))
+            index += statement.replace(
+                "<:1>", get_case_formatted(self.tablespace_name, "identifier")
+            )
 
         if conf["storage"]["compression"] == "yes":
             if self.compression == "ENABLED":
-                index += get_case_formatted(f"\nCOMPRESS {int(self.prefix_length)}", "keyword")
+                index += get_case_formatted(
+                    f"\nCOMPRESS {int(self.prefix_length)}", "keyword"
+                )
             elif self.compression != "DISABLED":
-                index += get_case_formatted(f"\nCOMPRESS {self.compression}", "keyword")
+                index += get_case_formatted(
+                    f"\nCOMPRESS {self.compression}", "keyword"
+                )
 
         local = ""
         if self.partitioned == "YES":
@@ -95,7 +123,10 @@ class Index:
 
         if int(self.degree) > 1:
             index += get_case_formatted(
-                f"\nPARALLEL ( DEGREE {int(self.degree)} INSTANCES {self.instances} )", "keyword")
+                f"\nPARALLEL ( DEGREE {int(self.degree)}"
+                f" INSTANCES {self.instances} )",
+                "keyword",
+            )
 
         if self.index_type == "NORMAL/REV":
             index += get_case_formatted("\nREVERSE", "keyword")
@@ -103,7 +134,9 @@ class Index:
         index += ";\n\n"
 
         if self.monitoring == "YES":
-            statement = get_case_formatted("ALTER INDEX <:1>\n  MONITORING USAGE;\n\n", "keyword")
+            statement = get_case_formatted(
+                "ALTER INDEX <:1>\n  MONITORING USAGE;\n\n", "keyword"
+            )
             index += statement.replace("<:1>", index_name)
 
         return index

@@ -48,20 +48,41 @@ class Partition:
     def get_partition(self):
         statement = ""
         if self.partitioning_type == "RANGE":
-            statement = get_case_formatted("\n  PARTITION<:1>VALUES LESS THAN (<:2>)", "keyword")
+            statement = get_case_formatted(
+                "\n  PARTITION<:1>VALUES LESS THAN (<:2>)", "keyword"
+            )
         elif self.partitioning_type == "LIST":
-            statement = get_case_formatted("\n  PARTITION<:1>VALUES (<:2>)", "keyword")
+            statement = get_case_formatted(
+                "\n  PARTITION<:1>VALUES (<:2>)", "keyword"
+            )
         partition_name = " "
         if not self.partition_name.startswith("SYS_P"):
-            partition_name = get_case_formatted(f" {self.partition_name} ", "identifier")
-        partition = statement.replace("<:1>", partition_name).replace("<:2>", self.high_value)
+            partition_name = get_case_formatted(
+                f" {self.partition_name} ", "identifier"
+            )
+        partition = statement.replace("<:1>", partition_name).replace(
+            "<:2>", self.high_value
+        )
         partition += self.get_logging()
         partition += self.get_compression()
         if conf["storage"]["storage"] == "with_storage":
             partition += get_full_storage(
-                get_indentation(), self.tablespace_name, self.pct_free, self.ini_trans, self.max_trans,
-                self.min_extent, self.max_extent, self.pct_increase, self.buffer_pool, self.flash_cache,
-                self.cell_flash_cache, self.initial_extent, self.next_extent)
+                get_indentation(),
+                self.tablespace_name,
+                self.pct_free,
+                self.ini_trans,
+                self.max_trans,
+                self.min_extent,
+                self.max_extent,
+                self.pct_increase,
+                self.buffer_pool,
+                self.flash_cache,
+                self.cell_flash_cache,
+                self.initial_extent,
+                self.next_extent,
+            )
         elif conf["storage"]["storage"] == "only_tablespace":
-            partition += f"\n{get_indentation()}TABLESPACE {self.tablespace_name}"
+            partition += (
+                f"\n{get_indentation()}TABLESPACE {self.tablespace_name}"
+            )
         return partition

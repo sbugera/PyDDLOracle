@@ -12,7 +12,9 @@ class Partitioning:
 
     def get_list_of_key_columns(self):
         list_of_key_columns = ""
-        for i, part_key_column in enumerate(self.part_key_columns.itertuples()):
+        for i, part_key_column in enumerate(
+            self.part_key_columns.itertuples()
+        ):
             if i == 0:
                 list_of_key_columns += f"{part_key_column.column_name}"
             else:
@@ -23,9 +25,12 @@ class Partitioning:
         partitioning = ""
         if conf["storage"]["partitions"] == "none":
             return ""
-        if (self.partitioning_type in ("RANGE", "LIST", "HASH")
-                and conf["storage"]["partitions"] in ("all", "compact")):
-            statement = get_case_formatted(f"PARTITION BY {self.partitioning_type}", "keyword")
+        if self.partitioning_type in ("RANGE", "LIST", "HASH") and conf[
+            "storage"
+        ]["partitions"] in ("all", "compact"):
+            statement = get_case_formatted(
+                f"PARTITION BY {self.partitioning_type}", "keyword"
+            )
             key_columns = self.get_list_of_key_columns()
             partitioning = f"\n{statement} ({key_columns})"
             if str(self.interval) not in ("nan", "None"):
@@ -35,29 +40,49 @@ class Partitioning:
                 partitioning += get_case_formatted(" AUTOMATIC", "keyword")
             if self.partitioning_type in ("RANGE", "LIST"):
                 partitioning += "\n("
-                for i, tab_partition in enumerate(self.tab_partitions.itertuples()):
-                    if (tab_partition.partition_position > 1
-                            and str(self.interval) not in ("nan", "None")
-                            and conf["storage"]["partitions"] == "compact"):
+                for _, tab_partition in enumerate(
+                    self.tab_partitions.itertuples()
+                ):
+                    if (
+                        tab_partition.partition_position > 1
+                        and str(self.interval) not in ("nan", "None")
+                        and conf["storage"]["partitions"] == "compact"
+                    ):
                         break
-                    if (tab_partition.partition_name.startswith("SYS_P")
-                            and conf["storage"]["partitions"] == "compact"):
+                    if (
+                        tab_partition.partition_name.startswith("SYS_P")
+                        and conf["storage"]["partitions"] == "compact"
+                    ):
                         break
-                    partition = Partition(self.partitioning_type, tab_partition)
+                    partition = Partition(
+                        self.partitioning_type, tab_partition
+                    )
                     partitioning += f"{partition.get_partition()},"
                 partitioning = partitioning[:-1]
                 partitioning += "\n)"
             if self.partitioning_type == "HASH":
                 partitioning += get_case_formatted(
-                    f"\n{get_indentation()}PARTITIONS {len(self.tab_partitions)}", "keyword")
-                if conf["storage"]["storage"] in ("only_tablespace", "with_storage"):
+                    f"\n{get_indentation()}PARTITIONS"
+                    f" {len(self.tab_partitions)}",
+                    "keyword",
+                )
+                if conf["storage"]["storage"] in (
+                    "only_tablespace",
+                    "with_storage",
+                ):
                     all_tablespaces = ""
                     for partition in self.tab_partitions.itertuples():
                         if all_tablespaces == "":
-                            all_tablespaces = get_case_formatted(partition.tablespace_name, "identifier")
+                            all_tablespaces = get_case_formatted(
+                                partition.tablespace_name, "identifier"
+                            )
                         else:
-                            all_tablespaces += ", " + get_case_formatted(partition.tablespace_name, "identifier")
-                    statement = get_case_formatted(f"\n{get_indentation()}STORE IN (<:1>)", "keyword")
+                            all_tablespaces += ", " + get_case_formatted(
+                                partition.tablespace_name, "identifier"
+                            )
+                    statement = get_case_formatted(
+                        f"\n{get_indentation()}STORE IN (<:1>)", "keyword"
+                    )
                     partitioning += statement.replace("<:1>", all_tablespaces)
         # todo: Implement sub-partitioning
 
