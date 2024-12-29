@@ -42,29 +42,43 @@ class Column:
 
     def get_name(self):
         """Format and pad column name."""
-        formatted_column_name = get_case_formatted(self.column_name, "identifier")
-        padded_column_name = formatted_column_name.ljust(self.max_column_name_length)
+        formatted_column_name = get_case_formatted(
+            self.column_name, "identifier"
+        )
+        padded_column_name = formatted_column_name.ljust(
+            self.max_column_name_length
+        )
         return padded_column_name
 
     def get_data_type(self):
         """Generate data type with precision, scale, and length."""
-        if (self.data_type_owner and str(self.data_type_owner) != "None" 
-                and str(self.data_type_owner) != "nan"):
+        if (
+            self.data_type_owner
+            and str(self.data_type_owner) != "None"
+            and str(self.data_type_owner) != "nan"
+        ):
             data_type = get_object_name(
-                self.data_type_owner, self.data_type, "keyword")
+                self.data_type_owner, self.data_type, "keyword"
+            )
         else:
             data_type = get_case_formatted(self.data_type, "keyword")
 
         if data_type.upper() == "NUMBER":
             if not pd.isnull(self.data_precision) and self.data_scale > 0:
                 data_type = (
-                    f"{data_type}({int(self.data_precision)},{int(self.data_scale)})")
+                    f"{data_type}({int(self.data_precision)},"
+                    f"{int(self.data_scale)})"
+                )
             elif not pd.isnull(self.data_precision):
                 data_type = f"{data_type}({int(self.data_precision)})"
             elif pd.isnull(self.data_precision) and self.data_scale == 0:
                 data_type = get_case_formatted("INTEGER", "keyword")
         elif data_type.upper() in ("CHAR", "VARCHAR", "VARCHAR2", "NVARCHAR"):
-            char_used = (get_case_formatted("BYTE", "keyword") if self.char_used == "B" else get_case_formatted("CHAR", "keyword"))
+            char_used = (
+                get_case_formatted("BYTE", "keyword")
+                if self.char_used == "B"
+                else get_case_formatted("CHAR", "keyword")
+            )
             data_type = f"{data_type}({int(self.data_length)} {char_used})"
         elif data_type.upper() in ("UROWID", "RAW", "NCHAR", "NVARCHAR2"):
             data_type = f"{data_type}({int(self.data_length)})"
@@ -82,25 +96,37 @@ class Column:
     def get_collation(self):
         """Get COLLATE clause if custom collation exists."""
         collation = ""
-        if (str(self.collation) not in ("nan", "None") 
-                and self.collation != "USING_NLS_COMP"):
+        if (
+            str(self.collation) not in ("nan", "None")
+            and self.collation != "USING_NLS_COMP"
+        ):
             collation = f" COLLATE {self.collation}"
         return get_case_formatted(collation, "keyword")
 
     def get_default(self):
         """Get DEFAULT or GENERATED ALWAYS AS clause."""
         default = ""
-        if (str(self.data_default) not in ("nan", "None") 
-                and self.virtual_column == "YES"):
-            default = (f""" {get_case_formatted("GENERATED ALWAYS AS", "keyword")} """
-                       f"""({self.data_default})""")
-        elif (str(self.data_default) not in ("nan", "None") 
-              and self.default_on_null == "YES"):
-            default = (f""" {get_case_formatted("DEFAULT ON NULL", "keyword")} """
-                       f"""{self.data_default}""")
+        if (
+            str(self.data_default) not in ("nan", "None")
+            and self.virtual_column == "YES"
+        ):
+            default = (
+                f""" {get_case_formatted("GENERATED ALWAYS AS", "keyword")} """
+                f"""({self.data_default})"""
+            )
+        elif (
+            str(self.data_default) not in ("nan", "None")
+            and self.default_on_null == "YES"
+        ):
+            default = (
+                f""" {get_case_formatted("DEFAULT ON NULL", "keyword")} """
+                f"""{self.data_default}"""
+            )
         elif str(self.data_default) not in ("nan", "None"):
-            default = (f""" {get_case_formatted("DEFAULT", "keyword")} """
-                       f"""{self.data_default}""")
+            default = (
+                f""" {get_case_formatted("DEFAULT", "keyword")} """
+                f"""{self.data_default}"""
+            )
         return default.rstrip()
 
     def get_not_null(self):
