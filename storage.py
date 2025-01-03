@@ -1,3 +1,5 @@
+"""Handles Oracle database storage definitions and DDL generation."""
+
 from utils import get_case_formatted, get_size_formatted
 
 
@@ -17,6 +19,7 @@ def get_full_storage(
     next_extent=None,
     local_index=None,
 ):
+    """Generate storage clause based on config and settings."""
     storage = ""
     if str(tablespace_name) != "nan" and local_index != "YES":
         statement = get_case_formatted(

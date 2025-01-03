@@ -1,3 +1,5 @@
+"""Handles Oracle database table definitions and DDL generation."""
+
 from column import Column
 from constraint import Constraint
 from partitioning import Partitioning
@@ -17,6 +19,7 @@ from utils import (
 
 
 def get_table_dfs(table_row, metadata):
+    """Extract relevant dataframes for a table from metadata."""
     df_all_tab_columns = metadata["tab_columns"]
     df_all_part_tables = metadata["part_tables"]
     df_all_part_key_columns = metadata["part_key_columns"]
@@ -78,6 +81,7 @@ def get_table_dfs(table_row, metadata):
 
 
 class Table:
+    """Oracle database table with complete DDL generation capabilities."""
     def __init__(
         self,
         table_attr,
@@ -92,6 +96,7 @@ class Table:
         tab_constraint_columns,
         tab_grants,
     ):
+        """Initialize table with metadata and related objects."""
         self.max_column_name_length = None
         self.ddl = ""
         self.part_table = part_table
@@ -148,12 +153,14 @@ class Table:
         )
 
     def get_maximum_column_name_length(self):
+        """Calculate maximum length needed for column name padding."""
         self.columns["column_name_quoted"] = self.columns["column_name"].apply(
             add_quotes
         )
         return self.columns["column_name_quoted"].str.len().max()
 
     def get_collation(self):
+        """Get collation clause if custom collation exists."""
         collation = ""
         if (
             self.default_collation
@@ -164,6 +171,7 @@ class Table:
         return get_case_formatted(collation, "keyword")
 
     def get_storage(self):
+        """Generate storage clause based on config and settings."""
         storage = ""
         if conf["storage"]["storage"] == "no_storage":
             storage = ""
@@ -214,6 +222,7 @@ class Table:
         return storage
 
     def get_logging(self):
+        """Get logging clause based on config setting."""
         logging = ""
         if conf["storage"]["logging"] == "yes" and self.partitioned == "NO":
             if self.logging == "YES":
@@ -223,6 +232,7 @@ class Table:
         return get_case_formatted(logging, "keyword")
 
     def get_compression(self):
+        """Get compression clause based on config and settings."""
         if self.partitioned == "NO":
             tab_compression, tab_compress_for = (
                 self.compression,
@@ -245,6 +255,7 @@ class Table:
         return get_case_formatted(compression, "keyword")
 
     def get_cache(self):
+        """Get caching clause based on config setting."""
         cache = ""
         if conf["storage"]["cache"] == "yes":
             if self.cache.strip() == "Y":
@@ -254,18 +265,21 @@ class Table:
         return get_case_formatted(cache, "keyword")
 
     def get_result_cache(self):
+        """Get result cache clause based on config setting."""
         result_cache = ""
         if conf["storage"]["result_cache"] == "yes":
             result_cache = f"\nRESULT_CACHE (MODE {self.result_cache})"
         return get_case_formatted(result_cache, "keyword")
 
     def get_tab_row_movement(self):
+        """Get row movement clause if enabled."""
         row_movement = ""
         if self.row_movement == "ENABLED":
             row_movement = "\nENABLE ROW MOVEMENT"
         return get_case_formatted(row_movement, "keyword")
 
     def get_partitioning(self):
+        """Generate partitioning clause if table is partitioned."""
         if self.partitioned == "NO":
             return ""
         partitioning = Partitioning(
@@ -274,6 +288,7 @@ class Table:
         return partitioning.get_partitioning()
 
     def get_indexes(self):
+        """Generate DDL for indexes if enabled in config."""
         indexes = ""
         if conf["indexes"] == "yes":
             for index_row in self.indexes.itertuples():
@@ -287,6 +302,7 @@ class Table:
         return indexes
 
     def get_constraints(self):
+        """Generate DDL for constraints if enabled in config."""
         constraints = ""
         if conf["constraints"] == "yes":
             if len(self.tab_constraints) > 0:
@@ -313,6 +329,7 @@ class Table:
         return constraints
 
     def get_comments(self):
+        """Generate DDL for comments if enabled in config."""
         comments = ""
         end_line_char = ""
         if conf["comments"]["empty_line_after_comment"] == "yes":
@@ -357,6 +374,7 @@ class Table:
         return comments
 
     def get_grants(self):
+        """Generate DDL for grants if enabled in config."""
         grants = ""
         if conf["grants"] == "yes":
             tab_grants_grouped = (
@@ -399,6 +417,7 @@ class Table:
         return grants
 
     def generate_ddl(self):
+        """Generate DDL for table."""
         self.table_full_name = get_object_name(
             self.owner, self.table_name, "identifier"
         )
@@ -437,6 +456,7 @@ class Table:
         self.ddl = replace_multiple_newlines(ddl)
 
     def store_ddl_into_file(self):
+        """Write generated DDL to filesystem."""
         file_path = get_file_path("table", self.owner, self.table_name)
         prepare_directories(file_path)
 

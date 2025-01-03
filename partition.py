@@ -1,8 +1,12 @@
+"""Handles Oracle database partition definitions and DDL generation."""
+
 from storage import get_full_storage
 from utils import conf, get_case_formatted, get_indentation
 
 
 class Partition:
+    """Oracle database partition with properties and DDL generation."""
+
     def __init__(self, partitioning_type, tab_partition):
         self.partitioning_type = partitioning_type
         self.partition_name = tab_partition.partition_name
@@ -25,6 +29,7 @@ class Partition:
         self.compress_for = tab_partition.compress_for
 
     def get_logging(self):
+        """Get LOGGING/NOLOGGING clause if specified in config."""
         logging = ""
         if conf["storage"]["logging"] == "yes":
             if self.logging == "YES":
@@ -34,6 +39,7 @@ class Partition:
         return get_case_formatted(logging, "keyword")
 
     def get_compression(self):
+        """Get compression clause based on config and settings."""
         compression = ""
         if conf["storage"]["compression"] == "yes":
             if self.compression == "DISABLED":
@@ -46,6 +52,7 @@ class Partition:
         return get_case_formatted(compression, "keyword")
 
     def get_partition(self):
+        """Generate complete partition DDL fragment."""
         statement = ""
         if self.partitioning_type == "RANGE":
             statement = get_case_formatted(

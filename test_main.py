@@ -1,18 +1,21 @@
+"""Test main script."""
+
 import os
 import shutil
 
-if not os.path.isfile("config_con.yaml"):
-    shutil.copyfile("config_con.template.yaml", "config_con.yaml")
-
-import main as m
 import pandas as pd
+import main as m
 import utils as ut
 from utils import conf
 from table import get_table_dfs
 from db_metadata import get_db_metadata
 
+if not os.path.isfile("config_con.yaml"):
+    shutil.copyfile("config_con.template.yaml", "config_con.yaml")
+
 
 def store_metadata_into_xlsx():
+    """Store metadata into xlsx files."""
     metadata = get_db_metadata("EXTORA_APP")
 
     df_tables = metadata["tables"]
@@ -55,6 +58,7 @@ def store_metadata_into_xlsx():
 
 
 def store_metadata_into_files():
+    """Store metadata into csv files."""
     metadata = get_db_metadata("EXTORA_APP")
 
     df_tables = metadata["tables"]
@@ -91,6 +95,7 @@ def store_metadata_into_files():
 
 
 def get_metadata_from_xlsx():
+    """Get metadata from xlsx files."""
     df_tables = pd.read_excel("test/dfs/df_tables.xlsx", na_values=[""])
     df_all_tab_columns = pd.read_excel(
         "test/dfs/df_all_tab_columns.xlsx", na_values=[""]
@@ -140,6 +145,7 @@ def get_metadata_from_xlsx():
 
 
 def get_metadata_from_files():
+    """Get metadata from csv files."""
     df_tables = pd.read_csv("test/dfs/df_tables.csv", na_values=[""])
     df_all_tab_columns = pd.read_csv(
         "test/dfs/df_all_tab_columns.csv", na_values=[""]
@@ -185,6 +191,7 @@ def get_metadata_from_files():
 
 
 def get_content_from_file(file_path):
+    """Get content of file."""
     try:
         with open(file_path, "r", encoding="utf-8") as f:
             content = f.read()
@@ -194,6 +201,7 @@ def get_content_from_file(file_path):
 
 
 def update_expected_ddl_file(file_path, ddl):
+    """Update expected DDL file."""
     try:
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(ddl)
@@ -204,6 +212,7 @@ def update_expected_ddl_file(file_path, ddl):
 
 
 def checking_tables_ddl(case_name):
+    """Check DDL of tables."""
     schema_name = "EXTORA_APP"
     db_metadata = get_metadata_from_files()
     df_tables = db_metadata["tables"]
@@ -216,13 +225,14 @@ def checking_tables_ddl(case_name):
             f"test/tables__{case_name}/{schema_name.lower()}"
             f".{table.table_name.lower()}.sql"
         )
-        if update_expected_ddl_files:
+        if UPDATE_EXPECTED_DDL_FILES:
             update_expected_ddl_file(file_path, ddl)
         expected_ddl = get_content_from_file(file_path)
         assert ddl == expected_ddl
 
 
 def checking_fks_ddl(case_name):
+    """Check DDL of foreign keys."""
     schema_name = "EXTORA_APP"
     db_metadata = get_metadata_from_files()
     df_foreign_keys = db_metadata["constraints"].loc[
@@ -239,13 +249,14 @@ def checking_fks_ddl(case_name):
             f"test/fks__{case_name}/{schema_name.lower()}"
             f".{foreign_key.constraint_name.lower()}.sql"
         )
-        if update_expected_ddl_files:
+        if UPDATE_EXPECTED_DDL_FILES:
             update_expected_ddl_file(file_path, ddl)
         expected_ddl = get_content_from_file(file_path)
         assert ddl == expected_ddl
 
 
 def test_get_table_dfs():
+    """Test get_table_dfs function."""
     db_metadata = get_metadata_from_files()
     df_tables = db_metadata["tables"]
     db_table_row = df_tables.iloc[0]
@@ -254,6 +265,7 @@ def test_get_table_dfs():
 
 
 def test_table_ddl():
+    """Test table DDL generation."""
     db_metadata = get_metadata_from_files()
     df_tables = db_metadata["tables"]
     db_table_row = df_tables.iloc[0]
@@ -264,6 +276,7 @@ def test_table_ddl():
 
 
 def test_store_ddl_into_file():
+    """Test store DDL into file."""
     db_metadata = get_metadata_from_files()
     df_tables = db_metadata["tables"]
     df_table = df_tables.iloc[0]
@@ -284,6 +297,7 @@ def test_store_ddl_into_file():
 
 
 def test_get_file_path_1():
+    """Test get_file_path function."""
     conf["file_path"][
         "table"
     ] = "./{OBJECT_OWNER}/{object_type}/{OBJECT_OWNER}.{object_name}.sql"
@@ -292,6 +306,7 @@ def test_get_file_path_1():
 
 
 def test_get_file_path_2():
+    """Test get_file_path function."""
     conf["file_path"][
         "trigger"
     ] = "./{object_owner}/{OBJECT_TYPE}S/{object_owner}.{OBJECT_NAME}.trg"
@@ -300,6 +315,7 @@ def test_get_file_path_2():
 
 
 def test_tables_ddl__1__uppercase__logging():
+    """Test tables DDL generation."""
     conf["case"]["keyword"] = "uppercase"
     conf["case"]["identifier"] = "uppercase"
     conf["storage"]["storage"] = "with_storage"
@@ -320,6 +336,7 @@ def test_tables_ddl__1__uppercase__logging():
 
 
 def test_tables_ddl__2__lowercase__compress():
+    """Test tables DDL generation."""
     conf["case"]["keyword"] = "lowercase"
     conf["case"]["identifier"] = "lowercase"
     conf["storage"]["storage"] = "with_storage"
@@ -340,6 +357,7 @@ def test_tables_ddl__2__lowercase__compress():
 
 
 def test_tables_ddl__3__no_storage():
+    """Test tables DDL generation."""
     conf["case"]["keyword"] = "uppercase"
     conf["case"]["identifier"] = "uppercase"
     conf["storage"]["storage"] = "no_storage"
@@ -360,6 +378,7 @@ def test_tables_ddl__3__no_storage():
 
 
 def test_tables_ddl__4__only_tablespace():
+    """Test tables DDL generation."""
     conf["case"]["keyword"] = "uppercase"
     conf["case"]["identifier"] = "uppercase"
     conf["storage"]["storage"] = "only_tablespace"
@@ -380,6 +399,7 @@ def test_tables_ddl__4__only_tablespace():
 
 
 def test_tables_ddl__5__uppercase__lowercase__compact_part():
+    """Test tables DDL generation."""
     conf["case"]["keyword"] = "uppercase"
     conf["case"]["identifier"] = "lowercase"
     conf["storage"]["storage"] = "with_storage"
@@ -400,6 +420,7 @@ def test_tables_ddl__5__uppercase__lowercase__compact_part():
 
 
 def test_tables_ddl__6__lowercase__uppercase__no_empty_line():
+    """Test tables DDL generation."""
     conf["case"]["keyword"] = "lowercase"
     conf["case"]["identifier"] = "uppercase"
     conf["storage"]["storage"] = "with_storage"
@@ -420,6 +441,7 @@ def test_tables_ddl__6__lowercase__uppercase__no_empty_line():
 
 
 def test_fk_1_lowercase_uppercase_no_prompt():
+    """Test foreign keys DDL generation."""
     conf["case"]["keyword"] = "lowercase"
     conf["case"]["identifier"] = "uppercase"
     conf["prompts"] = "no"
@@ -427,14 +449,15 @@ def test_fk_1_lowercase_uppercase_no_prompt():
 
 
 def test_fk_2_uppercase_lowercase_no_prompt():
+    """Test foreign keys DDL generation."""
     conf["case"]["keyword"] = "uppercase"
     conf["case"]["identifier"] = "lowercase"
     conf["prompts"] = "yes"
     checking_fks_ddl("2_uppercase_lowercase_no_prompt")
 
 
-update_expected_ddl_files = False
+UPDATE_EXPECTED_DDL_FILES = False
 if os.environ.get("RUN_LOCAL_ONLY", "False") == "True":
-    update_expected_ddl_files = False
+    UPDATE_EXPECTED_DDL_FILES = False
     store_metadata_into_xlsx()
     store_metadata_into_files()

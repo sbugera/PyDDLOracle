@@ -1,8 +1,11 @@
+"""Handles Oracle database index definitions and DDL generation."""
+
 from storage import get_full_storage
 from utils import conf, get_case_formatted, get_object_name, get_prompt
 
 
 class Index:
+    """Oracle database index with DDL generation."""
     def __init__(self, index_row, index_columns):
         self.owner = index_row.owner
         self.index_name = index_row.index_name
@@ -38,6 +41,7 @@ class Index:
         self.index_columns = index_columns
 
     def get_index(self):
+        """Generate complete index DDL fragment."""
         statement = get_case_formatted(
             "CREATE<:1> INDEX <:2> ON <:3>\n(<:4>)", "keyword"
         )

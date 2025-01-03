@@ -1,5 +1,7 @@
-import pandas as pd
+"""Generates DDL scripts for Oracle database objects."""
+
 import argparse
+import pandas as pd
 
 from constraint import get_foreign_key_dfs, Constraint
 from table import Table, get_table_dfs
@@ -12,6 +14,7 @@ pd.set_option("display.max_columns", None)
 
 
 def get_args():
+    """Returns command line arguments."""
     arg_parser = argparse.ArgumentParser(
         description="Generate DDL scripts for Oracle database objects"
     )

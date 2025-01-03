@@ -1,3 +1,5 @@
+"""Handles Oracle database metadata and DDL generation."""
+
 import pandas as pd
 from sqlalchemy import create_engine
 
@@ -6,6 +8,7 @@ from utils import conf_con
 
 
 def get_db_engine():
+    """Returns SQLAlchemy engine for Oracle database."""
     db_username = conf_con["database"]["username"]
     db_password = conf_con["database"]["password"]
     db_host = conf_con["database"]["host"]
@@ -26,6 +29,7 @@ def get_db_engine():
 
 
 def get_db_schema_name(arg_schema_name=None):
+    """Returns DB schema name for which DDL scripts need to be generated."""
     if arg_schema_name:
         username = arg_schema_name.upper()
     else:
@@ -34,6 +38,7 @@ def get_db_schema_name(arg_schema_name=None):
 
 
 def get_column_exists(df_column_exists, view_name, column_name):
+    """Checks if a column exists in a view."""
     return df_column_exists.loc[
         (df_column_exists["view_name"] == view_name)
         & (df_column_exists["column_name"] == column_name),
@@ -42,7 +47,8 @@ def get_column_exists(df_column_exists, view_name, column_name):
 
 
 def get_df_tables(engine, schema_name, df_column_exists):
-    sql_tables = sql.sql_tables
+    """Returns DataFrame with tables metadata."""
+    sql_tables = sql.SQL_TABLES
     if (
         get_column_exists(df_column_exists, "DBA_TABLES", "DEFAULT_COLLATION")
         == "Y"
@@ -57,7 +63,8 @@ def get_df_tables(engine, schema_name, df_column_exists):
 
 
 def get_df_tab_columns(engine, schema_name, df_column_exists):
-    sql_tab_columns = sql.sql_tab_columns
+    """Returns DataFrame with columns metadata."""
+    sql_tab_columns = sql.SQL_TAB_COLUMNS
     if get_column_exists(df_column_exists, "DBA_TAB_COLS", "COLLATION") == "Y":
         sql_tab_columns = sql_tab_columns.replace(
             "CAST(NULL AS VARCHAR2(100)) AS collation", "c.collation"
@@ -68,7 +75,8 @@ def get_df_tab_columns(engine, schema_name, df_column_exists):
 
 
 def get_df_part_tables(engine, schema_name, df_column_exists):
-    sql_part_tables = sql.sql_part_tables
+    """Returns DataFrame with partitioned tables metadata."""
+    sql_part_tables = sql.SQL_PART_TABLES
     if (
         get_column_exists(df_column_exists, "DBA_PART_TABLES", "AUTOLIST")
         == "Y"
@@ -92,58 +100,68 @@ def get_df_part_tables(engine, schema_name, df_column_exists):
 
 
 def get_df_part_key_columns(engine, schema_name):
+    """Returns DataFrame with partition key columns metadata."""
     return pd.read_sql_query(
-        sql.sql_part_key_columns, engine, params={"schema_name": schema_name}
+        sql.SQL_PART_KEY_COLUMNS, engine, params={"schema_name": schema_name}
     )
 
 
 def get_df_comments(engine, schema_name):
+    """Returns DataFrame with comments metadata."""
     return pd.read_sql_query(
-        sql.sql_comments, engine, params={"schema_name": schema_name}
+        sql.SQL_COMMENTS, engine, params={"schema_name": schema_name}
     )
 
 
 def get_df_tab_partitions(engine, schema_name):
+    """Returns DataFrame with table partitions metadata."""
     return pd.read_sql_query(
-        sql.sql_tab_partitions, engine, params={"schema_name": schema_name}
+        sql.SQL_TAB_PARTITIONS, engine, params={"schema_name": schema_name}
     )
 
 
 def get_df_indexes(engine, schema_name):
+    """Returns DataFrame with indexes metadata."""
     return pd.read_sql_query(
-        sql.sql_indexes, engine, params={"schema_name": schema_name}
+        sql.SQL_INDEXES, engine, params={"schema_name": schema_name}
     )
 
 
 def get_df_index_columns(engine, schema_name):
+    """Returns DataFrame with index columns metadata."""
     return pd.read_sql_query(
-        sql.sql_index_columns, engine, params={"schema_name": schema_name}
+        sql.SQL_INDEX_COLUMNS, engine, params={"schema_name": schema_name}
     )
 
 
 def get_df_constraints(engine, schema_name):
+    """Returns DataFrame with constraints metadata."""
     return pd.read_sql_query(
-        sql.sql_constraints, engine, params={"schema_name": schema_name}
+        sql.SQL_CONSTRAINTS, engine, params={"schema_name": schema_name}
     )
 
 
 def get_df_constraint_columns(engine, schema_name):
+    """Returns DataFrame with constraint columns metadata."""
     return pd.read_sql_query(
-        sql.sql_constraint_columns, engine, params={"schema_name": schema_name}
+        sql.SQL_CONSTRAINT_COLUMNS, engine, params={"schema_name": schema_name}
     )
 
 
 def get_df_grants(engine, schema_name):
+    """Returns DataFrame with grants metadata."""
     return pd.read_sql_query(
-        sql.sql_grants, engine, params={"schema_name": schema_name}
+        sql.SQL_GRANTS, engine, params={"schema_name": schema_name}
     )
 
 
 def get_df_column_exists(engine):
-    return pd.read_sql_query(sql.sql_column_exists, engine)
+    """Returns DataFrame with column exists metadata."""
+    return pd.read_sql_query(sql.SQL_COLUMN_EXISTS, engine)
 
 
 def get_db_metadata(schema_name):
+    """Returns dict with all database metadata DataFrames."""
     engine = get_db_engine()
     df_column_exists = get_df_column_exists(engine)
     metadata = {

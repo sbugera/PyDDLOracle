@@ -1,4 +1,6 @@
-sql_column_exists = """
+"""SQL queries for retrieving Oracle database metadata."""
+
+SQL_COLUMN_EXISTS = """
 WITH f(view_name, column_name) AS (
     SELECT 'DBA_TABLES'     , 'DEFAULT_COLLATION'     FROM dual UNION ALL
     SELECT 'DBA_TAB_COLS'   , 'COLLATION'             FROM dual UNION ALL
@@ -16,7 +18,7 @@ SELECT f.view_name,
    AND f.column_name = c.column_name
 """
 
-sql_tables = """
+SQL_TABLES = """
 SELECT t.owner,
        t.table_name,
        t.tablespace_name,
@@ -61,7 +63,7 @@ SELECT t.owner,
  ORDER BY t.table_name
 """
 
-sql_tab_columns = """
+SQL_TAB_COLUMNS = """
 SELECT c.table_name,
        c.column_name,
        c.column_id,
@@ -100,7 +102,7 @@ SELECT c.table_name,
  ORDER BY c.table_name, c.column_id, c.internal_column_id
 """
 
-sql_part_tables = """
+SQL_PART_TABLES = """
 SELECT pt.owner,
        pt.table_name,
        pt.partitioning_type,
@@ -136,7 +138,7 @@ SELECT pt.owner,
  ORDER BY pt.table_name
 """
 
-sql_part_key_columns = """
+SQL_PART_KEY_COLUMNS = """
 SELECT name,
        column_name
   FROM sys.dba_part_key_columns
@@ -145,7 +147,7 @@ SELECT name,
  ORDER BY name, column_position
 """
 
-sql_tab_partitions = """
+SQL_TAB_PARTITIONS = """
 SELECT table_name,
        partition_name,
        high_value,
@@ -176,7 +178,7 @@ SELECT table_name,
  ORDER BY table_name, partition_position
 """
 
-sql_comments = """
+SQL_COMMENTS = """
 SELECT table_name,
        NULL column_name,
        comments,
@@ -199,7 +201,7 @@ SELECT cc.table_name,
  ORDER BY table_name, order_num
 """
 
-sql_indexes = """
+SQL_INDEXES = """
 SELECT i.owner,
        i.index_name,
        i.index_type,
@@ -241,7 +243,7 @@ SELECT i.owner,
  ORDER BY i.owner, i.index_name
 """
 
-sql_index_columns = """
+SQL_INDEX_COLUMNS = """
 SELECT ic.index_owner,
        ic.index_name,
        ic.column_name,
@@ -257,7 +259,7 @@ SELECT ic.index_owner,
  ORDER BY ic.index_owner, ic.index_name, ic.column_position
 """
 
-sql_constraints = """
+SQL_CONSTRAINTS = """
 SELECT c.owner,
        c.table_name,
        c.constraint_name,
@@ -289,7 +291,7 @@ SELECT c.owner,
  ORDER BY c.table_name, c.constraint_type, c.constraint_name
 """
 
-sql_constraint_columns = """
+SQL_CONSTRAINT_COLUMNS = """
 SELECT c.owner,
        cc.table_name,
        cc.constraint_name,
@@ -326,7 +328,7 @@ SELECT cc.owner,
  ORDER BY owner, table_name, constraint_name, position
 """
 
-sql_grants = """
+SQL_GRANTS = """
 SELECT tp.grantee,
        tp.owner,
        tp.table_name,
