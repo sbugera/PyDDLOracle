@@ -1,11 +1,14 @@
+"""Utils module."""
+
+import re
+import os
 from collections import namedtuple
 from pprint import PrettyPrinter
 import yaml
-import re
-import os
 
 
 def load_config(file_path):
+    """Load config from YAML file."""
     with open(file_path, "r", encoding="utf-8") as stream:
         try:
             config = yaml.safe_load(stream)
@@ -16,9 +19,7 @@ def load_config(file_path):
 
 
 def get_dataframe_namedtuple(df, index):
-    """
-    Returns the row of a pandas dataframe as a namedtuple.
-    """
+    """Returns the row of a pandas dataframe as a namedtuple."""
     if index >= len(df):
         return None
     row = df.iloc[index]
@@ -27,10 +28,12 @@ def get_dataframe_namedtuple(df, index):
 
 
 def replace_multiple_newlines(text):
+    """Replace multiple newlines with a single newline."""
     return re.sub(r"\n+$", "\n", text)
 
 
 def pprint(variable):
+    """Pretty print a variable."""
     pp = PrettyPrinter(
         indent=1, width=80, depth=None, stream=None, compact=False
     )
@@ -41,6 +44,7 @@ def pprint(variable):
 
 
 def get_case_formatted(value, config_name_for_upper):
+    """Get case formatted value."""
     if not value:
         return ""
     if value != value.upper():
@@ -52,6 +56,7 @@ def get_case_formatted(value, config_name_for_upper):
 
 
 def add_quotes(value):
+    """Add quotes to value."""
     if any(char.islower() for char in value):
         return f'"{value}"'
     else:
@@ -59,10 +64,12 @@ def add_quotes(value):
 
 
 def get_indentation():
+    """Get indentation based on config."""
     return "    "
 
 
 def get_file_path(object_type, object_owner, object_name):
+    """Get file path based on config."""
     file_path_template = conf["file_path"][object_type]
     pattern = r"\{(.*?)\}"
     matches = re.findall(pattern, file_path_template)
@@ -90,12 +97,14 @@ def get_file_path(object_type, object_owner, object_name):
 
 
 def prepare_directories(file_path):
+    """Create directories if they don't exist."""
     directory = os.path.dirname(file_path)
     if not os.path.exists(directory):
         os.makedirs(directory)
 
 
 def get_size_formatted(initial_extent):
+    """Get size formatted based on config."""
     if initial_extent >= 1024 * 1024 * 1024:
         return str(int(initial_extent / 1024 / 1024 / 1024)) + "G"
     if initial_extent >= 1024 * 1024:
@@ -105,6 +114,7 @@ def get_size_formatted(initial_extent):
 
 
 def get_object_name(object_owner, object_name, config_name_for_upper):
+    """Get object name based on config."""
     return (
         get_case_formatted(object_owner, config_name_for_upper)
         + "."
@@ -113,6 +123,7 @@ def get_object_name(object_owner, object_name, config_name_for_upper):
 
 
 def get_prompt(prompt_text, *values):
+    """Get prompt based on config."""
     if conf["prompts"] == "yes":
         has_placeholders = re.search(r"<:1>", prompt_text)
         prompt = get_case_formatted("PROMPT", "keyword")

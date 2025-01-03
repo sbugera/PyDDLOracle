@@ -10,15 +10,7 @@ from utils import (
 
 
 def get_foreign_key_dfs(foreign_key_row, metadata):
-    """Get DataFrames with columns involved in foreign key relationship.
-
-    Args:
-        foreign_key_row: Foreign key metadata row
-        metadata: Dict containing database metadata DataFrames
-
-    Returns:
-        tuple: (foreign_key_row, foreign_key_cols, remote_key_cols)
-    """
+    """Get DataFrames with columns involved in foreign key relationship."""
     df_all_constraint_cols = metadata["constraint_columns"]
 
     df_foreign_key_columns = df_all_constraint_cols[
@@ -41,28 +33,7 @@ def get_foreign_key_dfs(foreign_key_row, metadata):
 
 
 class Constraint:
-    """Oracle database constraint with DDL generation.
-
-    Attributes:
-        owner: Schema owner
-        table_name: Table name
-        constraint_name: Constraint name
-        constraint_type: P (PK), U (unique), C (check), R (foreign key)
-        search_condition: Check constraint condition
-        status: ENABLED/DISABLED
-        deferrable: DEFERRABLE/NOT DEFERRABLE
-        deferred: IMMEDIATE/DEFERRED
-        validated: VALIDATED/NOT VALIDATED
-        index_owner: Owner of backing index
-        index_name: Name of backing index
-        r_owner: Referenced constraint owner
-        r_table_name: Referenced table name
-        r_constraint_name: Referenced constraint name
-        delete_rule: ON DELETE action
-        constraint_columns: Constraint columns
-        constraint_columns_remote: Referenced columns
-        ddl: Generated DDL statement
-    """
+    """Oracle database constraint with DDL generation."""
 
     def __init__(
         self,
@@ -90,14 +61,7 @@ class Constraint:
         self.constraint_columns_remote = constraint_columns_remote
 
     def get_constraint(self, standalone=False):
-        """Generate DDL for constraint definition.
-
-        Args:
-            standalone: If True, wrap in ALTER TABLE statement
-
-        Returns:
-            str: Formatted constraint DDL
-        """
+        """Generate DDL for constraint definition."""
         table_name = get_object_name(self.owner, self.table_name, "identifier")
         constraint_name = get_case_formatted(
             self.constraint_name, "identifier"

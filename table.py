@@ -96,7 +96,6 @@ class Table:
         tab_constraint_columns,
         tab_grants,
     ):
-        """Initialize table with metadata and related objects."""
         self.max_column_name_length = None
         self.ddl = ""
         self.part_table = part_table

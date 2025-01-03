@@ -5,24 +5,7 @@ from utils import get_case_formatted, get_object_name, get_indentation
 
 
 class Column:
-    """Oracle database column with properties and DDL generation.
-
-    Attributes:
-        max_column_name_length: Max padding length
-        column_name: Column name
-        data_type: Oracle data type
-        data_length: Length for string types
-        data_precision: Numeric precision
-        data_scale: Numeric scale
-        data_type_owner: Custom type owner
-        char_used: 'B' for byte, 'C' for char
-        hidden_column: 'YES' if hidden
-        collation: Collation setting
-        data_default: Default value
-        virtual_column: 'YES' if virtual
-        default_on_null: 'YES' if DEFAULT ON NULL
-        nullable: 'Y'/'N' for nullability
-    """
+    """Oracle database column with properties and DDL generation."""
 
     def __init__(self, column_row, max_column_name_length):
         self.max_column_name_length = max_column_name_length

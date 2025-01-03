@@ -1,8 +1,12 @@
+"""Handles Oracle database partition definitions and DDL generation."""
+
 from partition import Partition
 from utils import conf, get_case_formatted, get_indentation
 
 
 class Partitioning:
+    """Handles Oracle database partition definitions and DDL generation."""
+
     def __init__(self, part_table, part_key_columns, tab_partitions):
         self.partitioning_type = part_table.partitioning_type
         self.interval = part_table.interval
@@ -11,6 +15,7 @@ class Partitioning:
         self.tab_partitions = tab_partitions
 
     def get_list_of_key_columns(self):
+        """Generate list of key columns."""
         list_of_key_columns = ""
         for i, part_key_column in enumerate(
             self.part_key_columns.itertuples()
@@ -22,6 +27,7 @@ class Partitioning:
         return get_case_formatted(list_of_key_columns, "identifier")
 
     def get_partitioning(self):
+        """Generate partitioning clause if table is partitioned."""
         partitioning = ""
         if conf["storage"]["partitions"] == "none":
             return ""
