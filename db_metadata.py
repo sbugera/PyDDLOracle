@@ -40,8 +40,8 @@ def get_db_schema_name(arg_schema_name=None):
 def get_column_exists(df_column_exists, view_name, column_name):
     """Checks if a column exists in a view."""
     return df_column_exists.loc[
-        (df_column_exists["view_name"] == view_name)
-        & (df_column_exists["column_name"] == column_name),
+        (df_column_exists["view_name"] == view_name.upper())
+        & (df_column_exists["column_name"] == column_name.upper()),
         "column_exists",
     ].values[0]
 
