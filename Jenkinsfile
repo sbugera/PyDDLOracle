@@ -13,13 +13,14 @@ pipeline {
     }
 
     stages {
-        stage('Setup Virtual Environment') {
+        stage('Setup Environment') {
             steps {
                 sh '''
                     python3.13 -m venv ${VENV}
                     source ${VENV}/bin/activate
                     pip install --upgrade pip
                     pip install -r requirements.txt
+                    cp config_con.template.yaml config_con.yaml || true
                 '''
             }
         }
