@@ -16,7 +16,7 @@ jobs:
           command: pip install pytest
       - run:
           name: Prepare configuration
-          command: cp config_con_template.yaml config_con.yaml || true
+          command: cp config_con.template.yaml config_con.yaml || true
       - run:
           name: Run tests
           command: pytest --junitxml=junit.xml || ((($? == 5)) && echo 'Did not find any tests to run.')
