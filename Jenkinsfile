@@ -29,7 +29,7 @@ pipeline {
                 sh '''
                     source ${VENV}/bin/activate
                     mkdir -p test-results
-                    pytest tests/ \
+                    pytest test/ \
                         --junitxml=test-results/junit.xml \
                         --html=test-results/report.html \
                         --self-contained-html \
