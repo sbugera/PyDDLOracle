@@ -4,14 +4,24 @@ pipeline {
     environment {
         VENV = "venv"
     }
+    
     stages {
-
-        stage('Download Liquibase') {
+        stage('Download Liquibase and OJDBC Driver') {
             steps {
-                sh '''
-                curl -Lo liquibase.jar https://github.com/liquibase/liquibase/releases/download/v4.30.0/liquibase-core-4.30.0.jar
-                ls -l
-                '''
+                sh """
+                    mvn dependency:copy \
+                      -Dartifact=com.oracle.database.jdbc:ojdbc11:23.6.0.24.10 \
+                      -DoutputDirectory=libs \
+                      -Dmdep.stripVersion=true
+                """
+                sh """
+                    mvn dependency:copy \
+                      -Dartifact=org.liquibase:liquibase-core:4.30.0 \
+                      -DoutputDirectory=libs \
+                      -Dmdep.stripVersion=true
+                """
+                
+                sh "ls -l libs"
             }
         }
     }
