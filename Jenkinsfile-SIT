@@ -51,6 +51,52 @@ pipeline {
                 """
             }
         }
+
+        stage('Parse Secret') {
+            steps {
+                // Use the credential ID from Jenkins
+                withCredentials([string(credentialsId: 'db-credentials', variable: 'DB_CONFIG')]) {
+                    script {
+                        // If you're storing JSON in DB_CONFIG, parse it in Groovy:
+                        def config = readJSON text: DB_CONFIG
+
+                        // Now you can extract values
+                        def dbUser   = config.user
+                        def dbPass   = config.password
+                        def dbHost   = config.host
+                        def dbPort   = config.port
+                        def dbService = config.serviceName
+
+                        echo "Database User: ${dbUser}"
+                        echo "Database Host: ${dbHost}"
+
+                        // Use them as environment variables for subsequent steps, if you like:
+                        env.DB_USER = dbUser
+                        env.DB_PASS = dbPass
+                        env.DB_HOST = dbHost
+                        env.DB_PORT = dbPort.toString()
+                        env.DB_SERVICE = dbService
+                    }
+                }
+            }
+        }
+
+        stage('Apply Migrations') {
+            steps {
+                sh '''
+                    cd liquibase
+                    export LIQUIBASE_HOME=.
+                    
+                    echo "url=jdbc:oracle:thin:@${DB_HOST}:${DB_PORT}/${DB_SERVICE}" >> liquibase.properties
+                    echo "username=${DB_USER}" >> liquibase.properties
+                    echo "password=${DB_PASS}" >> liquibase.properties
+                    echo "changeLogFile=./migrations/master_changelog.xml" >> liquibase.properties
+                    echo "driver=oracle.jdbc.driver.OracleDriver" >> liquibase.properties
+
+                    java -jar ./internal/lib/liquibase-core.jar status
+                '''
+            }
+        }
     }
 }
 
