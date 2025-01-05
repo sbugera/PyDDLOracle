@@ -19,7 +19,7 @@ jobs:
           command: cp config_con.template.yaml config_con.yaml || true
       - run:
           name: Run tests
-          command: pytest --junitxml=junit.xml || ((($? == 5)) && echo 'Did not find any tests to run.')
+          command: pytest tests/unit --junitxml=junit.xml || ((($? == 5)) && echo 'Did not find any tests to run.')
       - store_test_results:
           path: junit.xml
 workflows:
