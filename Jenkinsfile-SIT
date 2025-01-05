@@ -44,6 +44,13 @@ pipeline {
                 """
                 
                 sh """
+                    mvn dependency:copy \
+                      -Dartifact=org.yaml:snakeyaml:2.3.0 \
+                      -DoutputDirectory=liquibase/internal/lib \
+                      -Dmdep.stripVersion=true
+                """
+                
+                sh """
                     ls -l liquibase/internal/lib
                     cd liquibase
                     export LIQUIBASE_HOME=.
