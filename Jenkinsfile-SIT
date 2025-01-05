@@ -11,18 +11,46 @@ pipeline {
                 sh """
                     mvn dependency:copy \
                       -Dartifact=com.oracle.database.jdbc:ojdbc11:23.6.0.24.10 \
-                      -DoutputDirectory=libs \
+                      -DoutputDirectory=liquibase/internal/lib \
                       -Dmdep.stripVersion=true
                 """
+
                 sh """
                     mvn dependency:copy \
                       -Dartifact=org.liquibase:liquibase-core:4.30.0 \
-                      -DoutputDirectory=libs \
+                      -DoutputDirectory=liquibase/internal/lib \
+                      -Dmdep.stripVersion=true
+                """
+
+                sh """
+                    mvn dependency:copy \
+                      -Dartifact=commons-io:commons-io:2.18.0 \
+                      -DoutputDirectory=liquibase/internal/lib \
+                      -Dmdep.stripVersion=true
+                """
+
+                sh """
+                    mvn dependency:copy \
+                      -Dartifact=info.picocli:picocli:4.7.6 \
+                      -DoutputDirectory=liquibase/internal/lib \
+                      -Dmdep.stripVersion=true
+                """
+
+                sh """
+                    mvn dependency:copy \
+                      -Dartifact=org.apache.commons:commons-lang3:3.17.0 \
+                      -DoutputDirectory=liquibase/internal/lib \
                       -Dmdep.stripVersion=true
                 """
                 
-                sh "ls -l libs"
+                sh """
+                    ls -l liquibase/internal/lib
+                    cd liquibase
+                    export LIQUIBASE_HOME=.
+                    java -jar ./internal/lib/liquibase-core.jar --version
+                """
             }
         }
     }
 }
+
