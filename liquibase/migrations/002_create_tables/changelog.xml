@@ -1,0 +1,23 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="002_001_tables" author="sit">
+        <sqlFile relativeToChangelogFile="true" path="pyddl_test.sales.sql" />
+        <sqlFile relativeToChangelogFile="true" path="pyddl_test.sales_simple_range.sql" />
+        <sqlFile relativeToChangelogFile="true" path="pyddl_test.t_cache__rowmovement__collation.sql" />
+        <sqlFile relativeToChangelogFile="true" path="pyddl_test.t_compress_basic.sql" />
+        <sqlFile relativeToChangelogFile="true" path="pyddl_test.t_compress_for_oltp.sql" />
+        <sqlFile relativeToChangelogFile="true" path="pyddl_test.t_hash_part.sql" />
+        <sqlFile relativeToChangelogFile="true" path="pyddl_test.t_list_part.sql" />
+        <sqlFile relativeToChangelogFile="true" path="pyddl_test.t_list_part__automatic.sql" />
+        <sqlFile relativeToChangelogFile="true" path="pyddl_test.t_list_part__multicolumn.sql" />
+        <sqlFile relativeToChangelogFile="true" path="pyddl_test.t_lowercase_range_part_interval_date.sql" />
+        <sqlFile relativeToChangelogFile="true" path="pyddl_test.t_range_part__range_subpart.sql" />
+        <sqlFile relativeToChangelogFile="true" path="pyddl_test.t_range_part_interval_number.sql" />
+        <sqlFile relativeToChangelogFile="true" path="pyddl_test.t_standard_datatypes.sql" />
+    </changeSet>
+
+</databaseChangeLog>
