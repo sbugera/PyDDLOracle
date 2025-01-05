@@ -100,7 +100,10 @@ pipeline {
                     echo "changeLogFile=./migrations/master_changelog.xml" >> liquibase.properties
                     echo "driver=oracle.jdbc.driver.OracleDriver" >> liquibase.properties
 
-                    java -jar ./internal/lib/liquibase-core.jar update
+                    java -jar ./internal/lib/liquibase-core.jar update-sql > update.sql
+                    echo "commit;" >> update.sql
+                    echo "exit;" >> update.sql
+                    sqlplus -s ${DB_USER}/${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_SERVICE} @update.sql
                 '''
             }
         }

@@ -6,3 +6,6 @@
 /.coverage
 /test/dfs/*.xlsx
 **/.DS_Store
+liquibase/update.sql
+liquibase/liquibase.properties
+liquibase/internal/lib/*
