@@ -100,7 +100,7 @@ pipeline {
                     echo "changeLogFile=./migrations/master_changelog.xml" >> liquibase.properties
                     echo "driver=oracle.jdbc.driver.OracleDriver" >> liquibase.properties
 
-                    java -jar ./internal/lib/liquibase-core.jar status
+                    java -jar ./internal/lib/liquibase-core.jar update
                 '''
             }
         }
