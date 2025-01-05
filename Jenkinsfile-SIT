@@ -9,48 +9,61 @@ pipeline {
         stage('Download Liquibase and OJDBC Driver') {
             steps {
                 sh """
+                    set +x +v
                     mvn dependency:copy \
+                      -Dorg.slf4j.simpleLogger.defaultLogLevel=warn \
                       -Dartifact=com.oracle.database.jdbc:ojdbc11:23.6.0.24.10 \
                       -DoutputDirectory=liquibase/internal/lib \
                       -Dmdep.stripVersion=true
                 """
 
                 sh """
+                    set +x +v
                     mvn dependency:copy \
+                      -Dorg.slf4j.simpleLogger.defaultLogLevel=warn \
                       -Dartifact=org.liquibase:liquibase-core:4.30.0 \
                       -DoutputDirectory=liquibase/internal/lib \
                       -Dmdep.stripVersion=true
                 """
 
                 sh """
+                    set +x +v
                     mvn dependency:copy \
+                      -Dorg.slf4j.simpleLogger.defaultLogLevel=warn \
                       -Dartifact=commons-io:commons-io:2.18.0 \
                       -DoutputDirectory=liquibase/internal/lib \
                       -Dmdep.stripVersion=true
                 """
 
                 sh """
+                    set +x +v
                     mvn dependency:copy \
+                      -Dorg.slf4j.simpleLogger.defaultLogLevel=warn \
                       -Dartifact=info.picocli:picocli:4.7.6 \
                       -DoutputDirectory=liquibase/internal/lib \
                       -Dmdep.stripVersion=true
                 """
 
                 sh """
+                    set +x +v
                     mvn dependency:copy \
+                      -Dorg.slf4j.simpleLogger.defaultLogLevel=warn \
                       -Dartifact=org.apache.commons:commons-lang3:3.17.0 \
                       -DoutputDirectory=liquibase/internal/lib \
                       -Dmdep.stripVersion=true
                 """
 
                 sh """
+                    set +x +v
                     mvn dependency:copy \
+                      -Dorg.slf4j.simpleLogger.defaultLogLevel=warn \
                       -Dartifact=org.yaml:snakeyaml:2.3 \
                       -DoutputDirectory=liquibase/internal/lib \
                       -Dmdep.stripVersion=true
                 """
 
                 sh """
+                    set +x +v
                     ls -l liquibase/internal/lib
                     cd liquibase
                     export LIQUIBASE_HOME=.
@@ -91,6 +104,7 @@ pipeline {
         stage('Apply Migrations') {
             steps {
                 sh '''
+                    set +x +v
                     cd liquibase
                     export LIQUIBASE_HOME=.
                     
