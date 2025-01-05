@@ -1,0 +1,4 @@
+CREATE USER pyddl_test IDENTIFIED BY pyddl_test;
+GRANT CREATE SESSION TO pyddl_test;
+GRANT CREATE TABLE TO pyddl_test;
+GRANT SELECT_CATALOG_ROLE TO pyddl_test;

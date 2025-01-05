@@ -1,0 +1,18 @@
+pipeline {
+    agent any
+
+    environment {
+        VENV = "venv"
+    }
+    stages {
+
+        stage('Download Liquibase') {
+            steps {
+                sh '''
+                curl -Lo liquibase.jar https://github.com/liquibase/liquibase/releases/download/v4.30.0/liquibase-core-4.30.0.jar
+                ls -l
+                '''
+            }
+        }
+    }
+}
