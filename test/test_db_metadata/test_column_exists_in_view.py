@@ -4,7 +4,7 @@
 import pandas as pd
 import pytest
 
-from db_metadata import get_column_exists
+from db_metadata import column_exists_in_view
 
 
 @pytest.fixture
@@ -21,29 +21,31 @@ def df_test_columns():
 
 def test_existing_column(df_test_columns):
     """Test when column exists in view."""
-    result = get_column_exists(df_test_columns, "DBA_TABLES", "COLUMN1")
-    assert result == "Y"
+    result = column_exists_in_view(df_test_columns, "DBA_TABLES", "COLUMN1")
+    assert result is True
 
 
 def test_non_existing_column(df_test_columns):
     """Test when column doesn't exist in view."""
-    result = get_column_exists(df_test_columns, "DBA_TAB_COLS", "COLUMN2")
-    assert result == "N"
+    result = column_exists_in_view(df_test_columns, "DBA_TAB_COLS", "COLUMN2")
+    assert result is False
 
 
 def test_missing_view(df_test_columns):
     """Test with non-existent view."""
     with pytest.raises(IndexError):
-        get_column_exists(df_test_columns, "NON_EXISTENT_VIEW", "COLUMN1")
+        column_exists_in_view(df_test_columns, "NON_EXISTENT_VIEW", "COLUMN1")
 
 
 def test_missing_column(df_test_columns):
     """Test with non-existent column in existing view."""
     with pytest.raises(IndexError):
-        get_column_exists(df_test_columns, "DBA_TABLES", "NON_EXISTENT_COLUMN")
+        column_exists_in_view(
+            df_test_columns, "DBA_TABLES", "NON_EXISTENT_COLUMN"
+        )
 
 
 def test_case_sensitivity(df_test_columns):
     """Test case sensitivity of view and column names."""
-    result = get_column_exists(df_test_columns, "dba_tables", "Column1")
-    assert result == "Y"
+    result = column_exists_in_view(df_test_columns, "dba_tables", "Column1")
+    assert result is True

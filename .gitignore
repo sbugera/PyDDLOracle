@@ -5,3 +5,4 @@
 /.idea/*
 /.coverage
 /test/dfs/*.xlsx
+**/.DS_Store

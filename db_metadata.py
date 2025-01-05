@@ -37,21 +37,21 @@ def get_db_schema_name(arg_schema_name=None):
     return username
 
 
-def get_column_exists(df_column_exists, view_name, column_name):
+def column_exists_in_view(df_column_exists, view_name, column_name):
     """Checks if a column exists in a view."""
-    return df_column_exists.loc[
+    column_exists = df_column_exists.loc[
         (df_column_exists["view_name"] == view_name.upper())
         & (df_column_exists["column_name"] == column_name.upper()),
         "column_exists",
     ].values[0]
+    return column_exists == "Y"
 
 
 def get_df_tables(engine, schema_name, df_column_exists):
     """Returns DataFrame with tables metadata."""
     sql_tables = sql.SQL_TABLES
-    if (
-        get_column_exists(df_column_exists, "DBA_TABLES", "DEFAULT_COLLATION")
-        == "Y"
+    if column_exists_in_view(
+        df_column_exists, "DBA_TABLES", "DEFAULT_COLLATION"
     ):
         sql_tables = sql_tables.replace(
             "CAST(NULL AS VARCHAR2(100)) AS default_collation",
@@ -65,7 +65,7 @@ def get_df_tables(engine, schema_name, df_column_exists):
 def get_df_tab_columns(engine, schema_name, df_column_exists):
     """Returns DataFrame with columns metadata."""
     sql_tab_columns = sql.SQL_TAB_COLUMNS
-    if get_column_exists(df_column_exists, "DBA_TAB_COLS", "COLLATION") == "Y":
+    if column_exists_in_view(df_column_exists, "DBA_TAB_COLS", "COLLATION"):
         sql_tab_columns = sql_tab_columns.replace(
             "CAST(NULL AS VARCHAR2(100)) AS collation", "c.collation"
         )
@@ -77,18 +77,12 @@ def get_df_tab_columns(engine, schema_name, df_column_exists):
 def get_df_part_tables(engine, schema_name, df_column_exists):
     """Returns DataFrame with partitioned tables metadata."""
     sql_part_tables = sql.SQL_PART_TABLES
-    if (
-        get_column_exists(df_column_exists, "DBA_PART_TABLES", "AUTOLIST")
-        == "Y"
-    ):
+    if column_exists_in_view(df_column_exists, "DBA_PART_TABLES", "AUTOLIST"):
         sql_part_tables = sql_part_tables.replace(
             "CAST('NO' AS VARCHAR2(3)) AS autolist", "pt.autolist"
         )
-    if (
-        get_column_exists(
-            df_column_exists, "DBA_PART_TABLES", "AUTOLIST_SUBPARTITION"
-        )
-        == "Y"
+    if column_exists_in_view(
+        df_column_exists, "DBA_PART_TABLES", "AUTOLIST_SUBPARTITION"
     ):
         sql_part_tables = sql_part_tables.replace(
             "CAST('NO' AS VARCHAR2(3)) AS autolist_subpartition",
