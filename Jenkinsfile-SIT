@@ -119,6 +119,7 @@ pipeline {
                     source ${VENV}/bin/activate
                     pip install --upgrade pip
                     pip install -r requirements.txt
+                    pip install -r requirements-test.txt
                     cp config_con.template.yaml config_con.yaml || true
                 '''
             }
