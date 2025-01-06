@@ -88,6 +88,10 @@ pipeline {
                         env.DB_SERVICE = dbService
                     }
                 }
+                
+                withCredentials([file(credentialsId: 'db_config_con', variable: 'config_con')]) {
+                    sh "cp \$config_con config_con.yaml"
+                }
             }
         }
 
@@ -120,7 +124,6 @@ pipeline {
                     pip install --upgrade pip
                     pip install -r requirements.txt
                     pip install -r requirements-test.txt
-                    cp config_con.template.yaml config_con.yaml || true
                 '''
             }
         }
