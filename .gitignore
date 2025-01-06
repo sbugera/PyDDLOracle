@@ -9,3 +9,4 @@
 liquibase/update.sql
 liquibase/liquibase.properties
 liquibase/internal/lib/*
+test-results/*

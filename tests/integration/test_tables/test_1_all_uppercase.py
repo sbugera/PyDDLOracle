@@ -62,14 +62,7 @@ def cleanup_ddl():
 def test_main_execution(config_file, cleanup_ddl):
     """Test execution of main.py with PYDDL_TEST schema."""
     result = subprocess.run(
-        [
-            ".venv/bin/python",
-            "main.py",
-            "-s",
-            "PYDDL_TEST",
-            "-c",
-            CONFIG_FILE_PATH,
-        ],
+        ["python", "main.py", "-s", "PYDDL_TEST", "-c", CONFIG_FILE_PATH],
         capture_output=True,
         text=True,
     )
