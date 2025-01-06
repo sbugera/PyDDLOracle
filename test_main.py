@@ -6,12 +6,14 @@ import shutil
 import pandas as pd
 import main as m
 import utils as ut
-from utils import conf
+from config import config as c
 from table import get_table_dfs
 from db_metadata import get_db_metadata
 
 if not os.path.isfile("config_con.yaml"):
     shutil.copyfile("config_con.template.yaml", "config_con.yaml")
+
+c.conf = c.load_config("config.yaml")
 
 
 def store_metadata_into_xlsx():
@@ -43,7 +45,9 @@ def store_metadata_into_xlsx():
     df_all_tab_partitions.to_excel(
         "tests/unit/dfs/df_all_tab_partitions.xlsx", index=False
     )
-    df_all_comments.to_excel("tests/unit/dfs/df_all_comments.xlsx", index=False)
+    df_all_comments.to_excel(
+        "tests/unit/dfs/df_all_comments.xlsx", index=False
+    )
     df_all_indexes.to_excel("tests/unit/dfs/df_all_indexes.xlsx", index=False)
     df_all_index_columns.to_excel(
         "tests/unit/dfs/df_all_index_columns.xlsx", index=False
@@ -74,8 +78,12 @@ def store_metadata_into_files():
     df_all_grants = metadata["grants"]
 
     df_tables.to_csv("tests/unit/dfs/df_tables.csv", index=False)
-    df_all_tab_columns.to_csv("tests/unit/dfs/df_all_tab_columns.csv", index=False)
-    df_all_part_tables.to_csv("tests/unit/dfs/df_all_part_tables.csv", index=False)
+    df_all_tab_columns.to_csv(
+        "tests/unit/dfs/df_all_tab_columns.csv", index=False
+    )
+    df_all_part_tables.to_csv(
+        "tests/unit/dfs/df_all_part_tables.csv", index=False
+    )
     df_all_part_key_columns.to_csv(
         "tests/unit/dfs/df_all_part_key_columns.csv", index=False
     )
@@ -87,7 +95,9 @@ def store_metadata_into_files():
     df_all_index_columns.to_csv(
         "tests/unit/dfs/df_all_index_columns.csv", index=False
     )
-    df_all_constraints.to_csv("tests/unit/dfs/df_all_constraints.csv", index=False)
+    df_all_constraints.to_csv(
+        "tests/unit/dfs/df_all_constraints.csv", index=False
+    )
     df_all_constraint_columns.to_csv(
         "tests/unit/dfs/df_all_constraint_columns.csv", index=False
     )
@@ -162,7 +172,9 @@ def get_metadata_from_files():
     df_all_comments = pd.read_csv(
         "tests/unit/dfs/df_all_comments.csv", na_values=[""]
     )
-    df_all_indexes = pd.read_csv("tests/unit/dfs/df_all_indexes.csv", na_values=[""])
+    df_all_indexes = pd.read_csv(
+        "tests/unit/dfs/df_all_indexes.csv", na_values=[""]
+    )
     df_all_index_columns = pd.read_csv(
         "tests/unit/dfs/df_all_index_columns.csv", na_values=[""]
     )
@@ -172,7 +184,9 @@ def get_metadata_from_files():
     df_all_constraint_columns = pd.read_csv(
         "tests/unit/dfs/df_all_constraint_columns.csv", na_values=[""]
     )
-    df_all_grants = pd.read_csv("tests/unit/dfs/df_all_grants.csv", na_values=[""])
+    df_all_grants = pd.read_csv(
+        "tests/unit/dfs/df_all_grants.csv", na_values=[""]
+    )
 
     metadata = {
         "tables": df_tables,
@@ -283,11 +297,11 @@ def test_store_ddl_into_file():
     tabel_dfs = m.get_table_dfs(df_table, db_metadata)
     table = m.Table(*tabel_dfs)
     table.generate_ddl()
-    conf["file_path"][
+    c.conf["file_path"][
         "table"
     ] = "./test_results/{OBJECT_OWNER}/tables/{object_owner}.{object_name}.sql"
     table.store_ddl_into_file()
-    file_path = conf["file_path"]["table"].format(
+    file_path = c.conf["file_path"]["table"].format(
         OBJECT_OWNER=df_table.owner.upper(),
         object_owner=df_table.owner.lower(),
         object_name=df_table.table_name.lower(),
@@ -298,7 +312,7 @@ def test_store_ddl_into_file():
 
 def test_get_file_path_1():
     """Test get_file_path function."""
-    conf["file_path"][
+    c.conf["file_path"][
         "table"
     ] = "./{OBJECT_OWNER}/{object_type}/{OBJECT_OWNER}.{object_name}.sql"
     file_path = ut.get_file_path("table", "SCHEMA_NAME", "TABLE_NAME")
@@ -307,7 +321,7 @@ def test_get_file_path_1():
 
 def test_get_file_path_2():
     """Test get_file_path function."""
-    conf["file_path"][
+    c.conf["file_path"][
         "trigger"
     ] = "./{object_owner}/{OBJECT_TYPE}S/{object_owner}.{OBJECT_NAME}.trg"
     file_path = ut.get_file_path("trigger", "schema_name", "trigger_name")
@@ -316,143 +330,143 @@ def test_get_file_path_2():
 
 def test_tables_ddl__1__uppercase__logging():
     """Test tables DDL generation."""
-    conf["case"]["keyword"] = "uppercase"
-    conf["case"]["identifier"] = "uppercase"
-    conf["storage"]["storage"] = "with_storage"
-    conf["storage"]["partitions"] = "all"
-    conf["storage"]["collation"] = "yes"
-    conf["storage"]["logging"] = "no"
-    conf["storage"]["compression"] = "yes"
-    conf["storage"]["cache"] = "yes"
-    conf["storage"]["result_cache"] = "yes"
-    conf["comments"]["comments"] = "yes"
-    conf["comments"]["empty_line_after_comment"] = "yes"
-    conf["comments"]["vertical_alignment"] = "yes"
-    conf["indexes"] = "yes"
-    conf["constraints"] = "yes"
-    conf["prompts"] = "yes"
-    conf["grants"] = "yes"
+    c.conf["case"]["keyword"] = "uppercase"
+    c.conf["case"]["identifier"] = "uppercase"
+    c.conf["storage"]["storage"] = "with_storage"
+    c.conf["storage"]["partitions"] = "all"
+    c.conf["storage"]["collation"] = "yes"
+    c.conf["storage"]["logging"] = "no"
+    c.conf["storage"]["compression"] = "yes"
+    c.conf["storage"]["cache"] = "yes"
+    c.conf["storage"]["result_cache"] = "yes"
+    c.conf["comments"]["comments"] = "yes"
+    c.conf["comments"]["empty_line_after_comment"] = "yes"
+    c.conf["comments"]["vertical_alignment"] = "yes"
+    c.conf["indexes"] = "yes"
+    c.conf["constraints"] = "yes"
+    c.conf["prompts"] = "yes"
+    c.conf["grants"] = "yes"
     checking_tables_ddl("1__uppercase__logging")
 
 
 def test_tables_ddl__2__lowercase__compress():
     """Test tables DDL generation."""
-    conf["case"]["keyword"] = "lowercase"
-    conf["case"]["identifier"] = "lowercase"
-    conf["storage"]["storage"] = "with_storage"
-    conf["storage"]["partitions"] = "all"
-    conf["storage"]["collation"] = "yes"
-    conf["storage"]["logging"] = "yes"
-    conf["storage"]["compression"] = "no"
-    conf["storage"]["cache"] = "yes"
-    conf["storage"]["result_cache"] = "yes"
-    conf["comments"]["comments"] = "yes"
-    conf["comments"]["empty_line_after_comment"] = "yes"
-    conf["comments"]["vertical_alignment"] = "yes"
-    conf["indexes"] = "yes"
-    conf["constraints"] = "yes"
-    conf["prompts"] = "yes"
-    conf["grants"] = "yes"
+    c.conf["case"]["keyword"] = "lowercase"
+    c.conf["case"]["identifier"] = "lowercase"
+    c.conf["storage"]["storage"] = "with_storage"
+    c.conf["storage"]["partitions"] = "all"
+    c.conf["storage"]["collation"] = "yes"
+    c.conf["storage"]["logging"] = "yes"
+    c.conf["storage"]["compression"] = "no"
+    c.conf["storage"]["cache"] = "yes"
+    c.conf["storage"]["result_cache"] = "yes"
+    c.conf["comments"]["comments"] = "yes"
+    c.conf["comments"]["empty_line_after_comment"] = "yes"
+    c.conf["comments"]["vertical_alignment"] = "yes"
+    c.conf["indexes"] = "yes"
+    c.conf["constraints"] = "yes"
+    c.conf["prompts"] = "yes"
+    c.conf["grants"] = "yes"
     checking_tables_ddl("2__lowercase__compress")
 
 
 def test_tables_ddl__3__no_storage():
     """Test tables DDL generation."""
-    conf["case"]["keyword"] = "uppercase"
-    conf["case"]["identifier"] = "uppercase"
-    conf["storage"]["storage"] = "no_storage"
-    conf["storage"]["partitions"] = "all"
-    conf["storage"]["collation"] = "yes"
-    conf["storage"]["logging"] = "yes"
-    conf["storage"]["compression"] = "yes"
-    conf["storage"]["cache"] = "no"
-    conf["storage"]["result_cache"] = "yes"
-    conf["comments"]["comments"] = "no"
-    conf["comments"]["empty_line_after_comment"] = "yes"
-    conf["comments"]["vertical_alignment"] = "yes"
-    conf["indexes"] = "yes"
-    conf["constraints"] = "yes"
-    conf["prompts"] = "no"
-    conf["grants"] = "yes"
+    c.conf["case"]["keyword"] = "uppercase"
+    c.conf["case"]["identifier"] = "uppercase"
+    c.conf["storage"]["storage"] = "no_storage"
+    c.conf["storage"]["partitions"] = "all"
+    c.conf["storage"]["collation"] = "yes"
+    c.conf["storage"]["logging"] = "yes"
+    c.conf["storage"]["compression"] = "yes"
+    c.conf["storage"]["cache"] = "no"
+    c.conf["storage"]["result_cache"] = "yes"
+    c.conf["comments"]["comments"] = "no"
+    c.conf["comments"]["empty_line_after_comment"] = "yes"
+    c.conf["comments"]["vertical_alignment"] = "yes"
+    c.conf["indexes"] = "yes"
+    c.conf["constraints"] = "yes"
+    c.conf["prompts"] = "no"
+    c.conf["grants"] = "yes"
     checking_tables_ddl("3__no_storage")
 
 
 def test_tables_ddl__4__only_tablespace():
     """Test tables DDL generation."""
-    conf["case"]["keyword"] = "uppercase"
-    conf["case"]["identifier"] = "uppercase"
-    conf["storage"]["storage"] = "only_tablespace"
-    conf["storage"]["partitions"] = "none"
-    conf["storage"]["collation"] = "yes"
-    conf["storage"]["logging"] = "yes"
-    conf["storage"]["compression"] = "yes"
-    conf["storage"]["cache"] = "yes"
-    conf["storage"]["result_cache"] = "no"
-    conf["comments"]["comments"] = "no"
-    conf["comments"]["empty_line_after_comment"] = "yes"
-    conf["comments"]["vertical_alignment"] = "yes"
-    conf["indexes"] = "yes"
-    conf["constraints"] = "yes"
-    conf["prompts"] = "no"
-    conf["grants"] = "no"
+    c.conf["case"]["keyword"] = "uppercase"
+    c.conf["case"]["identifier"] = "uppercase"
+    c.conf["storage"]["storage"] = "only_tablespace"
+    c.conf["storage"]["partitions"] = "none"
+    c.conf["storage"]["collation"] = "yes"
+    c.conf["storage"]["logging"] = "yes"
+    c.conf["storage"]["compression"] = "yes"
+    c.conf["storage"]["cache"] = "yes"
+    c.conf["storage"]["result_cache"] = "no"
+    c.conf["comments"]["comments"] = "no"
+    c.conf["comments"]["empty_line_after_comment"] = "yes"
+    c.conf["comments"]["vertical_alignment"] = "yes"
+    c.conf["indexes"] = "yes"
+    c.conf["constraints"] = "yes"
+    c.conf["prompts"] = "no"
+    c.conf["grants"] = "no"
     checking_tables_ddl("4__only_tablespace")
 
 
 def test_tables_ddl__5__uppercase__lowercase__compact_part():
     """Test tables DDL generation."""
-    conf["case"]["keyword"] = "uppercase"
-    conf["case"]["identifier"] = "lowercase"
-    conf["storage"]["storage"] = "with_storage"
-    conf["storage"]["partitions"] = "compact"
-    conf["storage"]["collation"] = "yes"
-    conf["storage"]["logging"] = "yes"
-    conf["storage"]["compression"] = "yes"
-    conf["storage"]["cache"] = "no"
-    conf["storage"]["result_cache"] = "yes"
-    conf["comments"]["comments"] = "yes"
-    conf["comments"]["empty_line_after_comment"] = "yes"
-    conf["comments"]["vertical_alignment"] = "no"
-    conf["indexes"] = "yes"
-    conf["constraints"] = "yes"
-    conf["prompts"] = "yes"
-    conf["grants"] = "yes"
+    c.conf["case"]["keyword"] = "uppercase"
+    c.conf["case"]["identifier"] = "lowercase"
+    c.conf["storage"]["storage"] = "with_storage"
+    c.conf["storage"]["partitions"] = "compact"
+    c.conf["storage"]["collation"] = "yes"
+    c.conf["storage"]["logging"] = "yes"
+    c.conf["storage"]["compression"] = "yes"
+    c.conf["storage"]["cache"] = "no"
+    c.conf["storage"]["result_cache"] = "yes"
+    c.conf["comments"]["comments"] = "yes"
+    c.conf["comments"]["empty_line_after_comment"] = "yes"
+    c.conf["comments"]["vertical_alignment"] = "no"
+    c.conf["indexes"] = "yes"
+    c.conf["constraints"] = "yes"
+    c.conf["prompts"] = "yes"
+    c.conf["grants"] = "yes"
     checking_tables_ddl("5__uppercase__lowercase__compact_part")
 
 
 def test_tables_ddl__6__lowercase__uppercase__no_empty_line():
     """Test tables DDL generation."""
-    conf["case"]["keyword"] = "lowercase"
-    conf["case"]["identifier"] = "uppercase"
-    conf["storage"]["storage"] = "with_storage"
-    conf["storage"]["partitions"] = "all"
-    conf["storage"]["collation"] = "yes"
-    conf["storage"]["logging"] = "yes"
-    conf["storage"]["compression"] = "yes"
-    conf["storage"]["cache"] = "yes"
-    conf["storage"]["result_cache"] = "no"
-    conf["comments"]["comments"] = "yes"
-    conf["comments"]["empty_line_after_comment"] = "no"
-    conf["comments"]["vertical_alignment"] = "yes"
-    conf["indexes"] = "no"
-    conf["constraints"] = "no"
-    conf["prompts"] = "yes"
-    conf["grants"] = "yes"
+    c.conf["case"]["keyword"] = "lowercase"
+    c.conf["case"]["identifier"] = "uppercase"
+    c.conf["storage"]["storage"] = "with_storage"
+    c.conf["storage"]["partitions"] = "all"
+    c.conf["storage"]["collation"] = "yes"
+    c.conf["storage"]["logging"] = "yes"
+    c.conf["storage"]["compression"] = "yes"
+    c.conf["storage"]["cache"] = "yes"
+    c.conf["storage"]["result_cache"] = "no"
+    c.conf["comments"]["comments"] = "yes"
+    c.conf["comments"]["empty_line_after_comment"] = "no"
+    c.conf["comments"]["vertical_alignment"] = "yes"
+    c.conf["indexes"] = "no"
+    c.conf["constraints"] = "no"
+    c.conf["prompts"] = "yes"
+    c.conf["grants"] = "yes"
     checking_tables_ddl("6__lowercase__uppercase__no_empty_line")
 
 
 def test_fk_1_lowercase_uppercase_no_prompt():
     """Test foreign keys DDL generation."""
-    conf["case"]["keyword"] = "lowercase"
-    conf["case"]["identifier"] = "uppercase"
-    conf["prompts"] = "no"
+    c.conf["case"]["keyword"] = "lowercase"
+    c.conf["case"]["identifier"] = "uppercase"
+    c.conf["prompts"] = "no"
     checking_fks_ddl("1_lowercase_uppercase_no_prompt")
 
 
 def test_fk_2_uppercase_lowercase_no_prompt():
     """Test foreign keys DDL generation."""
-    conf["case"]["keyword"] = "uppercase"
-    conf["case"]["identifier"] = "lowercase"
-    conf["prompts"] = "yes"
+    c.conf["case"]["keyword"] = "uppercase"
+    c.conf["case"]["identifier"] = "lowercase"
+    c.conf["prompts"] = "yes"
     checking_fks_ddl("2_uppercase_lowercase_no_prompt")
 
 

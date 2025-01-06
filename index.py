@@ -1,7 +1,8 @@
 """Handles Oracle database index definitions and DDL generation."""
 
 from storage import get_full_storage
-from utils import conf, get_case_formatted, get_object_name, get_prompt
+from utils import get_case_formatted, get_object_name, get_prompt
+from config import config as c
 
 
 class Index:
@@ -74,14 +75,14 @@ class Index:
         )
 
         logging = ""
-        if conf["storage"]["logging"] == "yes":
+        if c.conf["storage"]["logging"] == "yes":
             if self.logging == "YES":
                 logging = get_case_formatted("\nLOGGING", "keyword")
             elif self.logging == "NO":
                 logging = get_case_formatted("\nNOLOGGING", "keyword")
         index += logging
 
-        if conf["storage"]["storage"] == "with_storage":
+        if c.conf["storage"]["storage"] == "with_storage":
             index += get_full_storage(
                 "",
                 self.tablespace_name,
@@ -99,7 +100,7 @@ class Index:
                 self.partitioned,
             )
         elif (
-            conf["storage"]["storage"] == "only_tablespace"
+            c.conf["storage"]["storage"] == "only_tablespace"
             and self.partitioned != "YES"
         ):
             statement = get_case_formatted("\nTABLESPACE <:1>", "keyword")
@@ -107,7 +108,7 @@ class Index:
                 "<:1>", get_case_formatted(self.tablespace_name, "identifier")
             )
 
-        if conf["storage"]["compression"] == "yes":
+        if c.conf["storage"]["compression"] == "yes":
             if self.compression == "ENABLED":
                 index += get_case_formatted(
                     f"\nCOMPRESS {int(self.prefix_length)}", "keyword"

@@ -5,7 +5,7 @@ import pandas as pd
 from constraint import get_foreign_key_dfs, Constraint
 from table import Table, get_table_dfs
 from db_metadata import get_db_schema_name, get_db_metadata
-from utils import args
+from config import config
 
 pd.options.mode.chained_assignment = None  # type: ignore # default='warn'
 pd.set_option("display.max_rows", None)
@@ -13,7 +13,10 @@ pd.set_option("display.max_columns", None)
 
 
 if __name__ == "__main__":
-    db_schema_name = get_db_schema_name(args.schema_name)
+    config.args = config.get_args()
+    config.conf = config.load_config(config.args.config_file)
+    config.conf_con = config.load_config(config.args.con_config_file)
+    db_schema_name = get_db_schema_name(config.args.schema_name)
     db_metadata = get_db_metadata(db_schema_name)
 
     print("++++++++++++++++++++++++++++++++++++++++++++++++++".ljust(107, "+"))

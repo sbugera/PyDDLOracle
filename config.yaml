@@ -34,5 +34,5 @@ file_path:
     #   {OBJECT_OWNER}.{OBJECT_NAME}.sql => MY_SCHEMA.MY_TABLE.sql
     #   {OBJECT_TYPE}.{OBJECT_NAME}.sql  => TABLE.MY_TABLE.sql
     #   {OBJECT_NAME}.TRG                => MY_TRIGGER.TRG
-    table: "../ddls/{OBJECT_OWNER}/tables/{object_owner}.{object_name}.sql"
-    foreign_key: "../ddls/{OBJECT_OWNER}/foreign_key/{object_owner}.{object_name}.sql"
+    table: "./ddls/{OBJECT_OWNER}/tables/{object_owner}.{object_name}.sql"
+    foreign_key: "./ddls/{OBJECT_OWNER}/foreign_key/{object_owner}.{object_name}.sql"

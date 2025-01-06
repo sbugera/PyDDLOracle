@@ -4,24 +4,24 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 import sql_queries as sql
-from utils import conf_con
+from config import config as c
 
 
 def get_db_engine():
     """Returns SQLAlchemy engine for Oracle database."""
-    db_username = conf_con["database"]["username"]
-    db_password = conf_con["database"]["password"]
-    db_host = conf_con["database"]["host"]
-    db_port = conf_con["database"]["port"]
+    db_username = c.conf_con["database"]["username"]
+    db_password = c.conf_con["database"]["password"]
+    db_host = c.conf_con["database"]["host"]
+    db_port = c.conf_con["database"]["port"]
     connection_string = "oracle+oracledb://"
     try:
-        db_service_name = conf_con["database"]["service_name"]
+        db_service_name = c.conf_con["database"]["service_name"]
         connection_string += (
             f"{db_username}:{db_password}@{db_host}:{db_port}"
             f"/?service_name={db_service_name}"
         )
     except KeyError:
-        db_sid = conf_con["database"]["sid"]
+        db_sid = c.conf_con["database"]["sid"]
         connection_string += (
             f"{db_username}:{db_password}@{db_host}:{db_port}/{db_sid}"
         )
@@ -33,7 +33,7 @@ def get_db_schema_name(arg_schema_name=None):
     if arg_schema_name:
         username = arg_schema_name.upper()
     else:
-        username = conf_con["database"]["username"].upper()
+        username = c.conf_con["database"]["username"].upper()
     return username
 
 

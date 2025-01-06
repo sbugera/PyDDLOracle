@@ -4,7 +4,7 @@ from unittest.mock import patch
 import pytest
 
 from db_metadata import get_db_schema_name
-from utils import conf_con
+from config import config as c
 
 
 def test_with_provided_arg():
@@ -15,9 +15,9 @@ def test_with_provided_arg():
 
 def test_with_config():
     """Test schema name retrieval from configuration when no argument."""
-    with patch.dict(conf_con, {"database": {"username": "db_user"}}):
-        schema_name = get_db_schema_name()
-        assert schema_name == "DB_USER"
+    c.conf_con = {"database": {"username": "db_user"}}
+    schema_name = get_db_schema_name()
+    assert schema_name == "DB_USER"
 
 
 def test_with_mixed_case():
@@ -29,7 +29,7 @@ def test_with_mixed_case():
 
 def test_with_missing_config():
     """Test behavior when configuration is missing."""
-    with patch.dict(conf_con, {}, clear=True):
-        with pytest.raises(KeyError) as err:
-            get_db_schema_name()
-        assert str(err.value) == "'database'"
+    c.conf_con = {}
+    with pytest.raises(KeyError) as err:
+        get_db_schema_name()
+    assert str(err.value) == "'database'"

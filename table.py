@@ -6,7 +6,6 @@ from partitioning import Partitioning
 from index import Index
 from storage import get_full_storage
 from utils import (
-    conf,
     get_case_formatted,
     get_object_name,
     get_prompt,
@@ -16,6 +15,7 @@ from utils import (
     replace_multiple_newlines,
     get_dataframe_namedtuple,
 )
+from config import config as c
 
 
 def get_table_dfs(table_row, metadata):
@@ -172,20 +172,20 @@ class Table:
     def get_storage(self):
         """Generate storage clause based on config and settings."""
         storage = ""
-        if conf["storage"]["storage"] == "no_storage":
+        if c.conf["storage"]["storage"] == "no_storage":
             storage = ""
         elif (
-            conf["storage"]["storage"] == "only_tablespace"
+            c.conf["storage"]["storage"] == "only_tablespace"
             and self.partitioned == "NO"
         ):
             storage = f"\nTABLESPACE {self.tablespace_name}"
         elif (
-            conf["storage"]["storage"] == "only_tablespace"
+            c.conf["storage"]["storage"] == "only_tablespace"
             and self.partitioned == "YES"
         ):
             storage = f"\nTABLESPACE {self.def_tablespace_name}"
         elif (
-            conf["storage"]["storage"] == "with_storage"
+            c.conf["storage"]["storage"] == "with_storage"
             and self.partitioned == "NO"
         ):
             storage = get_full_storage(
@@ -202,7 +202,7 @@ class Table:
                 self.cell_flash_cache,
             )
         elif (
-            conf["storage"]["storage"] == "with_storage"
+            c.conf["storage"]["storage"] == "with_storage"
             and self.partitioned == "YES"
         ):
             storage = get_full_storage(
@@ -223,7 +223,7 @@ class Table:
     def get_logging(self):
         """Get logging clause based on config setting."""
         logging = ""
-        if conf["storage"]["logging"] == "yes" and self.partitioned == "NO":
+        if c.conf["storage"]["logging"] == "yes" and self.partitioned == "NO":
             if self.logging == "YES":
                 logging = "\nLOGGING"
             else:
@@ -243,7 +243,7 @@ class Table:
                 self.def_compress_for,
             )
         compression = ""
-        if conf["storage"]["compression"] == "yes":
+        if c.conf["storage"]["compression"] == "yes":
             if tab_compression in ("DISABLED", "NONE"):
                 compression = "\nNOCOMPRESS"
             else:
@@ -256,7 +256,7 @@ class Table:
     def get_cache(self):
         """Get caching clause based on config setting."""
         cache = ""
-        if conf["storage"]["cache"] == "yes":
+        if c.conf["storage"]["cache"] == "yes":
             if self.cache.strip() == "Y":
                 cache = "\nCACHE"
             else:
@@ -266,7 +266,7 @@ class Table:
     def get_result_cache(self):
         """Get result cache clause based on config setting."""
         result_cache = ""
-        if conf["storage"]["result_cache"] == "yes":
+        if c.conf["storage"]["result_cache"] == "yes":
             result_cache = f"\nRESULT_CACHE (MODE {self.result_cache})"
         return get_case_formatted(result_cache, "keyword")
 
@@ -289,7 +289,7 @@ class Table:
     def get_indexes(self):
         """Generate DDL for indexes if enabled in config."""
         indexes = ""
-        if conf["indexes"] == "yes":
+        if c.conf["indexes"] == "yes":
             for index_row in self.indexes.itertuples():
                 index_columns = self.index_columns[
                     self.index_columns["index_name"] == index_row.index_name
@@ -303,7 +303,7 @@ class Table:
     def get_constraints(self):
         """Generate DDL for constraints if enabled in config."""
         constraints = ""
-        if conf["constraints"] == "yes":
+        if c.conf["constraints"] == "yes":
             if len(self.tab_constraints) > 0:
                 constraints = get_prompt(
                     "Constraints for table ", self.table_full_name
@@ -331,9 +331,9 @@ class Table:
         """Generate DDL for comments if enabled in config."""
         comments = ""
         end_line_char = ""
-        if conf["comments"]["empty_line_after_comment"] == "yes":
+        if c.conf["comments"]["empty_line_after_comment"] == "yes":
             end_line_char = "\n"
-        if conf["comments"]["comments"] == "yes":
+        if c.conf["comments"]["comments"] == "yes":
             for comment_row in self.comments.itertuples():
                 if (
                     not comment_row.column_name
@@ -355,7 +355,7 @@ class Table:
                     column_name = get_case_formatted(
                         comment_row.column_name, "identifier"
                     )
-                    if conf["comments"]["vertical_alignment"] == "yes":
+                    if c.conf["comments"]["vertical_alignment"] == "yes":
                         # todo: Vertical alignment consider maximum column
                         #       name length only for columns with comments
                         column_name = column_name.ljust(
@@ -368,14 +368,14 @@ class Table:
                     )
         if comments != "":
             comments = comments + "\n"
-            if conf["comments"]["empty_line_after_comment"] == "no":
+            if c.conf["comments"]["empty_line_after_comment"] == "no":
                 comments = comments + "\n"
         return comments
 
     def get_grants(self):
         """Generate DDL for grants if enabled in config."""
         grants = ""
-        if conf["grants"] == "yes":
+        if c.conf["grants"] == "yes":
             tab_grants_grouped = (
                 self.tab_grants.groupby(["grantee", "grantable"])["privilege"]
                 .apply(lambda x: ", ".join(sorted(x)))

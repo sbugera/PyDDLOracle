@@ -1,7 +1,8 @@
 """Handles Oracle database partition definitions and DDL generation."""
 
 from storage import get_full_storage
-from utils import conf, get_case_formatted, get_indentation
+from utils import get_case_formatted, get_indentation
+from config import config as c
 
 
 class Partition:
@@ -31,7 +32,7 @@ class Partition:
     def get_logging(self):
         """Get LOGGING/NOLOGGING clause if specified in config."""
         logging = ""
-        if conf["storage"]["logging"] == "yes":
+        if c.conf["storage"]["logging"] == "yes":
             if self.logging == "YES":
                 logging = f"\n{get_indentation()}LOGGING"
             else:
@@ -41,7 +42,7 @@ class Partition:
     def get_compression(self):
         """Get compression clause based on config and settings."""
         compression = ""
-        if conf["storage"]["compression"] == "yes":
+        if c.conf["storage"]["compression"] == "yes":
             if self.compression == "DISABLED":
                 compression = f"\n{get_indentation()}NOCOMPRESS"
             else:
@@ -72,7 +73,7 @@ class Partition:
         )
         partition += self.get_logging()
         partition += self.get_compression()
-        if conf["storage"]["storage"] == "with_storage":
+        if c.conf["storage"]["storage"] == "with_storage":
             partition += get_full_storage(
                 get_indentation(),
                 self.tablespace_name,
@@ -88,7 +89,7 @@ class Partition:
                 self.initial_extent,
                 self.next_extent,
             )
-        elif conf["storage"]["storage"] == "only_tablespace":
+        elif c.conf["storage"]["storage"] == "only_tablespace":
             partition += (
                 f"\n{get_indentation()}TABLESPACE {self.tablespace_name}"
             )

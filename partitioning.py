@@ -1,7 +1,8 @@
 """Handles Oracle database partition definitions and DDL generation."""
 
 from partition import Partition
-from utils import conf, get_case_formatted, get_indentation
+from utils import get_case_formatted, get_indentation
+from config import config as c
 
 
 class Partitioning:
@@ -29,9 +30,9 @@ class Partitioning:
     def get_partitioning(self):
         """Generate partitioning clause if table is partitioned."""
         partitioning = ""
-        if conf["storage"]["partitions"] == "none":
+        if c.conf["storage"]["partitions"] == "none":
             return ""
-        if self.partitioning_type in ("RANGE", "LIST", "HASH") and conf[
+        if self.partitioning_type in ("RANGE", "LIST", "HASH") and c.conf[
             "storage"
         ]["partitions"] in ("all", "compact"):
             statement = get_case_formatted(
@@ -52,12 +53,12 @@ class Partitioning:
                     if (
                         tab_partition.partition_position > 1
                         and str(self.interval) not in ("nan", "None")
-                        and conf["storage"]["partitions"] == "compact"
+                        and c.conf["storage"]["partitions"] == "compact"
                     ):
                         break
                     if (
                         tab_partition.partition_name.startswith("SYS_P")
-                        and conf["storage"]["partitions"] == "compact"
+                        and c.conf["storage"]["partitions"] == "compact"
                     ):
                         break
                     partition = Partition(
@@ -72,7 +73,7 @@ class Partitioning:
                     f" {len(self.tab_partitions)}",
                     "keyword",
                 )
-                if conf["storage"]["storage"] in (
+                if c.conf["storage"]["storage"] in (
                     "only_tablespace",
                     "with_storage",
                 ):
