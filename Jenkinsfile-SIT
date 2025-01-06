@@ -112,6 +112,49 @@ pipeline {
                 '''
             }
         }
+        stage('Setup Environment') {
+            steps {
+                sh '''
+                    python3.13 -m venv ${VENV}
+                    source ${VENV}/bin/activate
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
+                    cp config_con.template.yaml config_con.yaml || true
+                '''
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh '''
+                    source ${VENV}/bin/activate
+                    mkdir -p test-results
+                    pytest tests/integration \
+                        --junitxml=test-results/junit.xml \
+                        --html=test-results/report.html \
+                        --self-contained-html \
+                '''
+            }
+            post {
+                always {
+                    // Publish JUnit test results
+                    junit 'test-results/junit.xml'
+                    
+                    // Publish HTML reports
+                    publishHTML(target: [
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'test-results',
+                        reportFiles: 'report.html',
+                        reportName: 'Pytest Report'
+                    ])
+                    
+                    // Archive the test reports
+                    archiveArtifacts artifacts: 'test-results/**/*', fingerprint: true
+                }
+            }
+        }
     }
 }
 

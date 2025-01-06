@@ -55,7 +55,7 @@ pipeline {
                         reportName: 'Pytest Report'
                     ])
                     
-                    // Using the new Coverage Plugin instead of Cobertura
+                    // Publish Coverage Report
                     recordCoverage(
                         tools: [[parser: 'COBERTURA', pattern: 'test-results/coverage.xml']],
                         id: 'python-coverage',
