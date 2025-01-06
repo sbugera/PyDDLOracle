@@ -63,7 +63,7 @@ def test_connection_string_format():
     ):
         engine = get_db_engine()
         expected = (
-            "oracle+cx_oracle://test_user:***@localhost:1521/"
+            "oracle+oracledb://test_user:***@localhost:1521/"
             "?service_name=test_service"
         )
         assert str(engine.url) == expected

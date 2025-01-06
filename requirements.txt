@@ -1,6 +1,6 @@
 colorama
 coverage
-cx-Oracle
+oracledb
 et-xmlfile
 exceptiongroup
 greenlet

@@ -13,7 +13,7 @@ def get_db_engine():
     db_password = conf_con["database"]["password"]
     db_host = conf_con["database"]["host"]
     db_port = conf_con["database"]["port"]
-    connection_string = "oracle+cx_oracle://"
+    connection_string = "oracle+oracledb://"
     try:
         db_service_name = conf_con["database"]["service_name"]
         connection_string += (
