@@ -1,34 +1,18 @@
 """Generates DDL scripts for Oracle database objects."""
 
-import argparse
 import pandas as pd
 
 from constraint import get_foreign_key_dfs, Constraint
 from table import Table, get_table_dfs
 from db_metadata import get_db_schema_name, get_db_metadata
-
+from utils import args
 
 pd.options.mode.chained_assignment = None  # type: ignore # default='warn'
 pd.set_option("display.max_rows", None)
 pd.set_option("display.max_columns", None)
 
 
-def get_args():
-    """Returns command line arguments."""
-    arg_parser = argparse.ArgumentParser(
-        description="Generate DDL scripts for Oracle database objects"
-    )
-    arg_parser.add_argument(
-        "--schema_name",
-        "-s",
-        type=str,
-        help="DB schema name for which DDL scripts need to be generated",
-    )
-    return arg_parser.parse_args()
-
-
 if __name__ == "__main__":
-    args = get_args()
     db_schema_name = get_db_schema_name(args.schema_name)
     db_metadata = get_db_metadata(db_schema_name)
 

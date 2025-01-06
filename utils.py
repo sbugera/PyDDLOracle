@@ -1,10 +1,39 @@
 """Utils module."""
 
+import argparse
 import re
 import os
 from collections import namedtuple
 from pprint import PrettyPrinter
 import yaml
+
+
+def get_args():
+    """Returns command line arguments."""
+    arg_parser = argparse.ArgumentParser(
+        description="Generate DDL scripts for Oracle database objects"
+    )
+    arg_parser.add_argument(
+        "--schema_name",
+        "-s",
+        type=str,
+        help="DB schema name for which DDL scripts need to be generated",
+    )
+    arg_parser.add_argument(
+        "--config_file",
+        "-c",
+        type=str,
+        default="config.yaml",
+        help="Path to the configuration file (default: config.yaml)",
+    )
+    arg_parser.add_argument(
+        "--con_config_file",
+        "-cc",
+        type=str,
+        default="config_con.yaml",
+        help="Path to the database connection configuration file (default: config_con.yaml)",
+    )
+    return arg_parser.parse_args()
 
 
 def load_config(file_path):
@@ -49,6 +78,7 @@ def get_case_formatted(value, config_name_for_upper):
         return ""
     if value != value.upper():
         return f'"{value}"'
+    
     if conf["case"][config_name_for_upper] == "uppercase":
         return value.upper()
     else:
@@ -138,6 +168,6 @@ def get_prompt(prompt_text, *values):
     else:
         return ""
 
-
-conf = load_config("config.yaml")
-conf_con = load_config("config_con.yaml")
+args = get_args()
+conf = load_config(args.config_file)
+conf_con = load_config(args.con_config_file)

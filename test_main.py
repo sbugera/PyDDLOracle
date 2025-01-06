@@ -30,31 +30,31 @@ def store_metadata_into_xlsx():
     df_all_constraint_columns = metadata["constraint_columns"]
     df_all_grants = metadata["grants"]
 
-    df_tables.to_excel("test/dfs/df_tables.xlsx", index=False)
+    df_tables.to_excel("tests/unit/dfs/df_tables.xlsx", index=False)
     df_all_tab_columns.to_excel(
-        "test/dfs/df_all_tab_columns.xlsx", index=False
+        "tests/unit/dfs/df_all_tab_columns.xlsx", index=False
     )
     df_all_part_tables.to_excel(
-        "test/dfs/df_all_part_tables.xlsx", index=False
+        "tests/unit/dfs/df_all_part_tables.xlsx", index=False
     )
     df_all_part_key_columns.to_excel(
-        "test/dfs/df_all_part_key_columns.xlsx", index=False
+        "tests/unit/dfs/df_all_part_key_columns.xlsx", index=False
     )
     df_all_tab_partitions.to_excel(
-        "test/dfs/df_all_tab_partitions.xlsx", index=False
+        "tests/unit/dfs/df_all_tab_partitions.xlsx", index=False
     )
-    df_all_comments.to_excel("test/dfs/df_all_comments.xlsx", index=False)
-    df_all_indexes.to_excel("test/dfs/df_all_indexes.xlsx", index=False)
+    df_all_comments.to_excel("tests/unit/dfs/df_all_comments.xlsx", index=False)
+    df_all_indexes.to_excel("tests/unit/dfs/df_all_indexes.xlsx", index=False)
     df_all_index_columns.to_excel(
-        "test/dfs/df_all_index_columns.xlsx", index=False
+        "tests/unit/dfs/df_all_index_columns.xlsx", index=False
     )
     df_all_constraints.to_excel(
-        "test/dfs/df_all_constraints.xlsx", index=False
+        "tests/unit/dfs/df_all_constraints.xlsx", index=False
     )
     df_all_constraint_columns.to_excel(
-        "test/dfs/df_all_constraint_columns.xlsx", index=False
+        "tests/unit/dfs/df_all_constraint_columns.xlsx", index=False
     )
-    df_all_grants.to_excel("test/dfs/df_all_grants.xlsx", index=False)
+    df_all_grants.to_excel("tests/unit/dfs/df_all_grants.xlsx", index=False)
 
 
 def store_metadata_into_files():
@@ -73,59 +73,59 @@ def store_metadata_into_files():
     df_all_constraint_columns = metadata["constraint_columns"]
     df_all_grants = metadata["grants"]
 
-    df_tables.to_csv("test/dfs/df_tables.csv", index=False)
-    df_all_tab_columns.to_csv("test/dfs/df_all_tab_columns.csv", index=False)
-    df_all_part_tables.to_csv("test/dfs/df_all_part_tables.csv", index=False)
+    df_tables.to_csv("tests/unit/dfs/df_tables.csv", index=False)
+    df_all_tab_columns.to_csv("tests/unit/dfs/df_all_tab_columns.csv", index=False)
+    df_all_part_tables.to_csv("tests/unit/dfs/df_all_part_tables.csv", index=False)
     df_all_part_key_columns.to_csv(
-        "test/dfs/df_all_part_key_columns.csv", index=False
+        "tests/unit/dfs/df_all_part_key_columns.csv", index=False
     )
     df_all_tab_partitions.to_csv(
-        "test/dfs/df_all_tab_partitions.csv", index=False
+        "tests/unit/dfs/df_all_tab_partitions.csv", index=False
     )
-    df_all_comments.to_csv("test/dfs/df_all_comments.csv", index=False)
-    df_all_indexes.to_csv("test/dfs/df_all_indexes.csv", index=False)
+    df_all_comments.to_csv("tests/unit/dfs/df_all_comments.csv", index=False)
+    df_all_indexes.to_csv("tests/unit/dfs/df_all_indexes.csv", index=False)
     df_all_index_columns.to_csv(
-        "test/dfs/df_all_index_columns.csv", index=False
+        "tests/unit/dfs/df_all_index_columns.csv", index=False
     )
-    df_all_constraints.to_csv("test/dfs/df_all_constraints.csv", index=False)
+    df_all_constraints.to_csv("tests/unit/dfs/df_all_constraints.csv", index=False)
     df_all_constraint_columns.to_csv(
-        "test/dfs/df_all_constraint_columns.csv", index=False
+        "tests/unit/dfs/df_all_constraint_columns.csv", index=False
     )
-    df_all_grants.to_csv("test/dfs/df_all_grants.csv", index=False)
+    df_all_grants.to_csv("tests/unit/dfs/df_all_grants.csv", index=False)
 
 
 def get_metadata_from_xlsx():
     """Get metadata from xlsx files."""
-    df_tables = pd.read_excel("test/dfs/df_tables.xlsx", na_values=[""])
+    df_tables = pd.read_excel("tests/unit/dfs/df_tables.xlsx", na_values=[""])
     df_all_tab_columns = pd.read_excel(
-        "test/dfs/df_all_tab_columns.xlsx", na_values=[""]
+        "tests/unit/dfs/df_all_tab_columns.xlsx", na_values=[""]
     )
     df_all_part_tables = pd.read_excel(
-        "test/dfs/df_all_part_tables.xlsx", na_values=[""]
+        "tests/unit/dfs/df_all_part_tables.xlsx", na_values=[""]
     )
     df_all_part_key_columns = pd.read_excel(
-        "test/dfs/df_all_part_key_columns.xlsx", na_values=[""]
+        "tests/unit/dfs/df_all_part_key_columns.xlsx", na_values=[""]
     )
     df_all_tab_partitions = pd.read_excel(
-        "test/dfs/df_all_tab_partitions.xlsx", na_values=[""]
+        "tests/unit/dfs/df_all_tab_partitions.xlsx", na_values=[""]
     )
     df_all_comments = pd.read_excel(
-        "test/dfs/df_all_comments.xlsx", na_values=[""]
+        "tests/unit/dfs/df_all_comments.xlsx", na_values=[""]
     )
     df_all_indexes = pd.read_excel(
-        "test/dfs/df_all_indexes.xlsx", na_values=[""]
+        "tests/unit/dfs/df_all_indexes.xlsx", na_values=[""]
     )
     df_all_index_columns = pd.read_excel(
-        "test/dfs/df_all_index_columns.xlsx", na_values=[""]
+        "tests/unit/dfs/df_all_index_columns.xlsx", na_values=[""]
     )
     df_all_constraints = pd.read_excel(
-        "test/dfs/df_all_constraints.xlsx", na_values=[""]
+        "tests/unit/dfs/df_all_constraints.xlsx", na_values=[""]
     )
     df_all_constraint_columns = pd.read_excel(
-        "test/dfs/df_all_constraint_columns.xlsx", na_values=[""]
+        "tests/unit/dfs/df_all_constraint_columns.xlsx", na_values=[""]
     )
     df_all_grants = pd.read_excel(
-        "test/dfs/df_all_grants.xlsx", na_values=[""]
+        "tests/unit/dfs/df_all_grants.xlsx", na_values=[""]
     )
 
     metadata = {
@@ -146,33 +146,33 @@ def get_metadata_from_xlsx():
 
 def get_metadata_from_files():
     """Get metadata from csv files."""
-    df_tables = pd.read_csv("test/dfs/df_tables.csv", na_values=[""])
+    df_tables = pd.read_csv("tests/unit/dfs/df_tables.csv", na_values=[""])
     df_all_tab_columns = pd.read_csv(
-        "test/dfs/df_all_tab_columns.csv", na_values=[""]
+        "tests/unit/dfs/df_all_tab_columns.csv", na_values=[""]
     )
     df_all_part_tables = pd.read_csv(
-        "test/dfs/df_all_part_tables.csv", na_values=[""]
+        "tests/unit/dfs/df_all_part_tables.csv", na_values=[""]
     )
     df_all_part_key_columns = pd.read_csv(
-        "test/dfs/df_all_part_key_columns.csv", na_values=[""]
+        "tests/unit/dfs/df_all_part_key_columns.csv", na_values=[""]
     )
     df_all_tab_partitions = pd.read_csv(
-        "test/dfs/df_all_tab_partitions.csv", na_values=[""]
+        "tests/unit/dfs/df_all_tab_partitions.csv", na_values=[""]
     )
     df_all_comments = pd.read_csv(
-        "test/dfs/df_all_comments.csv", na_values=[""]
+        "tests/unit/dfs/df_all_comments.csv", na_values=[""]
     )
-    df_all_indexes = pd.read_csv("test/dfs/df_all_indexes.csv", na_values=[""])
+    df_all_indexes = pd.read_csv("tests/unit/dfs/df_all_indexes.csv", na_values=[""])
     df_all_index_columns = pd.read_csv(
-        "test/dfs/df_all_index_columns.csv", na_values=[""]
+        "tests/unit/dfs/df_all_index_columns.csv", na_values=[""]
     )
     df_all_constraints = pd.read_csv(
-        "test/dfs/df_all_constraints.csv", na_values=[""]
+        "tests/unit/dfs/df_all_constraints.csv", na_values=[""]
     )
     df_all_constraint_columns = pd.read_csv(
-        "test/dfs/df_all_constraint_columns.csv", na_values=[""]
+        "tests/unit/dfs/df_all_constraint_columns.csv", na_values=[""]
     )
-    df_all_grants = pd.read_csv("test/dfs/df_all_grants.csv", na_values=[""])
+    df_all_grants = pd.read_csv("tests/unit/dfs/df_all_grants.csv", na_values=[""])
 
     metadata = {
         "tables": df_tables,
@@ -222,7 +222,7 @@ def checking_tables_ddl(case_name):
         table.generate_ddl()
         ddl = table.ddl
         file_path = (
-            f"test/tables__{case_name}/{schema_name.lower()}"
+            f"tests/unit/tables__{case_name}/{schema_name.lower()}"
             f".{table.table_name.lower()}.sql"
         )
         if UPDATE_EXPECTED_DDL_FILES:
@@ -246,7 +246,7 @@ def checking_fks_ddl(case_name):
         foreign_key.generate_ddl()
         ddl = foreign_key.ddl
         file_path = (
-            f"test/fks__{case_name}/{schema_name.lower()}"
+            f"tests/unit/fks__{case_name}/{schema_name.lower()}"
             f".{foreign_key.constraint_name.lower()}.sql"
         )
         if UPDATE_EXPECTED_DDL_FILES:

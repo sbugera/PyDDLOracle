@@ -5,10 +5,12 @@ import shutil
 import subprocess
 import pytest
 
+CONFIG_FILE_PATH = "config_all_uppercase.yaml"
+
 
 @pytest.fixture
 def config_file():
-    """Create config.yaml for testing."""
+    """Create configuration for testing."""
     config_content = """
 case:
   keyword: "uppercase"
@@ -35,51 +37,46 @@ prompts: "yes"
 grants: "yes"
 
 file_path:
-    table: "../ddls/{OBJECT_OWNER}/tables/{object_owner}.{object_name}.sql"
-    foreign_key: "../ddls/{OBJECT_OWNER}/foreign_key/{object_owner}.{object_name}.sql"
+    table: "./ddls/{OBJECT_OWNER}/tables/{object_owner}.{object_name}.sql"
+    foreign_key: "./ddls/{OBJECT_OWNER}/foreign_key/{object_owner}.{object_name}.sql"
 """
     
-    with open('config2.yaml', 'w', encoding='utf-8') as f:
+    with open(CONFIG_FILE_PATH, 'w', encoding='utf-8') as f:
         f.write(config_content)
     
     yield
     
-    # if os.path.exists('config2.yaml'):
-    #     os.remove('config2.yaml')
+    if os.path.exists(CONFIG_FILE_PATH):
+        os.remove(CONFIG_FILE_PATH)
 
 
 @pytest.fixture
 def cleanup_ddl():
     """Remove generated DDL files after test."""
     yield
+
     if os.path.exists('./ddls'):
         shutil.rmtree('./ddls')
 
 
 def test_main_execution(config_file, cleanup_ddl):
     """Test execution of main.py with PYDDL_TEST schema."""
-    # Execute main.py as a subprocess
-    result = subprocess.run(['python', 'main.py', '-s', 'PYDDL_TEST'], 
+    result = subprocess.run(['python', 'main.py', '-s', 'PYDDL_TEST', '-c', CONFIG_FILE_PATH], 
                           capture_output=True, 
                           text=True)
-    print(result.returncode)
-    print(result.stdout)
-
     
-    # Check if process executed successfully
     assert result.returncode == 0, \
         f"Process failed with error: {result.stderr}"
     
-    # Verify DDL directory was created
-    assert os.path.exists('./ddls/PYDDL_TEST/tables'), \
-        "DDL directory structure was not created"
-    
-    # Check if any DDL files were generated
     table_files = os.listdir('./ddls/PYDDL_TEST/tables')
-    assert len(table_files) > 0, "No DDL files were generated"
     
-    # Verify content of one of the files
-    with open(f'./ddls/PYDDL_TEST/tables/{table_files[0]}', 'r', encoding='utf-8') as f:
-        content = f.read()
-        assert 'CREATE TABLE' in content, \
-            "Generated DDL does not contain CREATE TABLE statement"
+    for script in table_files:
+        with open(f'./ddls/PYDDL_TEST/tables/{script}', 'r', encoding='utf-8') as f:
+            generated_ddl = f.read()
+
+        current_script_dir = os.path.dirname(os.path.realpath(__file__))
+        with open(f'{current_script_dir}/test_1_expected_scripts/{script}', 'r', encoding='utf-8') as f:
+            expected_ddl = f.read()
+        
+        assert generated_ddl == expected_ddl, \
+            f"Generated DDL does not match expected DDL for {script}"
