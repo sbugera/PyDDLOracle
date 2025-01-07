@@ -10,3 +10,6 @@ liquibase/update.sql
 liquibase/liquibase.properties
 liquibase/internal/lib/*
 test-results/*
+/ddls/*
+/config_test_*.yaml
+.env

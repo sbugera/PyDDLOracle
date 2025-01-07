@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        VENV = "venv"
+        VENV = ".venv"
     }
 
     options {

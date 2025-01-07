@@ -5,7 +5,7 @@ import shutil
 import subprocess
 import pytest
 
-CONFIG_FILE_PATH = "config_all_uppercase.yaml"
+CONFIG_FILE_PATH = "config_test_all_uppercase.yaml"
 
 
 @pytest.fixture
@@ -41,28 +41,35 @@ file_path:
     foreign_key: "./ddls/{OBJECT_OWNER}/foreign_key/{object_owner}.{object_name}.sql"
 """
 
+    if os.path.exists(CONFIG_FILE_PATH):
+        os.remove(CONFIG_FILE_PATH)
+
     with open(CONFIG_FILE_PATH, "w", encoding="utf-8") as f:
         f.write(config_content)
 
     yield
 
-    if os.path.exists(CONFIG_FILE_PATH):
-        os.remove(CONFIG_FILE_PATH)
-
 
 @pytest.fixture
 def cleanup_ddl():
     """Remove generated DDL files after test."""
-    yield
-
     if os.path.exists("./ddls"):
         shutil.rmtree("./ddls")
+
+    yield
 
 
 def test_main_execution(config_file, cleanup_ddl):
     """Test execution of main.py with PYDDL_TEST schema."""
     result = subprocess.run(
-        ["python", "main.py", "-s", "PYDDL_TEST", "-c", CONFIG_FILE_PATH],
+        [
+            ".venv/bin/python",
+            "main.py",
+            "-s",
+            "PYDDL_TEST",
+            "-c",
+            CONFIG_FILE_PATH,
+        ],
         capture_output=True,
         text=True,
     )
@@ -71,6 +78,9 @@ def test_main_execution(config_file, cleanup_ddl):
         result.returncode == 0
     ), f"Process failed with error: {result.stderr}"
 
+
+def test_generated_ddl():
+    """Test generated DDL against expected DDL."""
     table_files = os.listdir("./ddls/PYDDL_TEST/tables")
 
     for script in table_files:
@@ -90,3 +100,59 @@ def test_main_execution(config_file, cleanup_ddl):
         assert (
             generated_ddl == expected_ddl
         ), f"Generated DDL does not match expected DDL for {script}"
+
+
+def test_liquibase_update_sql():
+    """Test liquibase generation of update SQL."""
+    os.environ["LIQUIBASE_HOME"] = "./liquibase"
+    result = subprocess.run(
+        [
+            "java",
+            "-jar",
+            "./liquibase/internal/lib/liquibase-core.jar",
+            "--defaultsFile=./liquibase/liquibase.properties",
+            "--changeLogFile=./tests/integration/test_tables/test_1_expected_scripts/changelog.xml",
+            "update-sql",
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+    with open(
+        "./tests/integration/test_tables/test_1_expected_scripts/update.sql",
+        "w",
+        encoding="utf-8",
+    ) as f:
+        f.write(result.stdout)
+
+    assert (
+        result.returncode == 0
+    ), f"Liquibase diff failed with error: {result.stderr}"
+
+
+def test_database_sqlplus_deployment():
+    """Test deployment of generated DDL to Oracle database using SQL*Plus."""
+    db_user = os.getenv("DB_USER")
+    db_pass = os.getenv("DB_PASS")
+    db_host = os.getenv("DB_HOST")
+    db_port = os.getenv("DB_PORT")
+    db_service = os.getenv("DB_SERVICE")
+
+    result = subprocess.run(
+        [
+            "sqlplus",
+            "-S",
+            f"{db_user}/{db_pass}@{db_host}:{db_port}/{db_service}",
+            "@tests/integration/test_tables/test_1_expected_scripts/update.sql",
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+    assert (
+        result.returncode == 0
+    ), f"SQL*Plus deployment failed with error: {result.stderr}"
+
+    assert (
+        "Tables dropped" in result.stdout
+    ), "SQL*Plus deployment did not drop tables"
