@@ -1,17 +1,3 @@
-def downloadDependencyIfNeeded(String path, String name, String artifact, String version) {
-    sh """
-        if [ ! -f liquibase/internal/lib/${name}.jar ]; then
-            mvn dependency:copy \
-            -Dorg.slf4j.simpleLogger.defaultLogLevel=warn \
-            -Dartifact=${path}:${name}:${version} \
-            -DoutputDirectory=liquibase/internal/lib \
-            -Dmdep.stripVersion=true
-        else
-            echo "${name}.jar already exists, skipping download."
-        fi
-    """
-}
-
 pipeline {
     agent any
 
@@ -23,6 +9,20 @@ pipeline {
         stage('Download dependencies') {
             steps {
                 script {
+                    def downloadDependencyIfNeeded = { String path, String name, String artifact, String version ->
+                        sh """
+                            if [ ! -f liquibase/internal/lib/${name}.jar ]; then
+                                mvn dependency:copy \
+                                -Dorg.slf4j.simpleLogger.defaultLogLevel=warn \
+                                -Dartifact=${path}:${name}:${version} \
+                                -DoutputDirectory=liquibase/internal/lib \
+                                -Dmdep.stripVersion=true
+                            else
+                                echo "${name}.jar already exists, skipping download."
+                            fi
+                        """
+                    }
+
                     downloadDependencyIfNeeded("com.oracle.database.jdbc", "ojdbc11", "23.6.0.24.10")
                     downloadDependencyIfNeeded("org.liquibase", "liquibase-core", "4.30.0")
                     downloadDependencyIfNeeded("commons-io", "commons-io", "2.18.0")
@@ -30,7 +30,7 @@ pipeline {
                     downloadDependencyIfNeeded("org.apache.commons", "commons-lang3", "3.17.0")
                     downloadDependencyIfNeeded("org.yaml", "snakeyaml", "2.3")
                 }
-                
+
                 sh """
                     set +x +v
                     ls -l liquibase/internal/lib
