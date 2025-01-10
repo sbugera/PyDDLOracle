@@ -38,7 +38,7 @@ def get_case_formatted(value, config_name_for_upper):
         return ""
     if value != value.upper():
         return f'"{value}"'
-    
+
     if c.conf["case"][config_name_for_upper] == "uppercase":
         return value.upper()
     else:

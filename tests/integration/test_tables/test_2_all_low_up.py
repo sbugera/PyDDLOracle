@@ -1,12 +1,12 @@
-"""Test for tables with enabled all parameters and uppercase letters."""
+"""Test for tables with enabled all parameters and lowercase kewords and uppercase identifiers."""
 
 import os
 import shutil
 import subprocess
 import pytest
 
-TESTCASE_NUMBER = "1"
-CONFIG_FILE_PATH = "config_test_all_uppercase.yaml"
+TESTCASE_NUMBER = "2"
+CONFIG_FILE_PATH = "config_test_all_low_up.yaml"
 
 
 @pytest.fixture
@@ -14,7 +14,7 @@ def config_file():
     """Create configuration for testing."""
     config_content = """
 case:
-  keyword: "uppercase"
+  keyword: "lowercase"
   identifier: "uppercase"
 
 storage:
@@ -130,8 +130,6 @@ def test_main_execution(config_file, cleanup_ddl):
         capture_output=True,
         text=True,
     )
-
-    print(result.stdout)
 
     assert (
         result.returncode == 0
