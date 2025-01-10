@@ -9,7 +9,7 @@ pipeline {
         stage('Download dependencies') {
             steps {
                 script {
-                    def downloadDependencyIfNeeded = { String path, String name, String artifact, String version ->
+                    def downloadDependencyIfNeeded = { String path, String name, String version ->
                         sh """
                             if [ ! -f liquibase/internal/lib/${name}.jar ]; then
                                 mvn dependency:copy \
