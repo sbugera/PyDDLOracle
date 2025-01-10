@@ -22,13 +22,15 @@ pipeline {
     stages {
         stage('Download dependencies') {
             steps {
-                downloadDependencyIfNeeded("com.oracle.database.jdbc", "ojdbc11", "23.6.0.24.10")
-                downloadDependencyIfNeeded("org.liquibase", "liquibase-core", "4.30.0")
-                downloadDependencyIfNeeded("commons-io", "commons-io", "2.18.0")
-                downloadDependencyIfNeeded("info.picocli", "picocli", "4.7.6")
-                downloadDependencyIfNeeded("org.apache.commons", "commons-lang3", "3.17.0")
-                downloadDependencyIfNeeded("org.yaml", "snakeyaml", "2.3")
-
+                script {
+                    downloadDependencyIfNeeded("com.oracle.database.jdbc", "ojdbc11", "23.6.0.24.10")
+                    downloadDependencyIfNeeded("org.liquibase", "liquibase-core", "4.30.0")
+                    downloadDependencyIfNeeded("commons-io", "commons-io", "2.18.0")
+                    downloadDependencyIfNeeded("info.picocli", "picocli", "4.7.6")
+                    downloadDependencyIfNeeded("org.apache.commons", "commons-lang3", "3.17.0")
+                    downloadDependencyIfNeeded("org.yaml", "snakeyaml", "2.3")
+                }
+                
                 sh """
                     set +x +v
                     ls -l liquibase/internal/lib
