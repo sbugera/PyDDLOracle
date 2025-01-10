@@ -1,3 +1,17 @@
+def downloadDependencyIfNeeded(String path, String name, String artifact, String version) {
+    sh """
+        if [ ! -f liquibase/internal/lib/${name}.jar ]; then
+            mvn dependency:copy \
+            -Dorg.slf4j.simpleLogger.defaultLogLevel=warn \
+            -Dartifact=${path}:${name}:${version} \
+            -DoutputDirectory=liquibase/internal/lib \
+            -Dmdep.stripVersion=true
+        else
+            echo "${name}.jar already exists, skipping download."
+        fi
+    """
+}
+
 pipeline {
     agent any
 
@@ -6,59 +20,14 @@ pipeline {
     }
     
     stages {
-        stage('Download Liquibase and OJDBC Driver') {
+        stage('Download dependencies') {
             steps {
-                sh """
-                    if [ ! -f liquibase/internal/lib/ojdbc11.jar ]; then
-                        mvn dependency:copy \
-                        -Dorg.slf4j.simpleLogger.defaultLogLevel=warn \
-                        -Dartifact=com.oracle.database.jdbc:ojdbc11:23.6.0.24.10 \
-                        -DoutputDirectory=liquibase/internal/lib \
-                        -Dmdep.stripVersion=true
-                    else
-                        echo "ojdbc11.jar already exists, skipping download."
-                    fi
-                """
-
-                sh """
-                    mvn dependency:copy \
-                      -Dorg.slf4j.simpleLogger.defaultLogLevel=warn \
-                      -Dartifact=org.liquibase:liquibase-core:4.30.0 \
-                      -DoutputDirectory=liquibase/internal/lib \
-                      -Dmdep.stripVersion=true
-                """
-
-                sh """
-                    mvn dependency:copy \
-                      -Dorg.slf4j.simpleLogger.defaultLogLevel=warn \
-                      -Dartifact=commons-io:commons-io:2.18.0 \
-                      -DoutputDirectory=liquibase/internal/lib \
-                      -Dmdep.stripVersion=true
-                """
-
-                sh """
-                    mvn dependency:copy \
-                      -Dorg.slf4j.simpleLogger.defaultLogLevel=warn \
-                      -Dartifact=info.picocli:picocli:4.7.6 \
-                      -DoutputDirectory=liquibase/internal/lib \
-                      -Dmdep.stripVersion=true
-                """
-
-                sh """
-                    mvn dependency:copy \
-                      -Dorg.slf4j.simpleLogger.defaultLogLevel=warn \
-                      -Dartifact=org.apache.commons:commons-lang3:3.17.0 \
-                      -DoutputDirectory=liquibase/internal/lib \
-                      -Dmdep.stripVersion=true
-                """
-
-                sh """
-                    mvn dependency:copy \
-                      -Dorg.slf4j.simpleLogger.defaultLogLevel=warn \
-                      -Dartifact=org.yaml:snakeyaml:2.3 \
-                      -DoutputDirectory=liquibase/internal/lib \
-                      -Dmdep.stripVersion=true
-                """
+                downloadDependencyIfNeeded("com.oracle.database.jdbc", "ojdbc11", "23.6.0.24.10")
+                downloadDependencyIfNeeded("org.liquibase", "liquibase-core", "4.30.0")
+                downloadDependencyIfNeeded("commons-io", "commons-io", "2.18.0")
+                downloadDependencyIfNeeded("info.picocli", "picocli", "4.7.6")
+                downloadDependencyIfNeeded("org.apache.commons", "commons-lang3", "3.17.0")
+                downloadDependencyIfNeeded("org.yaml", "snakeyaml", "2.3")
 
                 sh """
                     set +x +v
@@ -70,7 +39,7 @@ pipeline {
             }
         }
 
-        stage('Parse Secret') {
+        stage('Get secrets') {
             steps {
                 withCredentials([string(credentialsId: 'db-credentials', variable: 'DB_CONFIG')]) {
                     script {
