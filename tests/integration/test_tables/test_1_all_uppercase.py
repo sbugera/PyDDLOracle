@@ -59,6 +59,62 @@ def cleanup_ddl():
     yield
 
 
+def test_baseline_liquibase_update_sql():
+    """Test baseline liquibase generation of update SQL."""
+    os.environ["LIQUIBASE_HOME"] = "./liquibase"
+    result = subprocess.run(
+        [
+            "java",
+            "-jar",
+            "./liquibase/internal/lib/liquibase-core.jar",
+            "--defaultsFile=./liquibase/liquibase.properties",
+            "--changeLogFile=./liquibase/migrations/master_changelog.xml",
+            "update-sql",
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+    with open(
+        "./tests/integration/test_tables/test_1_expected_scripts/baseline-update.sql",
+        "w",
+        encoding="utf-8",
+    ) as f:
+        f.write(result.stdout)
+
+    assert (
+        result.returncode == 0
+    ), f"Baseline Liquibase update-sql failed with error: {result.stderr}"
+
+
+def test_baseline_database_sqlplus_deployment():
+    """Test deployment of generated baseline DDL to Oracle database using SQL*Plus."""
+    db_user = os.getenv("DB_USER")
+    db_pass = os.getenv("DB_PASS")
+    db_host = os.getenv("DB_HOST")
+    db_port = os.getenv("DB_PORT")
+    db_service = os.getenv("DB_SERVICE")
+
+    result = subprocess.run(
+        [
+            "sqlplus",
+            "-S",
+            f"{db_user}/{db_pass}@{db_host}:{db_port}/{db_service}",
+            "@tests/integration/test_tables/test_1_expected_scripts/baseline-update.sql",
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+    assert (
+        result.returncode == 0
+    ), f"Baseline SQL*Plus deployment failed with error: {result.stderr}"
+
+    assert (
+        "Tables dropped" in result.stdout
+    ), "Baseline SQL*Plus deployment did not drop tables"
+
+
 def test_main_execution(config_file, cleanup_ddl):
     """Test execution of main.py with PYDDL_TEST schema."""
     result = subprocess.run(

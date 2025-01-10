@@ -13,3 +13,4 @@ test-results/*
 /ddls/*
 /config_test_*.yaml
 .env
+**update.sql

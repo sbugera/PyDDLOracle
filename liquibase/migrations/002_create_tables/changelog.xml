@@ -4,7 +4,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
 
-    <changeSet id="002_001_tables" author="sit">
+    <changeSet id="002_001_tables" author="sit" runAlways="true">
         <sqlFile relativeToChangelogFile="true" path="pyddl_test.sales.sql" />
         <sqlFile relativeToChangelogFile="true" path="pyddl_test.sales_simple_range.sql" />
         <sqlFile relativeToChangelogFile="true" path="pyddl_test.t_cache__rowmovement__collation.sql" />

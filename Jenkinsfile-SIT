@@ -95,7 +95,7 @@ pipeline {
             }
         }
 
-        stage('Apply Migrations') {
+        stage('Prepare Liquibase') {
             steps {
                 sh '''
                     set +x +v
@@ -107,12 +107,6 @@ pipeline {
                     echo "password=${DB_PASS}" >> liquibase.properties
                     echo "changeLogFile=./migrations/master_changelog.xml" >> liquibase.properties
                     echo "driver=oracle.jdbc.driver.OracleDriver" >> liquibase.properties
-
-                    sqlplus -s ${DB_USER}/${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_SERVICE} @clean_lb_table.sql
-                    java -jar ./internal/lib/liquibase-core.jar update-sql > update.sql
-                    echo "commit;" >> update.sql
-                    echo "exit;" >> update.sql
-                    sqlplus -s ${DB_USER}/${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_SERVICE} @update.sql
                 '''
             }
         }
