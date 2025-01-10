@@ -9,11 +9,15 @@ pipeline {
         stage('Download Liquibase and OJDBC Driver') {
             steps {
                 sh """
-                    mvn dependency:copy \
-                      -Dorg.slf4j.simpleLogger.defaultLogLevel=warn \
-                      -Dartifact=com.oracle.database.jdbc:ojdbc11:23.6.0.24.10 \
-                      -DoutputDirectory=liquibase/internal/lib \
-                      -Dmdep.stripVersion=true
+                    if [ ! -f liquibase/internal/lib/ojdbc11.jar ]; then
+                        mvn dependency:copy \
+                        -Dorg.slf4j.simpleLogger.defaultLogLevel=warn \
+                        -Dartifact=com.oracle.database.jdbc:ojdbc11:23.6.0.24.10 \
+                        -DoutputDirectory=liquibase/internal/lib \
+                        -Dmdep.stripVersion=true
+                    else
+                        echo "ojdbc11.jar already exists, skipping download."
+                    fi
                 """
 
                 sh """
