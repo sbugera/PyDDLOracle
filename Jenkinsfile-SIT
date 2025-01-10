@@ -90,7 +90,10 @@ pipeline {
                 }
                 
                 withCredentials([file(credentialsId: 'db_config_con', variable: 'config_con')]) {
-                    sh "cp \$config_con config_con.yaml"
+                    sh """
+                        cp \$config_con config_con.yaml
+                        chmod u+w config_con.yaml
+                    """
                 }
             }
         }
