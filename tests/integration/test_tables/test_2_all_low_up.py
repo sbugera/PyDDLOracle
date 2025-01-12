@@ -6,7 +6,13 @@ import subprocess
 import pytest
 
 TESTCASE_NUMBER = "2"
-CONFIG_FILE_PATH = "config_test_all_low_up.yaml"
+TEST_RESULTS_PATH = (
+    f"./tests/integration/test_tables/test_results/{TESTCASE_NUMBER}"
+)
+CONFIG_FILE_PATH = f"{TEST_RESULTS_PATH}/config_test.yaml"
+
+if not os.path.exists(f"{TEST_RESULTS_PATH}/ddls/PYDDL_TEST/tables"):
+    os.makedirs(f"{TEST_RESULTS_PATH}/ddls/PYDDL_TEST/tables")
 
 
 @pytest.fixture
@@ -38,9 +44,11 @@ prompts: "yes"
 grants: "yes"
 
 file_path:
-    table: "./ddls/{OBJECT_OWNER}/tables/{object_owner}.{object_name}.sql"
-    foreign_key: "./ddls/{OBJECT_OWNER}/foreign_key/{object_owner}.{object_name}.sql"
-"""
+    table: "<:PATH>/ddls/{OBJECT_OWNER}/tables/{object_owner}.{object_name}.sql"
+    foreign_key: "<:PATH>/ddls/{OBJECT_OWNER}/foreign_key/{object_owner}.{object_name}.sql"
+""".replace(
+        "<:PATH>", TEST_RESULTS_PATH
+    )
 
     if os.path.exists(CONFIG_FILE_PATH):
         os.remove(CONFIG_FILE_PATH)
@@ -54,8 +62,8 @@ file_path:
 @pytest.fixture
 def cleanup_ddl():
     """Remove generated DDL files after test."""
-    if os.path.exists("./ddls"):
-        shutil.rmtree("./ddls")
+    if os.path.exists(f"{TEST_RESULTS_PATH}/ddls"):
+        shutil.rmtree(f"{TEST_RESULTS_PATH}/ddls")
 
     yield
 
@@ -77,11 +85,13 @@ def test_baseline_liquibase_update_sql():
     )
 
     with open(
-        f"./tests/integration/test_tables/test_{TESTCASE_NUMBER}_expected_scripts/baseline-update.sql",
+        f"{TEST_RESULTS_PATH}/baseline-update.sql",
         "w",
         encoding="utf-8",
     ) as f:
         f.write(result.stdout)
+        f.write("\nCOMMIT;")
+        f.write("\nEXIT;")
 
     assert (
         result.returncode == 0
@@ -101,11 +111,18 @@ def test_baseline_database_sqlplus_deployment():
             "sqlplus",
             "-S",
             f"{db_user}/{db_pass}@{db_host}:{db_port}/{db_service}",
-            f"@tests/integration/test_tables/test_{TESTCASE_NUMBER}_expected_scripts/baseline-update.sql",
+            f"@{TEST_RESULTS_PATH}/baseline-update.sql",
         ],
         capture_output=True,
         text=True,
     )
+
+    with open(
+        f"{TEST_RESULTS_PATH}/baseline-deployment.log",
+        "w",
+        encoding="utf-8",
+    ) as f:
+        f.write(result.stdout)
 
     assert (
         result.returncode == 0
@@ -131,32 +148,39 @@ def test_main_execution(config_file, cleanup_ddl):
         text=True,
     )
 
+    print(result.stdout)
+
     assert (
         result.returncode == 0
     ), f"Process failed with error: {result.stderr}"
 
 
-def test_generated_ddl():
+def get_ddl_files():
+    """Get list of generated DDL files."""
+    return os.listdir(f"{TEST_RESULTS_PATH}/ddls/PYDDL_TEST/tables")
+
+
+@pytest.mark.parametrize("script", get_ddl_files())
+def test_generated_ddl(script):
     """Test generated DDL against expected DDL."""
-    table_files = os.listdir("./ddls/PYDDL_TEST/tables")
+    with open(
+        f"{TEST_RESULTS_PATH}/ddls/PYDDL_TEST/tables/{script}",
+        "r",
+        encoding="utf-8",
+    ) as f:
+        generated_ddl = f.read()
 
-    for script in table_files:
-        with open(
-            f"./ddls/PYDDL_TEST/tables/{script}", "r", encoding="utf-8"
-        ) as f:
-            generated_ddl = f.read()
+    current_script_dir = os.path.dirname(os.path.realpath(__file__))
+    with open(
+        f"{current_script_dir}/test_{TESTCASE_NUMBER}_expected_scripts/{script}",
+        "r",
+        encoding="utf-8",
+    ) as f:
+        expected_ddl = f.read()
 
-        current_script_dir = os.path.dirname(os.path.realpath(__file__))
-        with open(
-            f"{current_script_dir}/test_{TESTCASE_NUMBER}_expected_scripts/{script}",
-            "r",
-            encoding="utf-8",
-        ) as f:
-            expected_ddl = f.read()
-
-        assert (
-            generated_ddl == expected_ddl
-        ), f"Generated DDL does not match expected DDL for {script}"
+    assert (
+        generated_ddl == expected_ddl
+    ), f"Generated DDL does not match expected DDL for {script}"
 
 
 def test_liquibase_update_sql():
@@ -176,11 +200,13 @@ def test_liquibase_update_sql():
     )
 
     with open(
-        f"./tests/integration/test_tables/test_{TESTCASE_NUMBER}_expected_scripts/update.sql",
+        f"{TEST_RESULTS_PATH}/update.sql",
         "w",
         encoding="utf-8",
     ) as f:
         f.write(result.stdout)
+        f.write("\nCOMMIT;")
+        f.write("\nEXIT;")
 
     assert (
         result.returncode == 0
@@ -200,11 +226,18 @@ def test_database_sqlplus_deployment():
             "sqlplus",
             "-S",
             f"{db_user}/{db_pass}@{db_host}:{db_port}/{db_service}",
-            f"@tests/integration/test_tables/test_{TESTCASE_NUMBER}_expected_scripts/update.sql",
+            f"@{TEST_RESULTS_PATH}/update.sql",
         ],
         capture_output=True,
         text=True,
     )
+
+    with open(
+        f"{TEST_RESULTS_PATH}/deployment.log",
+        "w",
+        encoding="utf-8",
+    ) as f:
+        f.write(result.stdout)
 
     assert (
         result.returncode == 0
