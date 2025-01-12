@@ -110,6 +110,10 @@ class BaseTableTest(ABC):
         ), f"Baseline SQL*Plus deployment failed with error: {result.stderr}"
 
         assert (
+            "ORA-" not in result.stdout and "SP2-" not in result.stdout
+        ), "Baseline SQL*Plus deployment failed with ORA or SP2 error"
+
+        assert (
             "Tables dropped" in result.stdout
         ), "Baseline SQL*Plus deployment did not drop tables"
 
@@ -219,6 +223,10 @@ class BaseTableTest(ABC):
         assert (
             result.returncode == 0
         ), f"SQL*Plus deployment failed with error: {result.stderr}"
+
+        assert (
+            "ORA-" not in result.stdout and "SP2-" not in result.stdout
+        ), "SQL*Plus deployment failed with ORA or SP2 error"
 
         assert (
             "Tables dropped" in result.stdout

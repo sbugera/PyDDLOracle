@@ -1,0 +1,82 @@
+CREATE TABLE pyddl_test.sales
+(
+    sale_id      NUMBER,
+    sale_date    DATE,
+    sale_amount  NUMBER
+)
+NOCOMPRESS
+TABLESPACE pyddl_test_data
+PARTITION BY RANGE (sale_date)
+INTERVAL (NUMTOYMINTERVAL(1, 'MONTH'))
+(
+  PARTITION p1 VALUES LESS THAN (TO_DATE(' 2020-01-01 00:00:00', 'SYYYY-MM-DD HH24:MI:SS', 'NLS_CALENDAR=GREGORIAN'))
+    LOGGING
+    NOCOMPRESS
+    TABLESPACE pyddl_test_data,
+  PARTITION p2 VALUES LESS THAN (TO_DATE(' 2020-02-01 00:00:00', 'SYYYY-MM-DD HH24:MI:SS', 'NLS_CALENDAR=GREGORIAN'))
+    LOGGING
+    NOCOMPRESS
+    TABLESPACE pyddl_test_data,
+  PARTITION p3 VALUES LESS THAN (TO_DATE(' 2020-03-01 00:00:00', 'SYYYY-MM-DD HH24:MI:SS', 'NLS_CALENDAR=GREGORIAN'))
+    LOGGING
+    NOCOMPRESS
+    TABLESPACE pyddl_test_data,
+  PARTITION p4 VALUES LESS THAN (TO_DATE(' 2020-04-01 00:00:00', 'SYYYY-MM-DD HH24:MI:SS', 'NLS_CALENDAR=GREGORIAN'))
+    LOGGING
+    NOCOMPRESS
+    TABLESPACE pyddl_test_data,
+  PARTITION VALUES LESS THAN (TO_DATE(' 2020-05-01 00:00:00', 'SYYYY-MM-DD HH24:MI:SS', 'NLS_CALENDAR=GREGORIAN'))
+    LOGGING
+    NOCOMPRESS
+    TABLESPACE pyddl_test_data,
+  PARTITION VALUES LESS THAN (TO_DATE(' 2020-06-01 00:00:00', 'SYYYY-MM-DD HH24:MI:SS', 'NLS_CALENDAR=GREGORIAN'))
+    LOGGING
+    NOCOMPRESS
+    TABLESPACE pyddl_test_data
+)
+NOCACHE
+RESULT_CACHE (MODE DEFAULT);
+
+
+COMMENT ON TABLE pyddl_test.sales IS 'Sales';
+COMMENT ON COLUMN pyddl_test.sales.sale_id IS 'Sale ID';
+COMMENT ON COLUMN pyddl_test.sales.sale_date IS 'Sale Date';
+COMMENT ON COLUMN pyddl_test.sales.sale_amount IS 'Sale Ammount';
+
+
+CREATE INDEX pyddl_test.pk_sales ON pyddl_test.sales
+(sale_id)
+LOGGING
+TABLESPACE pyddl_test_data;
+
+CREATE INDEX pyddl_test.uk_sales ON pyddl_test.sales
+(sale_amount)
+LOGGING
+TABLESPACE pyddl_test_data;
+
+CREATE INDEX pyddl_test.uk_sales_02 ON pyddl_test.sales
+(sale_date, sale_amount)
+LOGGING
+TABLESPACE pyddl_test_data;
+
+
+ALTER TABLE pyddl_test.sales ADD (
+  CONSTRAINT ck_sales
+  CHECK (sale_amount > 0)
+  DEFERRABLE INITIALLY IMMEDIATE
+  ENABLE VALIDATE,
+  CONSTRAINT pk_sales
+  PRIMARY KEY (sale_id)
+  DEFERRABLE INITIALLY IMMEDIATE
+  USING INDEX pyddl_test.pk_sales
+  ENABLE VALIDATE,
+  CONSTRAINT uk_sales
+  UNIQUE (sale_amount)
+  DEFERRABLE INITIALLY IMMEDIATE
+  USING INDEX pyddl_test.uk_sales
+  ENABLE VALIDATE,
+  CONSTRAINT uk_sales_02
+  UNIQUE (sale_date, sale_amount)
+  DEFERRABLE INITIALLY IMMEDIATE
+  USING INDEX pyddl_test.uk_sales_02
+  ENABLE VALIDATE);

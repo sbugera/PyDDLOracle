@@ -1,0 +1,17 @@
+CREATE TABLE pyddl_test.t_range_part__range_subpart
+(
+    id      NUMBER,
+    sub_id  NUMBER
+)
+NOCOMPRESS
+TABLESPACE users
+PARTITION BY RANGE (id)
+INTERVAL (10)
+(
+  PARTITION p_0 VALUES LESS THAN (0)
+    LOGGING
+    COMPRESS BASIC
+    TABLESPACE pyddl_test_data
+)
+NOCACHE
+RESULT_CACHE (MODE DEFAULT);

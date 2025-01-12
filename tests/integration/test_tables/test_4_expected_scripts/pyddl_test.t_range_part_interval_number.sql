@@ -1,0 +1,96 @@
+prompt Table pyddl_test.t_range_part_interval_number
+create table pyddl_test.t_range_part_interval_number
+(
+    sale_id  number not null,
+    region   varchar2(50 byte),
+    amount   number
+)
+nocompress
+tablespace pyddl_test_data
+pctfree    10
+initrans   1
+maxtrans   255
+storage    (
+            buffer_pool      default
+            )
+partition by range (sale_id)
+interval (1000)
+(
+  partition initial_partition values less than (1000)
+    logging
+    nocompress
+    tablespace pyddl_test_data
+    pctfree    10
+    initrans   1
+    maxtrans   255
+    storage    (
+                initial          8M
+                next             1M
+                minextents       1
+                maxextents       unlimited
+                buffer_pool      default
+                ),
+  partition values less than (2000)
+    logging
+    nocompress
+    tablespace pyddl_test_data
+    pctfree    10
+    initrans   1
+    maxtrans   255
+    storage    (
+                initial          8M
+                next             1M
+                minextents       1
+                maxextents       unlimited
+                buffer_pool      default
+                )
+)
+nocache
+result_cache (mode default);
+
+
+prompt Index pyddl_test.uk_t_range_part_interval_number
+create index pyddl_test.uk_t_range_part_interval_number on pyddl_test.t_range_part_interval_number
+(region)
+logging
+tablespace pyddl_test_data
+pctfree    10
+initrans   2
+maxtrans   255
+storage    (
+            initial          64K
+            next             1M
+            minextents       1
+            maxextents       unlimited
+            pctincrease      0
+            buffer_pool      default
+            );
+
+prompt Index pyddl_test.uq_t_range_part_interval_number
+create unique index pyddl_test.uq_t_range_part_interval_number on pyddl_test.t_range_part_interval_number
+(sale_id)
+logging
+tablespace pyddl_test_data
+pctfree    10
+initrans   2
+maxtrans   255
+storage    (
+            initial          64K
+            next             1M
+            minextents       1
+            maxextents       unlimited
+            pctincrease      0
+            buffer_pool      default
+            );
+
+
+prompt Constraints for table pyddl_test.t_range_part_interval_number
+alter table pyddl_test.t_range_part_interval_number add (
+  constraint pk_t_range_part_interval_number
+  primary key (sale_id)
+  using index pyddl_test.uq_t_range_part_interval_number
+  enable validate,
+  constraint uk_t_range_part_interval_number
+  unique (region)
+  using index pyddl_test.uk_t_range_part_interval_number
+  enable validate);
