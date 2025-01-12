@@ -82,6 +82,7 @@ def get_table_dfs(table_row, metadata):
 
 class Table:
     """Oracle database table with complete DDL generation capabilities."""
+
     def __init__(
         self,
         table_attr,
@@ -178,12 +179,12 @@ class Table:
             c.conf["storage"]["storage"] == "only_tablespace"
             and self.partitioned == "NO"
         ):
-            storage = f"\nTABLESPACE {get_case_formatted(self.tablespace_name, "identifier")}"
+            storage = f"\nTABLESPACE {get_case_formatted(self.tablespace_name, 'identifier')}"
         elif (
             c.conf["storage"]["storage"] == "only_tablespace"
             and self.partitioned == "YES"
         ):
-            storage = f"\nTABLESPACE {get_case_formatted(self.def_tablespace_name, "identifier")}"
+            storage = f"\nTABLESPACE {get_case_formatted(self.def_tablespace_name, 'identifier')}"
         elif (
             c.conf["storage"]["storage"] == "with_storage"
             and self.partitioned == "NO"
