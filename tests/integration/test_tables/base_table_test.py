@@ -138,16 +138,12 @@ class BaseTableTest(ABC):
             result.returncode == 0
         ), f"Process failed with error: {result.stderr}"
 
-    def get_ddl_files(self):
-        """Get list of generated DDL files."""
-        return os.listdir(f"{self.test_results_path}/ddls/PYDDL_TEST/tables")
-
     def test_generated_ddl(self):
         """Test all generated DDL files against expected DDL."""
-        for script in self.get_ddl_files():
+        for script in os.listdir(f"{self.test_results_path}/ddls/PYDDL_TEST"):
             """Test generated DDL against expected DDL."""
             with open(
-                f"{self.test_results_path}/ddls/PYDDL_TEST/tables/{script}",
+                f"{self.test_results_path}/ddls/PYDDL_TEST/{script}",
                 "r",
                 encoding="utf-8",
             ) as f:
