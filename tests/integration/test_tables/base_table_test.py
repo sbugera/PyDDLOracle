@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 
 class BaseTableTest(ABC):
     """Base class for table DDL generation tests."""
-    
+
     testcase_number = None
     config_content = None
 
@@ -223,4 +223,3 @@ class BaseTableTest(ABC):
         assert (
             "Tables dropped" in result.stdout
         ), "SQL*Plus deployment did not drop tables"
-
