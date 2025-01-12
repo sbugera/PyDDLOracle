@@ -3,13 +3,8 @@ from .base_table_test import BaseTableTest
 class TestCase2(BaseTableTest):
     """All parameters enabled with lowercase kewords and uppercase identifiers."""
 
-    @property
-    def testcase_number(self) -> str:
-        return "2"
-
-    @property
-    def config_content(self) -> str:
-        return """
+    testcase_number = "2"
+    config_content = """
 case:
   keyword: "lowercase"
   identifier: "uppercase"

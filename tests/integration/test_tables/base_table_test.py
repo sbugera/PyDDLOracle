@@ -10,17 +10,8 @@ from abc import ABC, abstractmethod
 class BaseTableTest(ABC):
     """Base class for table DDL generation tests."""
     
-    @property
-    @abstractmethod
-    def testcase_number(self) -> str:
-        """Test case number to be implemented by concrete classes."""
-        pass
-
-    @property
-    @abstractmethod
-    def config_content(self) -> str:
-        """Configuration content to be implemented by concrete classes."""
-        pass
+    testcase_number = None
+    config_content = None
 
     @property
     def test_results_path(self) -> str:
@@ -32,10 +23,13 @@ class BaseTableTest(ABC):
         """Get the config file path."""
         return f"{self.test_results_path}/config_test.yaml"
 
-    def setup_directories(self):
-        """Set up required directories."""
-        if not os.path.exists(f"{self.test_results_path}/ddls/PYDDL_TEST/tables"):
-            os.makedirs(f"{self.test_results_path}/ddls/PYDDL_TEST/tables")
+    @classmethod
+    def setup_class(cls):
+        """Set up required directories before any tests in the class run."""
+        test_path = f"./tests/integration/test_tables/test_results/{cls.testcase_number}/ddls/PYDDL_TEST/tables"
+        print(f"Setting up test path: {test_path}")
+        if not os.path.exists(test_path):
+            os.makedirs(test_path)
 
     @pytest.fixture
     def config_file(self):

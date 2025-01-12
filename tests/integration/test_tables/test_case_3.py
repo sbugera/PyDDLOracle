@@ -1,13 +1,13 @@
 from .base_table_test import BaseTableTest
 
-class TestCase1(BaseTableTest):
-    """All parameters enabled with uppercase letters."""
+class TestCase3(BaseTableTest):
+    """All parameters enabled with uppercase kewords and lowercase identifiers."""
 
-    testcase_number = "1"
+    testcase_number = "3"
     config_content = """
 case:
   keyword: "uppercase"
-  identifier: "uppercase"
+  identifier: "lowercase"
 
 storage:
   storage: "with_storage"
