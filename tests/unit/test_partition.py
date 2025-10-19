@@ -52,7 +52,7 @@ def test_range_partition_statement_and_name():
 
 
 def test_list_partition_statement():
-    part = Partition("LIST", make_tab_partition(high_value="('A','B')"))
+    part = Partition("LIST", make_tab_partition(high_value="'A','B'"))
     ddl = part.get_partition()
     assert "PARTITION P_202401 VALUES ('A','B')" in ddl
 
@@ -60,7 +60,7 @@ def test_list_partition_statement():
 def test_partition_name_skips_sys_p_prefix():
     part = Partition("RANGE", make_tab_partition(partition_name="SYS_P12345"))
     ddl = part.get_partition()
-    assert "PARTITION  VALUES LESS THAN" in ddl  # no name injected
+    assert "PARTITION VALUES LESS THAN" in ddl  # no name injected
 
 
 def test_logging_yes_and_no():
