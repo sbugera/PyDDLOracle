@@ -35,11 +35,10 @@ pipeline {
                         --junitxml=test-results/junit.xml \
                         --html=test-results/report.html \
                         --self-contained-html \
-                        --cov=. \
+                        --cov=pyddl_oracle \
                         --cov-report=xml:test-results/coverage.xml \
                         --cov-report=html:test-results/coverage \
                         --cov-config=.coveragerc
-                        --cov-exclude=tests/*
                 '''
             }
             post {
