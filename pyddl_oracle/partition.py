@@ -5,7 +5,7 @@ from pyddl_oracle.storage import get_full_storage
 from pyddl_oracle.utils import get_case_formatted, get_indentation
 
 
-class Partition:
+class Partition:  # pylint: disable=too-many-instance-attributes
     """Oracle database partition with properties and DDL generation."""
 
     def __init__(self, partitioning_type, tab_partition):

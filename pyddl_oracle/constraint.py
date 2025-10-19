@@ -31,7 +31,7 @@ def get_foreign_key_dfs(foreign_key_row, metadata: DBMetadata):
     return foreign_key_row, df_foreign_key_columns, df_remote_key_columns
 
 
-class Constraint:
+class Constraint:  # pylint: disable=too-many-instance-attributes
     """Oracle database constraint with DDL generation."""
 
     def __init__(
@@ -59,29 +59,27 @@ class Constraint:
         self.constraint_columns = constraint_columns
         self.constraint_columns_remote = constraint_columns_remote
 
-    def get_constraint(self, standalone=False):
-        """Generate DDL for constraint definition."""
-        table_name = get_object_name(self.owner, self.table_name, "identifier")
-        constraint_name = get_case_formatted(
-            self.constraint_name, "identifier"
-        )
-        r_table_name = ""
+    def _get_r_table_name(self):
         if self.r_table_name and str(self.r_table_name) not in ("nan", "None"):
-            r_table_name = get_object_name(
+            return get_object_name(
                 self.r_owner, self.r_table_name, "identifier"
             )
+        return ""
 
-        constraint_columns = ""
+    def _get_constraint_columns(self):
+        columns = ""
         for i, constraint_column in enumerate(
             self.constraint_columns.itertuples()
         ):
-            constraint_columns += get_case_formatted(
+            columns += get_case_formatted(
                 constraint_column.column_name, "identifier"
             )
             if i != len(self.constraint_columns) - 1:
-                constraint_columns += ", "
+                columns += ", "
+        return columns
 
-        r_constraint_columns = ""
+    def _get_r_constraint_columns(self):
+        columns = ""
         if (
             self.constraint_columns_remote is not None
             and not self.constraint_columns_remote.empty
@@ -89,19 +87,22 @@ class Constraint:
             for i, r_constraint_column in enumerate(
                 self.constraint_columns_remote.itertuples()
             ):
-                r_constraint_columns += get_case_formatted(
+                columns += get_case_formatted(
                     r_constraint_column.column_name, "identifier"
                 )
                 if i != len(self.constraint_columns_remote) - 1:
-                    r_constraint_columns += ", "
+                    columns += ", "
+        return columns
 
+    def _get_start_of_statement(self, standalone, table_name):
         if standalone:
-            constraint = get_case_formatted(
+            return get_case_formatted(
                 "ALTER TABLE <:1> ADD (\n", "keyword"
             ).replace("<:1>", table_name)
-        else:
-            constraint = ""
+        return ""
 
+    def _get_statement_template(self):
+        statement = ""
         if self.constraint_type == "P":
             statement = get_case_formatted(
                 "  CONSTRAINT <:1>\n  PRIMARY KEY (<:2>)", "keyword"
@@ -120,41 +121,54 @@ class Constraint:
                 "  REFERENCES <:3> (<:4>)",
                 "keyword",
             )
-        else:
-            statement = ""
+        return statement
 
-        constraint += statement.replace("<:1>", constraint_name)
+    def _replace_constraint_name(self, template, constraint_name):
+        return template.replace("<:1>", constraint_name)
+
+    def _replace_constraint_columns(self, template, constraint_columns):
         if self.constraint_type == "C":
-            constraint = constraint.replace("<:2>", self.search_condition)
-        else:
-            constraint = constraint.replace("<:2>", constraint_columns)
+            return template.replace("<:2>", self.search_condition)
+        return template.replace("<:2>", constraint_columns)
 
+    def _replace_fk_columns(self, template, table_name, columns):
+        constraint = template
         if self.constraint_type == "R":
-            constraint = constraint.replace("<:3>", r_table_name)
-            constraint = constraint.replace("<:4>", r_constraint_columns)
+            constraint = constraint.replace("<:3>", table_name)
+            constraint = constraint.replace("<:4>", columns)
+        return constraint
 
+    def _get_deferrable(self):
         if self.deferrable == "DEFERRABLE":
-            constraint += get_case_formatted(
+            return get_case_formatted(
                 f"\n  DEFERRABLE INITIALLY {self.deferred}", "keyword"
             )
+        return ""
 
+    def _get_index_statement(self):
+        statement = ""
         if self.index_name and str(self.index_name) not in ("nan", "None"):
             statement = get_case_formatted("\n  USING INDEX <:1>", "keyword")
             index_name = get_object_name(
                 self.index_owner, self.index_name, "identifier"
             )
-            constraint += statement.replace("<:1>", index_name)
+            statement = statement.replace("<:1>", index_name)
+        return statement
 
+    def _get_on_delete_statement(self):
+        statement = ""
         if self.delete_rule and str(self.delete_rule) not in (
             "nan",
             "None",
             "NO ACTION",
         ):
             statement = get_case_formatted("\n  ON DELETE <:1>", "keyword")
-            constraint += statement.replace(
-                "<:1>", get_case_formatted(self.delete_rule, "keyword")
-            )
+            statement = statement.replace(
+                "<:1>",
+                get_case_formatted(self.delete_rule, "keyword"))
+        return statement
 
+    def _get_status_statement(self):
         if self.status == "ENABLED":
             status = get_case_formatted("ENABLE", "keyword")
         else:
@@ -165,8 +179,28 @@ class Constraint:
         else:
             validate = get_case_formatted("NOVALIDATE", "keyword")
 
-        constraint += f"\n  {status} {validate}"
+        return f"\n  {status} {validate}"
 
+    def get_constraint(self, standalone=False):
+        """Generate DDL for constraint definition."""
+        table_name = get_object_name(self.owner, self.table_name, "identifier")
+        constraint_name = get_case_formatted(
+            self.constraint_name, "identifier"
+        )
+        r_table_name = self._get_r_table_name()
+        constraint_columns = self._get_constraint_columns()
+        r_constraint_columns = self._get_r_constraint_columns()
+        template = self._get_statement_template()
+        constraint = self._get_start_of_statement(standalone, table_name)
+        constraint += self._replace_constraint_name(template, constraint_name)
+        constraint = self._replace_constraint_columns(
+            constraint, constraint_columns)
+        constraint = self._replace_fk_columns(
+            constraint, r_table_name, r_constraint_columns)
+        constraint += self._get_deferrable()
+        constraint += self._get_index_statement()
+        constraint += self._get_on_delete_statement()
+        constraint += self._get_status_statement()
         return constraint
 
     def generate_ddl(self):

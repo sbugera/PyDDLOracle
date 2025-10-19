@@ -42,16 +42,14 @@ def get_case_formatted(value, config_name_for_upper):
 
     if c.conf["case"][config_name_for_upper] == "uppercase":
         return value.upper()
-    else:
-        return value.lower()
+    return value.lower()
 
 
 def add_quotes(value):
     """Add quotes to value."""
     if any(char.islower() for char in value):
         return f'"{value}"'
-    else:
-        return value
+    return value
 
 
 def get_indentation():
@@ -96,12 +94,14 @@ def prepare_directories(file_path):
 
 def get_size_formatted(initial_extent):
     """Get size formatted based on config."""
+    size_formatted = ""
     if initial_extent >= 1024 * 1024 * 1024:
-        return str(int(initial_extent / 1024 / 1024 / 1024)) + "G"
-    if initial_extent >= 1024 * 1024:
-        return str(int(initial_extent / 1024 / 1024)) + "M"
-    if initial_extent >= 1024:
-        return str(int(initial_extent / 1024)) + "K"
+        size_formatted = str(int(initial_extent / 1024 / 1024 / 1024)) + "G"
+    elif initial_extent >= 1024 * 1024:
+        size_formatted = str(int(initial_extent / 1024 / 1024)) + "M"
+    elif initial_extent >= 1024:
+        size_formatted = str(int(initial_extent / 1024)) + "K"
+    return size_formatted
 
 
 def get_object_name(object_owner, object_name, config_name_for_upper):
@@ -126,5 +126,4 @@ def get_prompt(prompt_text, *values):
             placeholder = "<:" + str(i) + ">"
             prompt = prompt.replace(placeholder, str(value))
         return prompt
-    else:
-        return ""
+    return ""

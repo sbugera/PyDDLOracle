@@ -9,7 +9,7 @@ from pyddl_oracle.utils import (
 )
 
 
-class Column:
+class Column:  # pylint: disable=too-many-instance-attributes
     """Oracle database column with properties and DDL generation."""
 
     def __init__(self, column_row, max_column_name_length):

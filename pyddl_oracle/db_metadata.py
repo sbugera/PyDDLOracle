@@ -53,7 +53,7 @@ def column_exists_in_view(
     return exists_value == "Y"
 
 
-class DBMetadata:
+class DBMetadata:  # pylint: disable=too-many-instance-attributes
     """Class to handle Oracle database metadata."""
 
     def __init__(self):
