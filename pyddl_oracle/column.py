@@ -1,7 +1,12 @@
 """Handles Oracle database column definitions and DDL generation."""
 
 import pandas as pd
-from utils import get_case_formatted, get_object_name, get_indentation
+
+from pyddl_oracle.utils import (
+    get_case_formatted,
+    get_indentation,
+    get_object_name,
+)
 
 
 class Column:

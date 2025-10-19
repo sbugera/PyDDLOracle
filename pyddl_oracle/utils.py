@@ -1,10 +1,11 @@
 """Utils module."""
 
-import re
 import os
+import re
 from collections import namedtuple
 from pprint import PrettyPrinter
-from config import config as c
+
+from pyddl_oracle.config import config as c
 
 
 def get_dataframe_namedtuple(df, index):

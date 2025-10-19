@@ -1,9 +1,11 @@
 """Tests for database schema name retrieval functionality."""
 
-import pytest
 from unittest.mock import MagicMock
-from db_metadata import get_db_schema_name
-from config import config as c
+
+import pytest
+
+from pyddl_oracle.config import config as c
+from pyddl_oracle.db_metadata import get_db_schema_name
 
 
 def test_with_provided_arg():

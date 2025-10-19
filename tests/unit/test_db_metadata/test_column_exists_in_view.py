@@ -4,7 +4,7 @@
 import pandas as pd
 import pytest
 
-from db_metadata import column_exists_in_view
+from pyddl_oracle.db_metadata import column_exists_in_view
 
 
 @pytest.fixture

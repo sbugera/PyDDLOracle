@@ -1,22 +1,22 @@
 """Handles Oracle database table definitions and DDL generation."""
 
-from column import Column
-from constraint import Constraint
-from partitioning import Partitioning
-from index import Index
-from storage import get_full_storage
-from utils import (
+from pyddl_oracle.column import Column
+from pyddl_oracle.config import config as c
+from pyddl_oracle.constraint import Constraint
+from pyddl_oracle.db_metadata import DBMetadata
+from pyddl_oracle.index import Index
+from pyddl_oracle.partitioning import Partitioning
+from pyddl_oracle.storage import get_full_storage
+from pyddl_oracle.utils import (
+    add_quotes,
     get_case_formatted,
+    get_dataframe_namedtuple,
+    get_file_path,
     get_object_name,
     get_prompt,
-    get_file_path,
     prepare_directories,
-    add_quotes,
     replace_multiple_newlines,
-    get_dataframe_namedtuple,
 )
-from config import config as c
-from db_metadata import DBMetadata
 
 
 def get_table_dfs(table_row, metadata: DBMetadata):

@@ -1,10 +1,12 @@
 """Test cases for DBMetadata class initialization."""
 
-from unittest.mock import patch, MagicMock
-import pytest
+from unittest.mock import MagicMock, patch
+
 import pandas as pd
-from db_metadata import DBMetadata
-import sql_queries as sql
+import pytest
+
+from pyddl_oracle import sql_queries as sql
+from pyddl_oracle.db_metadata import DBMetadata
 
 # pylint: disable=redefined-outer-name
 # pylint: disable=unused-argument
@@ -13,7 +15,7 @@ import sql_queries as sql
 @pytest.fixture
 def mock_config():
     """Mock the configuration object."""
-    with patch("db_metadata.c") as mock_config:
+    with patch("pyddl_oracle.db_metadata.c") as mock_config:
         mock_config.conf_con = {
             "database": {
                 "username": "test_user",

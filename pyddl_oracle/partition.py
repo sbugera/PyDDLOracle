@@ -1,8 +1,8 @@
 """Handles Oracle database partition definitions and DDL generation."""
 
-from storage import get_full_storage
-from utils import get_case_formatted, get_indentation
-from config import config as c
+from pyddl_oracle.config import config as c
+from pyddl_oracle.storage import get_full_storage
+from pyddl_oracle.utils import get_case_formatted, get_indentation
 
 
 class Partition:

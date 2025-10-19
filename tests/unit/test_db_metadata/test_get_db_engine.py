@@ -1,10 +1,11 @@
 """Tests for database engine creation functionality."""
 
 from unittest.mock import patch
+
 from sqlalchemy import Engine
 
-from db_metadata import get_db_engine
-from config import config as c
+from pyddl_oracle.config import config as c
+from pyddl_oracle.db_metadata import get_db_engine
 
 
 def test_with_service_name():

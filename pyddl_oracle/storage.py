@@ -1,6 +1,6 @@
 """Handles Oracle database storage definitions and DDL generation."""
 
-from utils import get_case_formatted, get_size_formatted
+from pyddl_oracle.utils import get_case_formatted, get_size_formatted
 
 
 def get_full_storage(

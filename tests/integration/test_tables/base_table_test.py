@@ -122,7 +122,8 @@ class BaseTableTest(ABC):
         result = subprocess.run(
             [
                 ".venv/bin/python",
-                "main.py",
+                "-m",
+                "pyddl_oracle",
                 "-s",
                 "PYDDL_TEST",
                 "-c",

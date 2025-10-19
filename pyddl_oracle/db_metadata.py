@@ -3,8 +3,8 @@
 import pandas as pd
 from sqlalchemy import create_engine
 
-import sql_queries as sql
-from config import config as c
+from pyddl_oracle import sql_queries as sql
+from pyddl_oracle.config import config as c
 
 
 def get_db_schema_name() -> str:

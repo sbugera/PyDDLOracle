@@ -26,17 +26,17 @@ File names, output directory and other settings can be changed in [config.yaml](
 ## Usage
 
 ```
-python main.py [-s <schema name>]
+python -m pyddl_oracle [-s <schema name>]
 ```
-Where ```schema_name``` is the name of the schema to extract. If not specified, connection user will be used.
+Where ```schema_name``` is the name of the schema to extract. If not specified, the connection user will be used.
 
 For example:
 ```
-python main.py -s HR
+python -m pyddl_oracle -s HR
 ```
 or:
 ```
-python main.py
+python -m pyddl_oracle
 ```
 
 ## Currently supported objects

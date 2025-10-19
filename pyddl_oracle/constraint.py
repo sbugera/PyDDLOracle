@@ -1,13 +1,13 @@
 """Handles Oracle database constraint definitions and DDL generation."""
 
-from utils import (
+from pyddl_oracle.db_metadata import DBMetadata
+from pyddl_oracle.utils import (
     get_case_formatted,
-    get_object_name,
     get_file_path,
-    prepare_directories,
+    get_object_name,
     get_prompt,
+    prepare_directories,
 )
-from db_metadata import DBMetadata
 
 
 def get_foreign_key_dfs(foreign_key_row, metadata: DBMetadata):

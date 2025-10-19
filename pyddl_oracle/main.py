@@ -2,17 +2,18 @@
 
 import pandas as pd
 
-from constraint import get_foreign_key_dfs, Constraint
-from table import Table, get_table_dfs
-from db_metadata import DBMetadata
-from config import config as c
+from pyddl_oracle.config import config as c
+from pyddl_oracle.constraint import Constraint, get_foreign_key_dfs
+from pyddl_oracle.db_metadata import DBMetadata
+from pyddl_oracle.table import Table, get_table_dfs
 
 pd.options.mode.chained_assignment = None  # type: ignore # default='warn'
 pd.set_option("display.max_rows", None)
 pd.set_option("display.max_columns", None)
 
 
-if __name__ == "__main__":
+def run() -> None:
+    """Entry point for the CLI generation workflow."""
     c.args = c.get_args()
     c.conf = c.load_config(c.args.config_file)
     c.conf_con = c.load_config(c.args.con_config_file)
@@ -41,3 +42,7 @@ if __name__ == "__main__":
         foreign_key = Constraint(*foreign_key_dfs)
         foreign_key.generate_ddl()
         foreign_key.store_ddl_into_file()
+
+
+if __name__ == "__main__":
+    run()

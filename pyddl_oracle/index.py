@@ -1,8 +1,8 @@
 """Handles Oracle database index definitions and DDL generation."""
 
-from storage import get_full_storage
-from utils import get_case_formatted, get_object_name, get_prompt
-from config import config as c
+from pyddl_oracle.config import config as c
+from pyddl_oracle.storage import get_full_storage
+from pyddl_oracle.utils import get_case_formatted, get_object_name, get_prompt
 
 
 class Index:
