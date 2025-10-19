@@ -39,6 +39,7 @@ pipeline {
                         --cov-report=xml:test-results/coverage.xml \
                         --cov-report=html:test-results/coverage \
                         --cov-config=.coveragerc
+                        --cov-exclude=tests/*
                 '''
             }
             post {
@@ -80,7 +81,7 @@ pipeline {
                     steps {
                         sh '''
                             source ${VENV}/bin/activate
-                            pylint main.py app/ --output-format=parseable --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > test-results/pylint-report.txt || true
+                            pylint pyddl_oracle/ --output-format=parseable --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > test-results/pylint-report.txt || true
                         '''
                     }
                     post {
@@ -99,7 +100,7 @@ pipeline {
                     steps {
                         sh '''
                             source ${VENV}/bin/activate
-                            bandit -r main.py app/ -f html -o test-results/bandit-report.html || true
+                            bandit -r pyddl_oracle/ -f html -o test-results/bandit-report.html || true
                         '''
                     }
                     post {
@@ -120,7 +121,7 @@ pipeline {
                     steps {
                         sh '''
                             source ${VENV}/bin/activate
-                            flake8 main.py app/ --format=pylint > test-results/flake8-report.txt || true
+                            flake8 pyddl_oracle/ --format=pylint > test-results/flake8-report.txt || true
                         '''
                     }
                     post {
