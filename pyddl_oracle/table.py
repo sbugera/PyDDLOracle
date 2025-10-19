@@ -169,12 +169,18 @@ class Table:
             c.conf["storage"]["storage"] == "only_tablespace"
             and self.partitioned == "NO"
         ):
-            storage = f"\n{get_case_formatted('TABLESPACE', 'keyword')} {get_case_formatted(self.tablespace_name, 'identifier')}"
+            storage = (
+                f"\n{get_case_formatted('TABLESPACE', 'keyword')} "
+                f"{get_case_formatted(self.tablespace_name, 'identifier')}"
+            )
         elif (
             c.conf["storage"]["storage"] == "only_tablespace"
             and self.partitioned == "YES"
         ):
-            storage = f"\n{get_case_formatted('TABLESPACE', 'keyword')} {get_case_formatted(self.def_tablespace_name, 'identifier')}"
+            storage = (
+                f"\n{get_case_formatted('TABLESPACE', 'keyword')} "
+                f"{get_case_formatted(self.def_tablespace_name, 'identifier')}"
+            )
         elif (
             c.conf["storage"]["storage"] == "with_storage"
             and self.partitioned == "NO"

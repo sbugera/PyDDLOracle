@@ -90,5 +90,9 @@ class Partition:
                 self.next_extent,
             )
         elif c.conf["storage"]["storage"] == "only_tablespace":
-            partition += f"\n{get_indentation()}{get_case_formatted('TABLESPACE', 'keyword')} {get_case_formatted(self.tablespace_name, 'identifier')}"
+            partition += (
+                f"\n{get_indentation()}"
+                f"{get_case_formatted('TABLESPACE', 'keyword')} "
+                f"{get_case_formatted(self.tablespace_name, 'identifier')}"
+            )
         return partition

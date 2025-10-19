@@ -35,7 +35,7 @@ class Config:
             "-cc",
             type=str,
             default="config_con.yaml",
-            help="Path to the database connection configuration file (default: config_con.yaml)",
+            help="Path to the database connection configuration file",
         )
         return arg_parser.parse_args()
 

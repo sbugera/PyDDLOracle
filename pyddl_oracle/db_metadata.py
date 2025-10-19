@@ -27,14 +27,13 @@ def get_db_engine():
     db_port = c.conf_con["database"]["port"]
 
     connection_string = "oracle+oracledb://"
+    connection_string += f"{db_username}:{db_password}@{db_host}:{db_port}"
     try:
         db_service_name = c.conf_con["database"]["service_name"]
-        connection_string += (
-            f"{db_username}:{db_password}@{db_host}:{db_port}/?service_name={db_service_name}"
-        )
+        connection_string += f"/?service_name={db_service_name}"
     except KeyError:
         db_sid = c.conf_con["database"]["sid"]
-        connection_string += f"{db_username}:{db_password}@{db_host}:{db_port}/{db_sid}"
+        connection_string += f"/{db_sid}"
 
     return create_engine(connection_string, arraysize=1000)
 
@@ -81,7 +80,6 @@ class DBMetadata:
     def __del__(self):
         self.engine.dispose()
 
-
     def _get_column_exists(self):
         """Returns DataFrame with column exists metadata."""
         return pd.read_sql_query(sql.SQL_COLUMN_EXISTS, self.engine)
@@ -89,7 +87,9 @@ class DBMetadata:
     def _get_tables(self):
         """Returns DataFrame with tables metadata."""
         sql_tables = sql.SQL_TABLES
-        if column_exists_in_view(self.column_exists, "DBA_TABLES", "DEFAULT_COLLATION"):
+        if column_exists_in_view(self.column_exists,
+                                 "DBA_TABLES",
+                                 "DEFAULT_COLLATION"):
             sql_tables = sql_tables.replace(
                 "CAST(NULL AS VARCHAR2(100)) AS default_collation",
                 "t.default_collation",
@@ -101,7 +101,9 @@ class DBMetadata:
     def _get_tab_columns(self):
         """Returns DataFrame with columns metadata."""
         sql_tab_columns = sql.SQL_TAB_COLUMNS
-        if column_exists_in_view(self.column_exists, "DBA_TAB_COLS", "COLLATION"):
+        if column_exists_in_view(self.column_exists,
+                                 "DBA_TAB_COLS",
+                                 "COLLATION"):
             sql_tab_columns = sql_tab_columns.replace(
                 "CAST(NULL AS VARCHAR2(100)) AS collation", "c.collation"
             )
@@ -114,11 +116,15 @@ class DBMetadata:
     def _get_part_tables(self):
         """Returns DataFrame with partitioned tables metadata."""
         sql_part_tables = sql.SQL_PART_TABLES
-        if column_exists_in_view(self.column_exists, "DBA_PART_TABLES", "AUTOLIST"):
+        if column_exists_in_view(self.column_exists,
+                                 "DBA_PART_TABLES",
+                                 "AUTOLIST"):
             sql_part_tables = sql_part_tables.replace(
                 "CAST('NO' AS VARCHAR2(3)) AS autolist", "pt.autolist"
             )
-        if column_exists_in_view(self.column_exists, "DBA_PART_TABLES", "AUTOLIST_SUBPARTITION"):
+        if column_exists_in_view(self.column_exists,
+                                 "DBA_PART_TABLES",
+                                 "AUTOLIST_SUBPARTITION"):
             sql_part_tables = sql_part_tables.replace(
                 "CAST('NO' AS VARCHAR2(3)) AS autolist_subpartition",
                 "pt.autolist_subpartition",
