@@ -16,52 +16,42 @@ from utils import (
     get_dataframe_namedtuple,
 )
 from config import config as c
+from db_metadata import DBMetadata
 
 
-def get_table_dfs(table_row, metadata):
+def get_table_dfs(table_row, metadata: DBMetadata):
     """Extract relevant dataframes for a table from metadata."""
-    df_all_tab_columns = metadata["tab_columns"]
-    df_all_part_tables = metadata["part_tables"]
-    df_all_part_key_columns = metadata["part_key_columns"]
-    df_all_tab_partitions = metadata["tab_partitions"]
-    df_all_comments = metadata["comments"]
-    df_all_indexes = metadata["indexes"]
-    df_all_index_columns = metadata["index_columns"]
-    df_all_constraints = metadata["constraints"]
-    df_all_constraint_cols = metadata["constraint_columns"]
-    df_all_grants = metadata["grants"]
-
-    df_tab_columns = df_all_tab_columns[
-        df_all_tab_columns["table_name"] == table_row.table_name
+    df_tab_columns = metadata.tab_columns[
+        metadata.tab_columns["table_name"] == table_row.table_name
     ]
-    df_part_tables = df_all_part_tables[
-        df_all_part_tables["table_name"] == table_row.table_name
+    df_part_tables = metadata.part_tables[
+        metadata.part_tables["table_name"] == table_row.table_name
     ]
-    df_part_key_columns = df_all_part_key_columns[
-        df_all_part_key_columns["name"] == table_row.table_name
+    df_part_key_columns = metadata.part_key_columns[
+        metadata.part_key_columns["name"] == table_row.table_name
     ]
-    df_tab_partitions = df_all_tab_partitions[
-        df_all_tab_partitions["table_name"] == table_row.table_name
+    df_tab_partitions = metadata.tab_partitions[
+        metadata.tab_partitions["table_name"] == table_row.table_name
     ]
-    df_tab_comments = df_all_comments[
-        df_all_comments["table_name"] == table_row.table_name
+    df_tab_comments = metadata.comments[
+        metadata.comments["table_name"] == table_row.table_name
     ]
-    df_tab_indexes = df_all_indexes[
-        df_all_indexes["table_name"] == table_row.table_name
+    df_tab_indexes = metadata.indexes[
+        metadata.indexes["table_name"] == table_row.table_name
     ]
-    df_tab_index_columns = df_all_index_columns[
-        df_all_index_columns["table_name"] == table_row.table_name
+    df_tab_index_columns = metadata.index_columns[
+        metadata.index_columns["table_name"] == table_row.table_name
     ]
-    df_tab_constraints = df_all_constraints[
-        (df_all_constraints["table_name"] == table_row.table_name)
-        & (df_all_constraints["constraint_type"].isin(["P", "U", "C"]))
+    df_tab_constraints = metadata.constraints[
+        (metadata.constraints["table_name"] == table_row.table_name)
+        & (metadata.constraints["constraint_type"].isin(["P", "U", "C"]))
     ]
-    df_tab_constraint_columns = df_all_constraint_cols[
-        (df_all_constraint_cols["table_name"] == table_row.table_name)
-        & (df_all_constraint_cols["owner"] == table_row.owner)
+    df_tab_constraint_columns = metadata.constraint_columns[
+        (metadata.constraint_columns["table_name"] == table_row.table_name)
+        & (metadata.constraint_columns["owner"] == table_row.owner)
     ]
-    df_tab_grants = df_all_grants[
-        df_all_grants["table_name"] == table_row.table_name
+    df_tab_grants = metadata.grants[
+        metadata.grants["table_name"] == table_row.table_name
     ]
     part_table_row = get_dataframe_namedtuple(df_part_tables, 0)
 

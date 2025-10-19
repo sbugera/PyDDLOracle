@@ -7,26 +7,25 @@ from utils import (
     prepare_directories,
     get_prompt,
 )
+from db_metadata import DBMetadata
 
 
-def get_foreign_key_dfs(foreign_key_row, metadata):
+def get_foreign_key_dfs(foreign_key_row, metadata: DBMetadata):
     """Get DataFrames with columns involved in foreign key relationship."""
-    df_all_constraint_cols = metadata["constraint_columns"]
-
-    df_foreign_key_columns = df_all_constraint_cols[
+    df_foreign_key_columns = metadata.constraint_columns[
         (
-            df_all_constraint_cols["constraint_name"]
+            metadata.constraint_columns["constraint_name"]
             == foreign_key_row.constraint_name
         )
-        & (df_all_constraint_cols["owner"] == foreign_key_row.owner)
+        & (metadata.constraint_columns["owner"] == foreign_key_row.owner)
     ]
 
-    df_remote_key_columns = df_all_constraint_cols[
+    df_remote_key_columns = metadata.constraint_columns[
         (
-            df_all_constraint_cols["constraint_name"]
+            metadata.constraint_columns["constraint_name"]
             == foreign_key_row.r_constraint_name
         )
-        & (df_all_constraint_cols["owner"] == foreign_key_row.r_owner)
+        & (metadata.constraint_columns["owner"] == foreign_key_row.r_owner)
     ]
 
     return foreign_key_row, df_foreign_key_columns, df_remote_key_columns

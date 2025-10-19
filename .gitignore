@@ -10,5 +10,6 @@ liquibase/update.sql
 liquibase/liquibase.properties
 liquibase/internal/lib/*
 test-results/*
+ddls/*
 **/test_results/*
 .env

@@ -4,7 +4,7 @@ import os
 import shutil
 import subprocess
 import pytest
-from abc import ABC, abstractmethod
+from abc import ABC
 
 
 class BaseTableTest(ABC):

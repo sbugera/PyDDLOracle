@@ -3,12 +3,14 @@
 import argparse
 import yaml
 
+
 class Config:
     """Configuration class."""
+
     def __init__(self):
         self.args = None
-        self.conf = None
-        self.conf_con = None
+        self.conf = {}
+        self.conf_con = {}
 
     def get_args(self):
         """Returns command line arguments."""
@@ -36,15 +38,15 @@ class Config:
             help="Path to the database connection configuration file (default: config_con.yaml)",
         )
         return arg_parser.parse_args()
-    
+
     def load_config(self, file_path):
         """Load config from YAML file."""
         with open(file_path, "r", encoding="utf-8") as stream:
             try:
-                config = yaml.safe_load(stream)
-                return config
+                return yaml.safe_load(stream)
             except yaml.YAMLError as exc:
                 print(f"Error loading YAML file: {exc}")
                 return None
+
 
 config = Config()
