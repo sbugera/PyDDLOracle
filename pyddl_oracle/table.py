@@ -70,9 +70,10 @@ def get_table_dfs(table_row, metadata: DBMetadata):
     )
 
 
-class Table:
+class Table:  # pylint: disable=too-many-instance-attributes
     """Oracle database table with complete DDL generation capabilities."""
 
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(
         self,
         table_attr,

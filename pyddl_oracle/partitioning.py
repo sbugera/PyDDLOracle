@@ -91,6 +91,5 @@ class Partitioning:
                         f"\n{get_indentation()}STORE IN (<:1>)", "keyword"
                     )
                     partitioning += statement.replace("<:1>", all_tablespaces)
-        # todo: Implement sub-partitioning
 
         return partitioning

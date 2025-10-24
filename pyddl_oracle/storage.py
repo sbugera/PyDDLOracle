@@ -3,6 +3,9 @@
 from pyddl_oracle.utils import get_case_formatted, get_size_formatted
 
 
+# pylint: disable=too-many-arguments
+# pylint: disable=too-many-locals
+# pylint: disable=too-many-positional-arguments
 def get_full_storage(
     indentation,
     tablespace_name,
