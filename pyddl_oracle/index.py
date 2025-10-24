@@ -11,25 +11,17 @@ class Index:
         self.row = index_row
         self.index_columns = index_columns
 
-    def get_index(self):
-        """Generate complete index DDL fragment."""
-        statement = get_case_formatted(
-            "CREATE<:1> INDEX <:2> ON <:3>\n(<:4>)", "keyword"
-        )
-
+    def get_index_type(self):
+        """Get index type."""
         index_type = ""
         if self.row.index_type == "BITMAP":
             index_type += get_case_formatted(" BITMAP", "keyword")
         if self.row.uniqueness == "UNIQUE":
             index_type += get_case_formatted(" UNIQUE", "keyword")
+        return index_type
 
-        index_name = get_object_name(
-            self.row.owner, self.row.index_name, "identifier"
-        )
-        table_name = get_object_name(
-            self.row.table_owner, self.row.table_name, "identifier"
-        )
-
+    def get_index_columns(self):
+        """Get index columns."""
         index_columns = ""
         for i, index_column in enumerate(self.index_columns.itertuples()):
             index_columns += get_case_formatted(
@@ -37,25 +29,23 @@ class Index:
             )
             if i != len(self.index_columns) - 1:
                 index_columns += ", "
+        return index_columns
 
-        index = get_prompt("Index ", index_name)
-        index += (
-            statement.replace("<:1>", index_type)
-            .replace("<:2>", index_name)
-            .replace("<:3>", table_name)
-            .replace("<:4>", index_columns)
-        )
-
+    def get_index_logging(self):
+        """Get index logging."""
         logging = ""
         if c.conf["storage"]["logging"] == "yes":
             if self.row.logging == "YES":
                 logging = get_case_formatted("\nLOGGING", "keyword")
             elif self.row.logging == "NO":
                 logging = get_case_formatted("\nNOLOGGING", "keyword")
-        index += logging
+        return logging
 
+    def get_index_storage(self):
+        """Get index storage."""
+        storage = ""
         if c.conf["storage"]["storage"] == "with_storage":
-            index += get_full_storage(
+            storage += get_full_storage(
                 "",
                 self.row.tablespace_name,
                 self.row.pct_free,
@@ -71,50 +61,95 @@ class Index:
                 self.row.next_extent,
                 self.row.partitioned,
             )
-        elif (
-            c.conf["storage"]["storage"] == "only_tablespace"
-            and self.row.partitioned != "YES"
-        ):
-            statement = get_case_formatted("\nTABLESPACE <:1>", "keyword")
-            index += statement.replace(
-                "<:1>",
-                get_case_formatted(self.row.tablespace_name, "identifier"),
+        elif (c.conf["storage"]["storage"] == "only_tablespace"
+              and self.row.partitioned != "YES"):
+            storage += (
+                f"\n{get_case_formatted('TABLESPACE', 'keyword')} "
+                f"{get_case_formatted(self.row.tablespace_name, 'identifier')}"
             )
+        return storage
 
+    def get_index_compression(self):
+        """Get index compression."""
+        compression = ""
         if c.conf["storage"]["compression"] == "yes":
             if self.row.compression == "ENABLED":
-                index += get_case_formatted(
+                compression += get_case_formatted(
                     f"\nCOMPRESS {int(self.row.prefix_length)}", "keyword"
                 )
             elif self.row.compression != "DISABLED":
-                index += get_case_formatted(
+                compression += get_case_formatted(
                     f"\nCOMPRESS {self.row.compression}", "keyword"
                 )
+        return compression
 
+    def get_index_local(self):
+        """Get index local."""
         local = ""
         if self.row.partitioned == "YES":
             local = get_case_formatted("\nLOCAL", "keyword")
-        index += local
+        return local
 
+    def get_index_visibility(self):
+        """Get index visibility."""
+        visibility = ""
         if self.row.visibility == "INVISIBLE":
-            index += get_case_formatted("\nINVISIBLE", "keyword")
+            visibility = get_case_formatted("\nINVISIBLE", "keyword")
+        return visibility
 
+    def get_index_degree(self):
+        """Get index degree."""
+        degree = ""
         if int(self.row.degree) > 1:
-            index += get_case_formatted(
+            degree = get_case_formatted(
                 f"\nPARALLEL ( DEGREE {int(self.row.degree)}"
                 f" INSTANCES {self.row.instances} )",
                 "keyword",
             )
+        return degree
 
+    def get_index_reverse(self):
+        """Get index reverse."""
+        reverse = ""
         if self.row.index_type == "NORMAL/REV":
-            index += get_case_formatted("\nREVERSE", "keyword")
+            reverse = get_case_formatted("\nREVERSE", "keyword")
+        return reverse
 
-        index += ";\n\n"
-
+    def get_index_monitoring(self, index_name):
+        """Get index monitoring."""
+        monitoring = ""
         if self.row.monitoring == "YES":
-            statement = get_case_formatted(
+            monitoring = get_case_formatted(
                 "ALTER INDEX <:1>\n  MONITORING USAGE;\n\n", "keyword"
             )
-            index += statement.replace("<:1>", index_name)
+            monitoring = monitoring.replace("<:1>", index_name)
+        return monitoring
 
-        return index
+    def get_index(self):
+        """Generate complete index DDL fragment."""
+        statement = get_case_formatted(
+            "CREATE<:1> INDEX <:2> ON <:3>\n(<:4>)", "keyword"
+        )
+
+        index_name = get_object_name(
+            self.row.owner, self.row.index_name, "identifier"
+        )
+        table_name = get_object_name(
+            self.row.table_owner, self.row.table_name, "identifier"
+        )
+
+        index = statement.replace("<:1>", self.get_index_type())
+        index = index.replace("<:2>", index_name)
+        index = index.replace("<:3>", table_name)
+        index = index.replace("<:4>", self.get_index_columns())
+        index += self.get_index_logging()
+        index += self.get_index_storage()
+        index += self.get_index_compression()
+        index += self.get_index_local()
+        index += self.get_index_visibility()
+        index += self.get_index_degree()
+        index += self.get_index_reverse()
+        index += ";\n\n"
+        index += self.get_index_monitoring(index_name)
+
+        return get_prompt("Index ", index_name) + index

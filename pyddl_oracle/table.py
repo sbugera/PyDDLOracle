@@ -353,8 +353,6 @@ class Table:
                         comment_row.column_name, "identifier"
                     )
                     if c.conf["comments"]["vertical_alignment"] == "yes":
-                        # todo: Vertical alignment consider maximum column
-                        #       name length only for columns with comments
                         column_name = column_name.ljust(
                             self.max_column_name_length
                         )
@@ -441,7 +439,6 @@ class Table:
         ddl += self.get_cache()
         ddl += self.get_result_cache()
         ddl += self.get_tab_row_movement()
-        # todo: Add LOB storage
         ddl += ";\n\n\n"
 
         ddl += self.get_comments()
