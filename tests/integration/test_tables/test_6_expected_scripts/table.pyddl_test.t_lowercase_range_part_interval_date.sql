@@ -1,0 +1,60 @@
+CREATE TABLE pyddl_test."t_lowercase_RANGE_PART_INTERVAL_DATE"
+(
+    sale_date        DATE,
+    region           VARCHAR2(50 BYTE),
+    amount           NUMBER,
+    "Col_lowercase"  VARCHAR2(10 BYTE) DEFAULT 'test' NOT NULL
+)
+NOCOMPRESS
+TABLESPACE pyddl_test_data
+PARTITION BY RANGE (sale_date)
+INTERVAL (NUMTOYMINTERVAL(1, 'MONTH'))
+(
+  PARTITION sales_data_initial VALUES LESS THAN (TO_DATE(' 2022-01-01 00:00:00', 'SYYYY-MM-DD HH24:MI:SS', 'NLS_CALENDAR=GREGORIAN'))
+    LOGGING
+    NOCOMPRESS
+    TABLESPACE pyddl_test_data,
+  PARTITION VALUES LESS THAN (TO_DATE(' 2022-02-01 00:00:00', 'SYYYY-MM-DD HH24:MI:SS', 'NLS_CALENDAR=GREGORIAN'))
+    LOGGING
+    NOCOMPRESS
+    TABLESPACE pyddl_test_data,
+  PARTITION VALUES LESS THAN (TO_DATE(' 2022-03-01 00:00:00', 'SYYYY-MM-DD HH24:MI:SS', 'NLS_CALENDAR=GREGORIAN'))
+    LOGGING
+    NOCOMPRESS
+    TABLESPACE pyddl_test_data
+)
+NOCACHE
+RESULT_CACHE (MODE DEFAULT);
+
+
+COMMENT ON TABLE pyddl_test."t_lowercase_RANGE_PART_INTERVAL_DATE" IS 'Comment for table t_lowercase_RANGE_PART_INTERVAL_DATE';
+COMMENT ON COLUMN pyddl_test."t_lowercase_RANGE_PART_INTERVAL_DATE".sale_date IS 'Column comment for SALES_DATE in t_lowercase_RANGE_PART_INTERVAL_DATE';
+COMMENT ON COLUMN pyddl_test."t_lowercase_RANGE_PART_INTERVAL_DATE"."Col_lowercase" IS 'Column comment for "Col_lowercase" in t_lowercase_RANGE_PART_INTERVAL_DATE';
+
+
+CREATE INDEX pyddl_test."pk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk" ON pyddl_test."t_lowercase_RANGE_PART_INTERVAL_DATE"
+(sale_date, region)
+LOGGING
+TABLESPACE pyddl_test_index;
+
+CREATE INDEX pyddl_test."uk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk" ON pyddl_test."t_lowercase_RANGE_PART_INTERVAL_DATE"
+(amount)
+LOGGING
+TABLESPACE pyddl_test_index;
+
+
+ALTER TABLE pyddl_test."t_lowercase_RANGE_PART_INTERVAL_DATE" ADD (
+  CONSTRAINT "ck_lowercase_T_RANGE_PART_INTERVAL_DATE"
+  CHECK (amount BETWEEN 1 and 1000000 )
+  DEFERRABLE INITIALLY DEFERRED
+  ENABLE VALIDATE,
+  CONSTRAINT "pk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk"
+  PRIMARY KEY (sale_date, region)
+  DEFERRABLE INITIALLY DEFERRED
+  USING INDEX pyddl_test."pk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk"
+  ENABLE VALIDATE,
+  CONSTRAINT "uk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk"
+  UNIQUE (amount)
+  DEFERRABLE INITIALLY DEFERRED
+  USING INDEX pyddl_test."uk_lowercase_T_RANGE_PART_INTERVAL_DATE_pk"
+  ENABLE VALIDATE);

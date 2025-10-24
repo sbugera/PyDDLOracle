@@ -1,0 +1,79 @@
+PROMPT Table PYDDL_TEST.T_LIST_PART__MULTICOLUMN
+CREATE TABLE PYDDL_TEST.T_LIST_PART__MULTICOLUMN
+(
+    SALE_DATE         DATE,
+    REGION            VARCHAR2(50 BYTE),
+    PRODUCT_CATEGORY  VARCHAR2(50 BYTE),
+    AMOUNT            NUMBER
+)
+NOCOMPRESS
+TABLESPACE PYDDL_TEST_DATA
+PCTFREE    10
+INITRANS   1
+MAXTRANS   255
+STORAGE    (
+            BUFFER_POOL      DEFAULT
+            )
+PARTITION BY LIST (REGION, PRODUCT_CATEGORY)
+(
+  PARTITION NORTH_ELECTRONICS VALUES (( 'North', 'Electronics' ))
+    LOGGING
+    NOCOMPRESS
+    TABLESPACE PYDDL_TEST_DATA
+    PCTFREE    10
+    INITRANS   1
+    MAXTRANS   255
+    STORAGE    (
+                INITIAL          8M
+                NEXT             1M
+                MINEXTENTS       1
+                MAXEXTENTS       UNLIMITED
+                BUFFER_POOL      DEFAULT
+                ),
+  PARTITION NORTH_CLOTHING VALUES (( 'North', 'Clothing' ))
+    LOGGING
+    NOCOMPRESS
+    TABLESPACE PYDDL_TEST_DATA
+    PCTFREE    10
+    INITRANS   1
+    MAXTRANS   255
+    STORAGE    (
+                BUFFER_POOL      DEFAULT
+                ),
+  PARTITION SOUTH_ELECTRONICS VALUES (( 'South', 'Electronics' ))
+    LOGGING
+    NOCOMPRESS
+    TABLESPACE PYDDL_TEST_DATA
+    PCTFREE    10
+    INITRANS   1
+    MAXTRANS   255
+    STORAGE    (
+                BUFFER_POOL      DEFAULT
+                ),
+  PARTITION SOUTH_CLOTHING VALUES (( 'South', 'Clothing' ))
+    LOGGING
+    NOCOMPRESS
+    TABLESPACE PYDDL_TEST_DATA
+    PCTFREE    10
+    INITRANS   1
+    MAXTRANS   255
+    STORAGE    (
+                INITIAL          8M
+                NEXT             1M
+                MINEXTENTS       1
+                MAXEXTENTS       UNLIMITED
+                BUFFER_POOL      DEFAULT
+                ),
+  PARTITION OTHER_SALES VALUES (DEFAULT)
+    LOGGING
+    NOCOMPRESS
+    TABLESPACE PYDDL_TEST_DATA
+    PCTFREE    10
+    INITRANS   1
+    MAXTRANS   255
+    STORAGE    (
+                BUFFER_POOL      DEFAULT
+                )
+)
+NOCACHE
+RESULT_CACHE (MODE DEFAULT);

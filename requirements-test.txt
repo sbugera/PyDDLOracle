@@ -1,0 +1,6 @@
+pylint
+pytest
+pytest-html
+pytest-cov
+bandit
+flake8

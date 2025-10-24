@@ -1,0 +1,136 @@
+pipeline {
+    agent any
+
+    environment {
+        VENV = ".venv"
+    }
+    
+    stages {
+        stage('Download dependencies') {
+            steps {
+                script {
+                    def downloadDependencyIfNeeded = { String path, String name, String version ->
+                        sh """
+                            if [ ! -f liquibase/internal/lib/${name}.jar ]; then
+                                mvn dependency:copy \
+                                -Dorg.slf4j.simpleLogger.defaultLogLevel=warn \
+                                -Dartifact=${path}:${name}:${version} \
+                                -DoutputDirectory=liquibase/internal/lib \
+                                -Dmdep.stripVersion=true
+                            else
+                                echo "${name}.jar already exists, skipping download."
+                            fi
+                        """
+                    }
+
+                    downloadDependencyIfNeeded("com.oracle.database.jdbc", "ojdbc11", "23.6.0.24.10")
+                    downloadDependencyIfNeeded("org.liquibase", "liquibase-core", "4.30.0")
+                    downloadDependencyIfNeeded("commons-io", "commons-io", "2.18.0")
+                    downloadDependencyIfNeeded("info.picocli", "picocli", "4.7.6")
+                    downloadDependencyIfNeeded("org.apache.commons", "commons-lang3", "3.17.0")
+                    downloadDependencyIfNeeded("org.yaml", "snakeyaml", "2.3")
+                }
+
+                sh """
+                    set +x +v
+                    ls -l liquibase/internal/lib
+                    cd liquibase
+                    export LIQUIBASE_HOME=.
+                    java -jar ./internal/lib/liquibase-core.jar --version
+                """
+            }
+        }
+
+        stage('Get secrets') {
+            steps {
+                withCredentials([string(credentialsId: 'db-credentials', variable: 'DB_CONFIG')]) {
+                    script {
+                        def config = readJSON text: DB_CONFIG
+
+                        def dbUser   = config.user
+                        def dbPass   = config.password
+                        def dbHost   = config.host
+                        def dbPort   = config.port
+                        def dbService = config.serviceName
+
+                        echo "Database User: ${dbUser}"
+                        echo "Database Host: ${dbHost}"
+
+                        env.DB_USER = dbUser
+                        env.DB_PASS = dbPass
+                        env.DB_HOST = dbHost
+                        env.DB_PORT = dbPort.toString()
+                        env.DB_SERVICE = dbService
+                    }
+                }
+                
+                withCredentials([file(credentialsId: 'db_config_con', variable: 'config_con')]) {
+                    sh """
+                        cp \$config_con config_con.yaml
+                        chmod u+w config_con.yaml
+                    """
+                }
+            }
+        }
+
+        stage('Prepare Liquibase') {
+            steps {
+                sh '''
+                    set +x +v
+                    cd liquibase
+                    export LIQUIBASE_HOME=.
+                    
+                    echo "url=jdbc:oracle:thin:@${DB_HOST}:${DB_PORT}/${DB_SERVICE}" >> liquibase.properties
+                    echo "username=${DB_USER}" >> liquibase.properties
+                    echo "password=${DB_PASS}" >> liquibase.properties
+                    echo "changeLogFile=./migrations/master_changelog.xml" >> liquibase.properties
+                    echo "driver=oracle.jdbc.driver.OracleDriver" >> liquibase.properties
+                '''
+            }
+        }
+        stage('Setup Environment') {
+            steps {
+                sh '''
+                    python3.13 -m venv ${VENV}
+                    source ${VENV}/bin/activate
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
+                    pip install -r requirements-test.txt
+                '''
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh '''
+                    source ${VENV}/bin/activate
+                    mkdir -p test-results
+                    pytest tests/integration \
+                        --junitxml=test-results/junit.xml \
+                        --html=test-results/report.html \
+                        --self-contained-html \
+                '''
+            }
+            post {
+                always {
+                    // Publish JUnit test results
+                    junit 'test-results/junit.xml'
+                    
+                    // Publish HTML reports
+                    publishHTML(target: [
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'test-results',
+                        reportFiles: 'report.html',
+                        reportName: 'Pytest Report'
+                    ])
+                    
+                    // Archive the test reports
+                    archiveArtifacts artifacts: 'test-results/**/*', fingerprint: true
+                }
+            }
+        }
+    }
+}
+

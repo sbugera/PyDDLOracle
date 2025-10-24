@@ -1,7 +1,15 @@
 /venv
-/__pycache__
+**/__pycache__
 .vscode/settings.json
 /config_con.yaml
 /.idea/*
 /.coverage
 /test/dfs/*.xlsx
+**/.DS_Store
+liquibase/update.sql
+liquibase/liquibase.properties
+liquibase/internal/lib/*
+test-results/*
+ddls/*
+**/test_results/*
+.env

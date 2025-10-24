@@ -1,0 +1,17 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="003_001_fks" author="sit" runAlways="true">
+        <sqlFile relativeToChangelogFile="true" path="pyddl_test.fk_lowercase_t_range_part_interval_date_amount.sql" />
+        <sqlFile relativeToChangelogFile="true" path="pyddl_test.fk_sales_simple_range_amount.sql" />
+        <sqlFile relativeToChangelogFile="true" path="pyddl_test.fk_sales_simple_range_date_amount.sql" />
+        <sqlFile relativeToChangelogFile="true" path="pyddl_test.fk_sales_simple_range_date.sql" />
+        <sqlFile relativeToChangelogFile="true" path="pyddl_test.fk_t_compress_basic_v1.sql" />
+        <sqlFile relativeToChangelogFile="true" path="pyddl_test.fk_t_compress_for_oltp_v1.sql" />
+        <sqlFile relativeToChangelogFile="true" path="pyddl_test.fk_t_range_part_interval_date_col_lowercase.sql" />
+    </changeSet>
+
+</databaseChangeLog>

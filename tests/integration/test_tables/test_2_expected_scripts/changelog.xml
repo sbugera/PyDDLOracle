@@ -1,0 +1,37 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="001_001_drop_objects" author="sit" runAlways="true">
+        <sqlFile relativeToChangelogFile="true" path="../drop_tables.sql" splitStatements="false"/> 
+    </changeSet>
+
+    <changeSet id="001_002_tables" author="sit" runAlways="true">
+        <sqlFile relativeToChangelogFile="true" path="table.pyddl_test.sales.sql" />
+        <sqlFile relativeToChangelogFile="true" path="table.pyddl_test.sales_simple_range.sql" />
+        <sqlFile relativeToChangelogFile="true" path="table.pyddl_test.t_cache__rowmovement__collation.sql" />
+        <sqlFile relativeToChangelogFile="true" path="table.pyddl_test.t_compress_basic.sql" />
+        <sqlFile relativeToChangelogFile="true" path="table.pyddl_test.t_compress_for_oltp.sql" />
+        <sqlFile relativeToChangelogFile="true" path="table.pyddl_test.t_hash_part.sql" />
+        <sqlFile relativeToChangelogFile="true" path="table.pyddl_test.t_list_part.sql" />
+        <sqlFile relativeToChangelogFile="true" path="table.pyddl_test.t_list_part__automatic.sql" />
+        <sqlFile relativeToChangelogFile="true" path="table.pyddl_test.t_list_part__multicolumn.sql" />
+        <sqlFile relativeToChangelogFile="true" path="table.pyddl_test.t_lowercase_range_part_interval_date.sql" />
+        <sqlFile relativeToChangelogFile="true" path="table.pyddl_test.t_range_part__range_subpart.sql" />
+        <sqlFile relativeToChangelogFile="true" path="table.pyddl_test.t_range_part_interval_number.sql" />
+        <sqlFile relativeToChangelogFile="true" path="table.pyddl_test.t_standard_datatypes.sql" />
+    </changeSet>
+
+    <changeSet id="001_003_fks" author="sit" runAlways="true">
+        <sqlFile relativeToChangelogFile="true" path="foreign_key.pyddl_test.fk_lowercase_t_range_part_interval_date_amount.sql" />
+        <sqlFile relativeToChangelogFile="true" path="foreign_key.pyddl_test.fk_sales_simple_range_amount.sql" />
+        <sqlFile relativeToChangelogFile="true" path="foreign_key.pyddl_test.fk_sales_simple_range_date_amount.sql" />
+        <sqlFile relativeToChangelogFile="true" path="foreign_key.pyddl_test.fk_sales_simple_range_date.sql" />
+        <sqlFile relativeToChangelogFile="true" path="foreign_key.pyddl_test.fk_t_compress_basic_v1.sql" />
+        <sqlFile relativeToChangelogFile="true" path="foreign_key.pyddl_test.fk_t_compress_for_oltp_v1.sql" />
+        <sqlFile relativeToChangelogFile="true" path="foreign_key.pyddl_test.fk_t_range_part_interval_date_col_lowercase.sql" />
+    </changeSet>
+
+</databaseChangeLog>
