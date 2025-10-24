@@ -6,7 +6,7 @@ from pyddl_oracle.constraint import Constraint
 from pyddl_oracle.db_metadata import DBMetadata
 from pyddl_oracle.index import Index
 from pyddl_oracle.partitioning import Partitioning
-from pyddl_oracle.storage import get_full_storage
+from pyddl_oracle.storage import Storage
 from pyddl_oracle.utils import (
     add_quotes,
     get_case_formatted,
@@ -186,7 +186,7 @@ class Table:  # pylint: disable=too-many-instance-attributes
             c.conf["storage"]["storage"] == "with_storage"
             and self.partitioned == "NO"
         ):
-            storage = get_full_storage(
+            storage = Storage(
                 "",
                 self.tablespace_name,
                 self.pct_free,
@@ -198,12 +198,12 @@ class Table:  # pylint: disable=too-many-instance-attributes
                 self.buffer_pool,
                 self.flash_cache,
                 self.cell_flash_cache,
-            )
+            ).build()
         elif (
             c.conf["storage"]["storage"] == "with_storage"
             and self.partitioned == "YES"
         ):
-            storage = get_full_storage(
+            storage = Storage(
                 "",
                 self.def_tablespace_name,
                 self.def_pct_free,
@@ -215,7 +215,7 @@ class Table:  # pylint: disable=too-many-instance-attributes
                 self.def_buffer_pool,
                 self.def_flash_cache,
                 self.def_cell_flash_cache,
-            )
+            ).build()
         return storage
 
     def get_logging(self):

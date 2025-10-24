@@ -101,12 +101,11 @@ def test_only_tablespace_when_not_partitioned(monkeypatch):
 
 def test_with_storage_calls_storage_helper(monkeypatch):
     calls = {}
-
-    def fake_get_full_storage(*args, **kwargs):
+    
+    def fake_build(self, *_args, **_kwargs):
         calls["called"] = True
-        return "\n-- STORAGE --"
-
-    monkeypatch.setattr("pyddl_oracle.index.get_full_storage", fake_get_full_storage)
+        return f"\n{self.indentation}-- STORAGE --"
+    monkeypatch.setattr("pyddl_oracle.index.Storage.build", fake_build)
 
     c.conf["storage"]["storage"] = "with_storage"
     row = make_index_row()

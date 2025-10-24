@@ -143,12 +143,11 @@ def test_get_collation_included_and_ignored_cases():
 
 def test_get_storage_variants_use_full_storage(monkeypatch):
     calls = {}
-
-    def fake_full_storage(*args, **kwargs):
+    
+    def fake_build(self, *_args, **_kwargs):
         calls["called"] = True
-        return "\n-- STORAGE --"
-
-    monkeypatch.setattr("pyddl_oracle.table.get_full_storage", fake_full_storage)
+        return f"\n{self.indentation}-- STORAGE --"
+    monkeypatch.setattr("pyddl_oracle.table.Storage.build", fake_build)
 
     # with_storage, non-partitioned
     t = make_table()
@@ -344,14 +343,14 @@ def test_generate_ddl_full_assembly(monkeypatch):
         def get_constraint(self):
             return "CST"
 
-    def fake_full_storage(*args, **kwargs):
+    def fake_build(self, *_args, **_kwargs):
         return "\n-- STORAGE --"
 
     monkeypatch.setattr("pyddl_oracle.table.Column", FakeColumn)
     monkeypatch.setattr("pyddl_oracle.table.Partitioning", FakePartitioning)
     monkeypatch.setattr("pyddl_oracle.table.Index", FakeIndex)
     monkeypatch.setattr("pyddl_oracle.table.Constraint", FakeConstraint)
-    monkeypatch.setattr("pyddl_oracle.table.get_full_storage", fake_full_storage)
+    monkeypatch.setattr("pyddl_oracle.table.Storage.build", fake_build)
 
     columns = pd.DataFrame({"column_name": ["ID"]})
     indexes = pd.DataFrame({"index_name": ["I1"], "table_name": ["TBL"]})

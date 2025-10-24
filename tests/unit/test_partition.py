@@ -1,5 +1,4 @@
 """Unit tests for pyddl_oracle.partition.Partition generation."""
-
 from types import SimpleNamespace
 
 import pytest
@@ -81,14 +80,16 @@ def test_compression_disabled_basic_advanced():
 
     # BASIC -> COMPRESS BASIC
     part_basic = Partition(
-        "RANGE", make_tab_partition(compression="ENABLED", compress_for="BASIC")
+        "RANGE",
+        make_tab_partition(compression="ENABLED", compress_for="BASIC"),
     )
     ddl_basic = part_basic.get_partition()
     assert "\n    COMPRESS BASIC" in ddl_basic
 
     # ADVANCED -> COMPRESS FOR OLTP
     part_adv = Partition(
-        "RANGE", make_tab_partition(compression="ENABLED", compress_for="ADVANCED")
+        "RANGE",
+        make_tab_partition(compression="ENABLED", compress_for="ADVANCED"),
     )
     ddl_adv = part_adv.get_partition()
     assert "\n    COMPRESS FOR OLTP" in ddl_adv
@@ -104,19 +105,13 @@ def test_only_tablespace_branch():
 def test_with_storage_calls_helper(monkeypatch):
     calls = {}
 
-    def fake_get_full_storage(*args, **kwargs):
+    def fake_build(self, *_args, **_kwargs):
         calls["called"] = True
-        indent = args[0]
-        return f"\n{indent}-- PART STORAGE --"
-
-    monkeypatch.setattr(
-        "pyddl_oracle.partition.get_full_storage", fake_get_full_storage
-    )
+        return f"\n{self.indentation}-- PART STORAGE --"
+    monkeypatch.setattr("pyddl_oracle.partition.Storage.build", fake_build)
 
     c.conf["storage"]["storage"] = "with_storage"
     part = Partition("RANGE", make_tab_partition())
     ddl = part.get_partition()
     assert calls.get("called") is True
     assert "-- PART STORAGE --" in ddl
-
-

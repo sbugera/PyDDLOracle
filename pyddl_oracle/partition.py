@@ -1,7 +1,7 @@
 """Handles Oracle database partition definitions and DDL generation."""
 
 from pyddl_oracle.config import config as c
-from pyddl_oracle.storage import get_full_storage
+from pyddl_oracle.storage import Storage
 from pyddl_oracle.utils import get_case_formatted, get_indentation
 
 
@@ -74,7 +74,7 @@ class Partition:  # pylint: disable=too-many-instance-attributes
         partition += self.get_logging()
         partition += self.get_compression()
         if c.conf["storage"]["storage"] == "with_storage":
-            partition += get_full_storage(
+            partition += Storage(
                 get_indentation(),
                 self.tablespace_name,
                 self.pct_free,
@@ -88,7 +88,7 @@ class Partition:  # pylint: disable=too-many-instance-attributes
                 self.cell_flash_cache,
                 self.initial_extent,
                 self.next_extent,
-            )
+            ).build()
         elif c.conf["storage"]["storage"] == "only_tablespace":
             partition += (
                 f"\n{get_indentation()}"

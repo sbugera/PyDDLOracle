@@ -1,7 +1,7 @@
 """Handles Oracle database index definitions and DDL generation."""
 
 from pyddl_oracle.config import config as c
-from pyddl_oracle.storage import get_full_storage
+from pyddl_oracle.storage import Storage
 from pyddl_oracle.utils import get_case_formatted, get_object_name, get_prompt
 
 
@@ -45,7 +45,7 @@ class Index:
         """Get index storage."""
         storage = ""
         if c.conf["storage"]["storage"] == "with_storage":
-            storage += get_full_storage(
+            storage += Storage(
                 "",
                 self.row.tablespace_name,
                 self.row.pct_free,
@@ -60,7 +60,7 @@ class Index:
                 self.row.initial_extent,
                 self.row.next_extent,
                 self.row.partitioned,
-            )
+            ).build()
         elif (c.conf["storage"]["storage"] == "only_tablespace"
               and self.row.partitioned != "YES"):
             storage += (
