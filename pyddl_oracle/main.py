@@ -18,6 +18,7 @@ def run() -> None:
     c.conf = c.load_config(c.args.config_file)
     c.conf_con = c.load_config(c.args.con_config_file)
     db_metadata = DBMetadata()
+    db_metadata.load_db_metadata()
 
     print("++++++++++++++++++++++++++++++++++++++++++++++++++".ljust(107, "+"))
     print("    Tables")

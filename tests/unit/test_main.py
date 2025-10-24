@@ -14,12 +14,14 @@ def test_run_invokes_table_and_fk_generation(monkeypatch, capsys):
     c.args = None
 
     def fake_get_args():
-        return SimpleNamespace(config_file="config.yaml", con_config_file="config_con.yaml")
+        return SimpleNamespace(config_file="config.yaml",
+                               con_config_file="config_con.yaml")
 
     def fake_load_config(path):
         # return minimal valid shapes for both config and connection config
         if path.endswith("config.yaml"):
-            return {"case": {"keyword": "uppercase", "identifier": "uppercase"}}
+            return {"case": {"keyword": "uppercase",
+                             "identifier": "uppercase"}}
         return {"database": {}}
 
     monkeypatch.setattr(main.c, "get_args", fake_get_args)
@@ -32,6 +34,7 @@ def test_run_invokes_table_and_fk_generation(monkeypatch, capsys):
             self.constraints = pd.DataFrame(
                 {"constraint_type": ["R"], "constraint_name": ["FK1"]}
             )
+            self.load_db_metadata = lambda: None
 
     monkeypatch.setattr(main, "DBMetadata", FakeDBMetadata)
 
@@ -39,7 +42,7 @@ def test_run_invokes_table_and_fk_generation(monkeypatch, capsys):
     def fake_get_table_dfs(row, metadata):
         # Return tuple matching signature expected by Table(*tabel_dfs)
         return (
-            SimpleNamespace(owner="SCHEMA", table_name=row.table_name),  # table_row
+            SimpleNamespace(owner="SCHEMA", table_name=row.table_name),
             None,  # part_table_row
             pd.DataFrame({"column_name": ["C1"]}),  # columns
             pd.DataFrame([]),  # comments
@@ -109,7 +112,7 @@ def test_run_invokes_table_and_fk_generation(monkeypatch, capsys):
     # run
     main.run()
 
-    # assertions: one table processed and one FK processed, with generation+store
+    # assertions: one table processed and one FK processed
     assert calls["tables"].count("gen") == 1
     assert calls["tables"].count("store") == 1
     assert calls["fks"].count("gen") == 1
@@ -118,5 +121,3 @@ def test_run_invokes_table_and_fk_generation(monkeypatch, capsys):
     out = capsys.readouterr().out
     assert "Tables" in out and "Foreign Keys" in out
     assert "T1" in out and "FK1" in out
-
-

@@ -1,283 +1,311 @@
 """Merged unit tests for db metadata and related helpers."""
 
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
-from sqlalchemy import Engine
 
 from pyddl_oracle import sql_queries as sql
 from pyddl_oracle.config import config as c
-from pyddl_oracle.db_metadata import (
-    DBMetadata,
-    column_exists_in_view,
-    get_db_engine,
-    get_db_schema_name,
-)
+from pyddl_oracle.db_metadata import DBMetadata
 
 
-# =============================
-# column_exists_in_view tests
-# =============================
-
-
-@pytest.fixture
-def df_test_columns():
-    """Fixture providing test DataFrame with column existence data."""
-    return pd.DataFrame(
-        {
-            "view_name": ["DBA_TABLES", "DBA_TAB_COLS", "DBA_TABLES"],
-            "column_name": ["COLUMN1", "COLUMN2", "COLUMN3"],
-            "column_exists": ["Y", "N", "Y"],
-        }
-    )
-
-
-def test_existing_column(df_test_columns):
-    """Test when column exists in view."""
-    result = column_exists_in_view(df_test_columns, "DBA_TABLES", "COLUMN1")
-    assert result is True
-
-
-def test_non_existing_column(df_test_columns):
-    """Test when column doesn't exist in view."""
-    result = column_exists_in_view(df_test_columns, "DBA_TAB_COLS", "COLUMN2")
-    assert result is False
-
-
-def test_missing_view(df_test_columns):
-    """Test with non-existent view."""
-    with pytest.raises(IndexError):
-        column_exists_in_view(df_test_columns, "NON_EXISTENT_VIEW", "COLUMN1")
-
-
-def test_missing_column(df_test_columns):
-    """Test with non-existent column in existing view."""
-    with pytest.raises(IndexError):
-        column_exists_in_view(df_test_columns, "DBA_TABLES", "NON_EXISTENT_COLUMN")
-
-
-def test_case_sensitivity(df_test_columns):
-    """Test case sensitivity of view and column names."""
-    result = column_exists_in_view(df_test_columns, "dba_tables", "Column1")
-    assert result is True
-
-
-# =============================
-# get_db_engine tests
-# =============================
-
-
-def test_with_service_name():
-    """Test engine creation using service name connection."""
-    c.conf_con = {
-        "database": {
-            "username": "test_user",
-            "password": "test_pass",
-            "host": "localhost",
-            "port": "1521",
-            "service_name": "test_service",
-        }
-    }
-    engine = get_db_engine()
-    assert isinstance(engine, Engine)
-    assert "service_name=test_service" in str(engine.url)
-    engine.dispose()
-
-
-def test_with_sid():
-    """Test engine creation using SID connection."""
-    c.conf_con = {
-        "database": {
-            "username": "test_user",
-            "password": "test_pass",
-            "host": "localhost",
-            "port": "1521",
-            "sid": "test_sid",
-        }
-    }
-    engine = get_db_engine()
-    assert isinstance(engine, Engine)
-    assert "test_sid" in str(engine.url)
-    engine.dispose()
-
-
-def test_connection_string_format():
-    """Test correct format of connection string."""
-    c.conf_con = {
-        "database": {
-            "username": "test_user",
-            "password": "test_pass",
-            "host": "localhost",
-            "port": "1521",
-            "service_name": "test_service",
-        }
-    }
-    engine = get_db_engine()
-    expected = (
-        "oracle+oracledb://test_user:***@localhost:1521/" "?service_name=test_service"
-    )
-    assert str(engine.url) == expected
-    engine.dispose()
-
-
-def test_arraysize_setting():
-    """Test if engine is created with correct arraysize."""
-    c.conf_con = {
-        "database": {
-            "username": "test_user",
-            "password": "test_pass",
-            "host": "localhost",
-            "port": "1521",
-            "sid": "test_sid",
-        }
-    }
-    engine = get_db_engine()
-    assert engine.dialect.arraysize == 1000
-    engine.dispose()
-
-
-# =============================
-# get_db_schema_name tests
-# =============================
-
-
-def test_with_provided_arg():
-    """Test schema name retrieval when argument is provided."""
-    c.args = MagicMock(schema_name="test_schema")
-    c.args.schema_name = "test_schema"
-    schema_name = get_db_schema_name()
-    assert schema_name == "TEST_SCHEMA"
-
-
-def test_with_config():
-    """Test schema name retrieval from configuration when no argument."""
-    c.args = MagicMock(schema_name=None)
-    c.conf_con = {"database": {"username": "db_user"}}
-    schema_name = get_db_schema_name()
-    assert schema_name == "DB_USER"
-
-
-def test_with_mixed_case():
-    """Test if mixed case schema name is properly converted."""
-    c.args = MagicMock(schema_name="TeSt_ScHeMa")
-    schema_name = get_db_schema_name()
-    assert schema_name == "TEST_SCHEMA"
-    assert schema_name.isupper()
-
-
-def test_with_missing_config():
-    """Test behavior when configuration is missing."""
-    c.args = MagicMock(schema_name=None)
+@pytest.fixture(autouse=True)
+def reset_config():
+    # Ensure a clean config between tests
+    c.args = None
+    c.conf = {}
     c.conf_con = {}
-    with pytest.raises(KeyError) as err:
-        get_db_schema_name()
-    assert str(err.value) == "'database'"
+    yield
+    c.args = None
+    c.conf = {}
+    c.conf_con = {}
 
 
-# =============================
-# DBMetadata initialization tests
-# =============================
+def df_column_exists(values):
+    return pd.DataFrame(
+        values,
+        columns=[
+            "view_name",
+            "column_name",
+            "column_exists",
+            "data_type",
+            "char_length",
+        ],
+    )
 
 
-@pytest.fixture
-def mock_config():
-    """Mock the configuration object."""
-    with patch("pyddl_oracle.db_metadata.c") as mock_config:
-        mock_config.conf_con = {
-            "database": {
-                "username": "test_user",
-                "password": "test_pass",
-                "host": "localhost",
-                "port": "1521",
-                "service_name": "test_service",
-            }
+def test_set_db_schema_name_uses_cli_over_config():
+    c.args = SimpleNamespace(schema_name="my_schema")
+    c.conf_con = {"database": {"username": "other"}}
+    dbm = DBMetadata()
+    dbm._set_db_schema_name()  # pylint: disable=protected-access
+    assert dbm.schema_name == "MY_SCHEMA"
+
+
+def test_set_db_schema_name_falls_back_to_username_upper():
+    c.args = SimpleNamespace(schema_name=None)
+    c.conf_con = {"database": {"username": "lowercase"}}
+    dbm = DBMetadata()
+    dbm._set_db_schema_name()  # pylint: disable=protected-access
+    assert dbm.schema_name == "LOWERCASE"
+
+
+@patch("pyddl_oracle.db_metadata.create_engine")
+def test_engine_with_service_name(mock_create_engine: MagicMock):
+    c.conf_con = {
+        "database": {
+            "username": "u",
+            "password": "p",
+            "host": "h",
+            "port": 1521,
+            "service_name": "XEPDB1",
         }
-        mock_config.args = MagicMock()
-        mock_config.args.schema_name = "test_schema"
-        yield mock_config
+    }
+    dbm = DBMetadata()
+    eng = dbm._get_db_engine()  # pylint: disable=protected-access
+
+    expected = "oracle+oracledb://u:p@h:1521/?service_name=XEPDB1"
+    mock_create_engine.assert_called_once_with(expected, arraysize=1000)
+    assert eng == mock_create_engine.return_value
 
 
-@pytest.fixture
-def mock_read_sql_query():
-    """
-    Replaces pd.read_sql_query with a mock that returns
-    different DataFrame objects depending on the SQL query or parameters.
-    """
+@patch("pyddl_oracle.db_metadata.create_engine")
+def test_engine_with_sid(mock_create_engine: MagicMock):
+    c.conf_con = {
+        "database": {
+            "username": "u",
+            "password": "p",
+            "host": "h",
+            "port": 1521,
+            "sid": "ORCLCDB",
+        }
+    }
+    dbm = DBMetadata()
+    _ = dbm._get_db_engine()  # pylint: disable=protected-access
 
-    def _mock_side_effect(query, *args, params=None, **kwargs):
-        """Inspects 'query' (and/or 'params') and returns different DataFrames."""
-        if query == sql.SQL_COLUMN_EXISTS:
-            return pd.DataFrame(
-                {
-                    "view_name": [
-                        "DBA_TABLES",
-                        "DBA_TAB_COLS",
+    expected = "oracle+oracledb://u:p@h:1521/ORCLCDB"
+    mock_create_engine.assert_called_once_with(expected, arraysize=1000)
+
+
+def test_column_exists_in_view_true_false_and_index_error():
+    dbm = DBMetadata()
+    dbm.column_exists = df_column_exists(
+        [
+            ["DBA_TABLES", "DEFAULT_COLLATION", "Y", None, None],
+            ["DBA_TAB_COLS", "COLLATION", "N", None, None],
+        ]
+    )
+
+    assert dbm._column_exists_in_view(
+        "DBA_TABLES",
+        "DEFAULT_COLLATION",
+    )  # pylint: disable=protected-access
+    assert dbm._column_exists_in_view(
+        "dba_tab_cols",
+        "collation",
+    ) is False  # pylint: disable=protected-access
+
+    with pytest.raises(IndexError):
+        _ = dbm._column_exists_in_view(
+            "DBA_PART_TABLES",
+            "AUTOLIST",
+        )  # pylint: disable=protected-access
+
+
+@patch("pandas.read_sql_query")
+def test_tables_replace_default_collation(mock_read_sql: MagicMock):
+    dbm = DBMetadata()
+    dbm.engine = MagicMock()
+    dbm.schema_name = "SCHEMA"
+    # emulate column exists containing DEFAULT_COLLATION=Y
+    dbm.column_exists = df_column_exists(
+        [["DBA_TABLES", "DEFAULT_COLLATION", "Y", None, None]]
+    )
+
+    dbm._set_tables()  # pylint: disable=protected-access
+
+    # verify SQL got replaced
+    args, kwargs = mock_read_sql.call_args
+    sent_sql = args[0]
+    assert "t.default_collation" in sent_sql
+    assert kwargs["params"] == {"schema_name": "SCHEMA"}
+
+
+@patch("pandas.read_sql_query")
+def test_tables_keep_cast_when_not_exists(mock_read_sql: MagicMock):
+    dbm = DBMetadata()
+    dbm.engine = MagicMock()
+    dbm.schema_name = "SCHEMA"
+    dbm.column_exists = df_column_exists(
+        [["DBA_TABLES", "DEFAULT_COLLATION", "N", None, None]]
+    )
+
+    dbm._set_tables()  # pylint: disable=protected-access
+
+    args, _ = mock_read_sql.call_args
+    sent_sql = args[0]
+    assert "CAST(NULL AS VARCHAR2(100)) AS default_collation" in sent_sql
+
+
+@patch("pandas.read_sql_query")
+def test_tab_cols_replace_collation(mock_read_sql: MagicMock):
+    dbm = DBMetadata()
+    dbm.engine = MagicMock()
+    dbm.schema_name = "SCHEMA"
+    dbm.column_exists = df_column_exists(
+        [["DBA_TAB_COLS", "COLLATION", "Y", None, None]]
+    )
+
+    dbm._set_tab_columns()  # pylint: disable=protected-access
+
+    sent_sql = mock_read_sql.call_args[0][0]
+    assert "c.collation" in sent_sql
+
+
+@patch("pandas.read_sql_query")
+def test_tab_cols_keep_cast_when_not_exists(mock_read_sql: MagicMock):
+    dbm = DBMetadata()
+    dbm.engine = MagicMock()
+    dbm.schema_name = "SCHEMA"
+    dbm.column_exists = df_column_exists(
+        [["DBA_TAB_COLS", "COLLATION", "N", None, None]]
+    )
+
+    dbm._set_tab_columns()  # pylint: disable=protected-access
+
+    sent_sql = mock_read_sql.call_args[0][0]
+    assert "CAST(NULL AS VARCHAR2(100)) AS collation" in sent_sql
+
+
+@patch("pandas.read_sql_query")
+def test_part_tables_replace_autolist(mock_read_sql: MagicMock):
+    dbm = DBMetadata()
+    dbm.engine = MagicMock()
+    dbm.schema_name = "SCHEMA"
+    dbm.column_exists = df_column_exists(
+        [
+            ["DBA_PART_TABLES", "AUTOLIST", "Y", None, None],
+            ["DBA_PART_TABLES", "AUTOLIST_SUBPARTITION", "Y", None, None],
+        ]
+    )
+
+    dbm._set_part_tables()  # pylint: disable=protected-access
+
+    sent_sql = mock_read_sql.call_args[0][0]
+    assert "pt.autolist" in sent_sql
+    assert "pt.autolist_subpartition" in sent_sql
+
+
+@patch("pandas.read_sql_query")
+def test_part_tables_partial_replacements(mock_read_sql: MagicMock):
+    dbm = DBMetadata()
+    dbm.engine = MagicMock()
+    dbm.schema_name = "SCHEMA"
+    dbm.column_exists = df_column_exists(
+        [
+            ["DBA_PART_TABLES", "AUTOLIST", "Y", None, None],
+            ["DBA_PART_TABLES", "AUTOLIST_SUBPARTITION", "N", None, None],
+        ]
+    )
+
+    dbm._set_part_tables()  # pylint: disable=protected-access
+
+    sent_sql = mock_read_sql.call_args[0][0]
+    assert "pt.autolist" in sent_sql
+    assert (
+        "CAST('NO' AS VARCHAR2(3)) AS autolist_subpartition" in sent_sql
+    )
+
+
+@patch("pandas.read_sql_query")
+def test_setters_call_read_sql_with_params(mock_read_sql: MagicMock):
+    # Sanity: other setters pass schema param and engine
+    dbm = DBMetadata()
+    dbm.engine = MagicMock()
+    dbm.schema_name = "SCHEMA"
+
+    mock_read_sql.return_value = pd.DataFrame()
+
+    dbm._set_part_key_columns()  # pylint: disable=protected-access
+    dbm._set_tab_partitions()  # pylint: disable=protected-access
+    dbm._set_comments()  # pylint: disable=protected-access
+    dbm._set_indexes()  # pylint: disable=protected-access
+    dbm._set_index_columns()  # pylint: disable=protected-access
+    dbm._set_constraints()  # pylint: disable=protected-access
+    dbm._set_constraint_columns()  # pylint: disable=protected-access
+    dbm._set_grants()  # pylint: disable=protected-access
+
+    # Expect eight calls with params carrying schema_name
+    assert mock_read_sql.call_count == 8
+    for _args, kwargs in mock_read_sql.call_args_list:
+        assert kwargs["params"] == {"schema_name": "SCHEMA"}
+
+
+@patch("pandas.read_sql_query")
+@patch("pyddl_oracle.db_metadata.create_engine")
+def test_load_orchestrates_and_disposes(
+    mock_ce: MagicMock, mock_read_sql: MagicMock
+):
+    # Arrange minimal config and column_exists to drive replacements
+    c.args = SimpleNamespace(schema_name=None)
+    c.conf_con = {
+        "database": {
+            "username": "SCHEMA",
+            "password": "p",
+            "host": "h",
+            "port": 1521,
+            "service_name": "XEPDB1",
+        }
+    }
+
+    # column_exists returned on first setter
+    def read_sql_side_effect(query, con, params=None):
+        # avoid unused-argument lint
+        _ = con, params
+        if query is sql.SQL_COLUMN_EXISTS:
+            return df_column_exists(
+                [
+                    ["DBA_TABLES", "DEFAULT_COLLATION", "N", None, None],
+                    ["DBA_TAB_COLS", "COLLATION", "N", None, None],
+                    ["DBA_PART_TABLES", "AUTOLIST", "N", None, None],
+                    [
                         "DBA_PART_TABLES",
-                        "DBA_PART_TABLES",
-                    ],
-                    "column_name": [
-                        "DEFAULT_COLLATION",
-                        "COLLATION",
-                        "AUTOLIST",
                         "AUTOLIST_SUBPARTITION",
+                        "N",
+                        None,
+                        None,
                     ],
-                    "column_exists": ["N", "Y", "Y", "N"],
-                }
+                ]
             )
-
-        if query == sql.SQL_TABLES:
-            if params and params.get("schema_name") == "TEST_SCHEMA":
-                return pd.DataFrame(
-                    {
-                        "table_name": ["TABLE_1", "TABLE_2"],
-                        "default_collation": [None, None],
-                    }
-                )
-            return pd.DataFrame(
-                {"table_name": ["TABLE_3"], "default_collation": [None]}
-            )
-
-        if query == sql.SQL_TAB_COLUMNS:
-            return pd.DataFrame(
-                {
-                    "table_name": ["TABLE_1", "TABLE_2"],
-                    "column_name": ["COL1", "COL2"],
-                    "collation": [None, "USING_NLS_COMP"],
-                }
-            )
-
         return pd.DataFrame()
 
-    with patch("pandas.read_sql_query", side_effect=_mock_side_effect) as mock:
-        yield mock
+    mock_read_sql.side_effect = read_sql_side_effect
 
-
-def test_dbmetadata_initialization(mock_read_sql_query, mock_config):
-    """Test if DBMetadata initializes with correct attributes."""
     dbm = DBMetadata()
-    assert hasattr(dbm, "schema_name")
-    assert hasattr(dbm, "engine")
-    assert hasattr(dbm, "column_exists")
-    assert hasattr(dbm, "tables")
-    assert hasattr(dbm, "tab_columns")
-    assert hasattr(dbm, "part_tables")
-    assert hasattr(dbm, "part_key_columns")
-    assert hasattr(dbm, "tab_partitions")
-    assert hasattr(dbm, "comments")
-    assert hasattr(dbm, "indexes")
-    assert hasattr(dbm, "index_columns")
-    assert hasattr(dbm, "constraints")
-    assert hasattr(dbm, "constraint_columns")
-    assert hasattr(dbm, "grants")
+    dbm.load_db_metadata()
 
-    assert mock_read_sql_query.call_count >= 1
+    # Engine created and disposed
+    mock_ce.assert_called_once()
+    dbm.engine.dispose.assert_called_once()  # type: ignore[attr-defined]
 
-    assert not dbm.column_exists.empty
-    assert "view_name" in dbm.column_exists.columns
-    assert "column_exists" in dbm.column_exists.columns
-
-    assert not dbm.tables.empty
-    assert "table_name" in dbm.tables.columns
-
-
+    # After load, get_db_metadata returns dict with DataFrames
+    md = dbm.get_db_metadata()
+    expected_keys = {
+        "column_exists",
+        "tables",
+        "tab_columns",
+        "part_tables",
+        "part_key_columns",
+        "tab_partitions",
+        "comments",
+        "indexes",
+        "index_columns",
+        "constraints",
+        "constraint_columns",
+        "grants",
+    }
+    assert set(md.keys()) == expected_keys
+    for v in md.values():
+        assert isinstance(v, pd.DataFrame)

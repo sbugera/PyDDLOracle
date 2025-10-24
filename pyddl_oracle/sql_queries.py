@@ -56,8 +56,8 @@ SELECT t.owner,
        t.flash_cache,
        t.cell_flash_cache,
        t.result_cache,
-       t.segment_created,
-       CAST(NULL AS VARCHAR2(100)) AS default_collation
+       CAST(NULL AS VARCHAR2(100)) AS default_collation,
+       t.segment_created
   FROM sys.dba_tables t
  WHERE t.owner = :schema_name
  ORDER BY t.table_name
@@ -90,8 +90,8 @@ SELECT c.table_name,
        c.default_on_null,
        c.evaluation_edition,
        c.unusable_before,
-       c.unusable_beginning,
-       CAST(NULL AS VARCHAR2(100)) AS collation
+       CAST(NULL AS VARCHAR2(100)) AS collation,
+       c.unusable_beginning
   FROM sys.dba_tab_cols   c
   JOIN sys.dba_all_tables t
     ON c.table_name = t.table_name
